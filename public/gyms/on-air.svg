@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 70">
+  <!-- Rectangle border -->
+  <rect x="2" y="2" width="196" height="66" rx="2" ry="2"
+    fill="none" stroke="#111111" stroke-width="3"/>
+  <!-- ON AIR bold -->
+  <text x="100" y="31" text-anchor="middle"
+    font-family="'Arial Black','Impact',Arial,sans-serif"
+    font-weight="900" font-size="22" fill="#111111" letter-spacing="5">ON AIR</text>
+  <!-- Divider line -->
+  <line x1="30" y1="38" x2="170" y2="38" stroke="#111111" stroke-width="1.5"/>
+  <!-- ORIGINAL FITNESS small caps -->
+  <text x="100" y="55" text-anchor="middle"
+    font-family="Arial,sans-serif"
+    font-weight="400" font-size="9" fill="#111111" letter-spacing="3.5">ORIGINAL FITNESS</text>
+</svg>

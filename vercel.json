@@ -1,0 +1,17 @@
+{
+  "alias": ["evolya.vercel.app"],
+  "crons": [
+    {
+      "path": "/api/cron/weekly-report",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/cron/late-payments",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/bilan",
+      "schedule": "0 9 1 * *"
+    }
+  ]
+}

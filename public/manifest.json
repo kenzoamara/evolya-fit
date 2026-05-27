@@ -1,0 +1,24 @@
+﻿{
+  "name": "Evolya'Fit",
+  "short_name": "Evolya'Fit",
+  "description": "Ton espace membre — suivi, messages et objectifs avec ton coach.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFB",
+  "theme_color": "#4E9B6F",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/logo-evolya-icon-v2.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-evolya-icon-v2.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

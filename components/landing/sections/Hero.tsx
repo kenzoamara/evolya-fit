@@ -1,0 +1,83 @@
+﻿'use client'
+
+import Link from 'next/link'
+import ShaderBackground from '@/components/ui/shader-background'
+
+function FrenchFlag({ width = 20, height = 14 }: { width?: number; height?: number }) {
+  return (
+    <svg width={width} height={height} viewBox="0 0 30 20" xmlns="http://www.w3.org/2000/svg" style={{ borderRadius: 2, flexShrink: 0 }}>
+      <rect width="10" height="20" fill="#002395" />
+      <rect x="10" width="10" height="20" fill="#FFFFFF" />
+      <rect x="20" width="10" height="20" fill="#ED2939" />
+    </svg>
+  )
+}
+
+export function Hero() {
+  return (
+    <section
+      className="relative overflow-hidden flex flex-col justify-center"
+      style={{ minHeight: '100dvh', backgroundColor: '#0D1F3C' }}
+    >
+      {/* WebGL Shader background */}
+      <ShaderBackground />
+
+      {/* Overlay pour garantir la lisibilité du texte */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, rgba(13,31,60,0.55) 0%, rgba(13,31,60,0.25) 50%, rgba(13,31,60,0.60) 100%)',
+        }}
+      />
+
+      <div className="relative z-10 max-w-6xl mx-auto w-full px-4 sm:px-6 pt-24 pb-14 text-center">
+
+        {/* Bannière France */}
+        <div className="inline-flex items-center gap-2.5 bg-white/10 border border-white/15 text-white/80 text-[12px] sm:text-[13px] font-medium px-4 py-1.5 rounded-full mb-6 sm:mb-8 backdrop-blur-sm">
+          Pour les coachs sportifs indépendants francophones
+          <FrenchFlag width={18} height={13} />
+        </div>
+
+        {/* Titre principal */}
+        <h1 className="text-[32px] sm:text-[40px] md:text-[52px] lg:text-[62px] font-bold text-white leading-[1.15] tracking-[-0.025em] mb-5 sm:mb-6">
+          Le système qui te permet de dépasser <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>30 membres</span> sans négliger la qualité de ton coaching
+        </h1>
+
+        {/* Sous-titre */}
+        <p className="text-[15px] sm:text-[17px] md:text-[19px] text-white/65 leading-relaxed mb-8 sm:mb-10 max-w-2xl mx-auto">
+          Un système tout-en-un &amp; simplissime pour structurer ton coaching, automatiser sans affecter le lien avec tes membres et maintenir un suivi de haute qualité sans surcharge de travail.
+        </p>
+
+        {/* CTA principal */}
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
+          <Link
+            href="/#pricing"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#4E9B6F] hover:bg-[#3D7A5F] text-white text-[15px] sm:text-[16px] font-bold px-8 py-4 rounded-xl transition-colors shadow-[0_4px_24px_rgba(78,155,111,0.45)]"
+          >
+            Commencer gratuitement — 14 jours offerts
+            <svg width="17" height="17" viewBox="0 0 17 17" fill="none">
+              <path d="M3.5 8.5h10M9.5 4.5l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </Link>
+
+          <p className="text-[12px] sm:text-[13px] text-white/45 font-medium">
+            Sans carte bancaire · Opérationnel en 10 minutes
+          </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+              <FrenchFlag width={13} height={10} />
+              Conçu en France
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+              Sans carte bancaire
+            </span>
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+              🔒 Hébergé en Europe
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 56">
+  <!-- ONE in bold black -->
+  <text x="12" y="38" font-family="'Arial Black','Impact',Arial,sans-serif" font-weight="900" font-size="36" fill="#111111" letter-spacing="-1">ONE</text>
+  <!-- FITNESS CLUB in red italic -->
+  <text x="103" y="38" font-family="'Arial Black',Arial,sans-serif" font-weight="900" font-size="17" fill="#C8102E" letter-spacing="0" font-style="italic">FITNESS CLUB</text>
+  <!-- Tagline -->
+  <text x="120" y="51" text-anchor="middle" font-family="Arial,sans-serif" font-weight="600" font-size="7" fill="#C8102E" letter-spacing="3">LE N°1 C'EST VOUS</text>
+</svg>

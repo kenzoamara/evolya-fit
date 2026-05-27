@@ -3,7 +3,7 @@ workflows:
     name: Android Build
     max_build_duration: 60
     environment:
-      node: 18.17.0
+      node: 20.11.0
     scripts:
       - name: Install dependencies
         script: npm install
@@ -21,7 +21,7 @@ workflows:
     name: iOS Build
     max_build_duration: 120
     environment:
-      node: 18.17.0
+      node: 20.11.0
       xcode: latest
       cocoapods: default
     scripts:

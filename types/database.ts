@@ -140,7 +140,7 @@ export type Client = {
   invite_token: string | null
   invite_token_expires_at: string | null
   invite_token_used: boolean
-  status: 'active' | 'inactive'
+  status: 'active' | 'inactive' | 'pending'
   last_checkin_at: string | null
   rest_days: number[]
   created_at: string

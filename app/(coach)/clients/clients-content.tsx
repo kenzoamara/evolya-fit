@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -119,52 +119,61 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
 
   const now = new Date()
 
-  // ── CSV import ──────────────────────────────────────────────────────────────
-  const [csvLoading, setCsvLoading] = useState(false)
-  const csvInputRef = useRef<HTMLInputElement>(null)
+  // ── Onglets + lien partageable + demandes reçues ─────────────────────────────
+  const [tab, setTab] = useState<'membres' | 'demandes'>('membres')
+  const [shareModal, setShareModal] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [approveLoadingId, setApproveLoadingId] = useState<string | null>(null)
 
-  async function handleCSVImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setCsvLoading(true)
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.evolyafit.fr'
+  const shareLink = `${appUrl}/rejoindre/${profile.id}`
+
+  const pendingClients = clients.filter(c => c.status === 'pending')
+
+  async function handleCopyShareLink() {
+    await navigator.clipboard.writeText(shareLink)
+    setShareCopied(true)
+    setTimeout(() => setShareCopied(false), 2000)
+  }
+
+  async function handleApprove(client: ClientWithRelations) {
+    if (limitReached) {
+      toast.error(`Limite de ${clientMax} membres atteinte. Passe à un plan supérieur pour valider cette demande.`)
+      return
+    }
+    setApproveLoadingId(client.id)
     try {
-      const text = await file.text()
-      const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean)
-      if (lines.length < 2) { toast.error('Le fichier CSV est vide ou ne contient qu\'un en-tête.'); setCsvLoading(false); return }
-
-      // Detect separator (comma or semicolon)
-      const sep = lines[0].includes(';') ? ';' : ','
-      const header = lines[0].split(sep).map(h => h.toLowerCase().replace(/["\s]/g, ''))
-      const colNom = header.findIndex(h => h === 'nom' || h === 'name' || h === 'fullname' || h === 'full_name' || h === 'prenom' || h === 'firstname')
-      const colEmail = header.findIndex(h => h === 'email' || h === 'mail' || h === 'courriel')
-
-      if (colNom === -1 || colEmail === -1) {
-        toast.error('Le CSV doit contenir des colonnes "nom" (ou "name") et "email".')
-        setCsvLoading(false); if (csvInputRef.current) csvInputRef.current.value = ''; return
-      }
-
-      const rows = lines.slice(1).map(l => {
-        const cols = l.split(sep).map(c => c.replace(/^["']|["']$/g, '').trim())
-        return { nom: cols[colNom] ?? '', email: cols[colEmail] ?? '' }
-      }).filter(r => r.nom && r.email && r.email.includes('@'))
-
-      if (rows.length === 0) { toast.error('Aucune ligne valide trouvée (nom + email requis).'); setCsvLoading(false); return }
-
-      const res = await fetch('/api/clients/import-csv', {
+      const res = await fetch('/api/clients/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clients: rows }),
+        body: JSON.stringify({ clientId: client.id }),
       })
       const data = await res.json()
-      if (data.error) { toast.error(data.error); setCsvLoading(false); return }
-      toast.success(`${data.created} athlète${data.created > 1 ? 's' : ''} importé${data.created > 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} doublon${data.skipped > 1 ? 's' : ''} ignoré${data.skipped > 1 ? 's' : ''})` : ''}`)
+      if (!res.ok) { toast.error(data.error ?? 'Erreur lors de la validation.'); return }
+      if (data.hasEmail) {
+        toast.success(`${client.full_name} validé — lien envoyé par email.`)
+      } else {
+        // Pas d'email : on montre le lien à copier/envoyer manuellement
+        setClientLink({ name: client.full_name, url: data.magicLink })
+        setShowAddModal(true)
+        toast.success(`${client.full_name} validé. Envoie-lui son lien d'accès.`)
+      }
       router.refresh()
     } catch {
-      toast.error('Erreur lors de la lecture du fichier CSV.')
+      toast.error('Erreur réseau. Réessaie.')
     } finally {
-      setCsvLoading(false)
-      if (csvInputRef.current) csvInputRef.current.value = ''
+      setApproveLoadingId(null)
     }
+  }
+
+  async function handleReject(clientId: string) {
+    setApproveLoadingId(clientId)
+    const supabase = createClient()
+    const { error } = await supabase.from('clients').delete().eq('id', clientId)
+    setApproveLoadingId(null)
+    if (error) { toast.error('Erreur lors du refus.'); return }
+    toast.success('Demande refusée.')
+    router.refresh()
   }
 
   function openEditName(client: ClientWithRelations, e: React.MouseEvent) {
@@ -211,8 +220,9 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
   }
 
   const filteredClients = clients.filter((c) =>
-    c.full_name.toLowerCase().includes(search.toLowerCase()) ||
-    (c.email ?? '').toLowerCase().includes(search.toLowerCase())
+    c.status !== 'pending' &&
+    (c.full_name.toLowerCase().includes(search.toLowerCase()) ||
+     (c.email ?? '').toLowerCase().includes(search.toLowerCase()))
   )
 
   const activeClients = clients.filter((c) => c.status === 'active').length
@@ -270,18 +280,17 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {/* CSV import */}
-          <input ref={csvInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleCSVImport} />
+          {/* Lien partageable */}
           <button
-            onClick={() => csvInputRef.current?.click()}
-            disabled={csvLoading}
-            title="Importer des athlètes depuis un fichier CSV (colonnes : nom, email)"
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFB] text-[#374151] text-sm font-medium rounded-lg transition-all active:scale-[0.98] disabled:opacity-50"
+            onClick={() => setShareModal(true)}
+            title="Partager mon lien d'invitation"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFB] text-[#374151] text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
           >
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M6.5 9V1M3 6l3.5 3.5L10 6M1.5 11.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
-            {csvLoading ? 'Import...' : 'CSV'}
+            Partager mon lien
           </button>
 
           {limitReached ? (
@@ -302,8 +311,71 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
         </div>
       </div>
 
+      {/* Onglets Membres / Demandes reçues */}
+      <div className="flex items-center gap-1 mb-4 border-b border-[#E2E8F0]">
+        <button
+          onClick={() => setTab('membres')}
+          className={`relative px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'membres' ? 'text-[#0D1F3C]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+        >
+          Membres
+          {tab === 'membres' && <span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#4E9B6F] rounded-full" />}
+        </button>
+        <button
+          onClick={() => setTab('demandes')}
+          className={`relative px-3 py-2.5 text-sm font-medium transition-colors flex items-center gap-1.5 ${tab === 'demandes' ? 'text-[#0D1F3C]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
+        >
+          Demandes reçues
+          {pendingClients.length > 0 && (
+            <span className="text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1 text-white bg-[#EF4444]">
+              {pendingClients.length}
+            </span>
+          )}
+          {tab === 'demandes' && <span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#4E9B6F] rounded-full" />}
+        </button>
+      </div>
+
+      {/* Demandes reçues */}
+      {tab === 'demandes' && (
+        pendingClients.length === 0 ? (
+          <div className="bg-white border border-[#E2E8F0] rounded-xl">
+            <EmptyState icon="clients" title="Aucune demande reçue"
+              description="Les personnes qui s'inscrivent via ton lien de partage apparaissent ici. Tu reçois aussi une notification par email." />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-1.5">
+            {pendingClients.map((client) => {
+              const c = avatarColor(client.full_name)
+              const isLoading = approveLoadingId === client.id
+              return (
+                <div key={client.id} className="flex items-center justify-between bg-white border border-[#E2E8F0] rounded-xl px-4 sm:px-5 py-4">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0" style={{ backgroundColor: c.bg, color: c.text }}>
+                      {client.full_name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-sm text-[#0D1F3C] truncate">{client.full_name}</p>
+                      <p className="text-xs text-[#94A3B8] truncate">{client.email?.includes('@evolya.internal') ? 'Sans email' : client.email}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                    <button onClick={() => handleReject(client.id)} disabled={isLoading}
+                      className="px-3 py-2 text-xs font-medium text-[#64748B] border border-[#E2E8F0] rounded-lg hover:bg-[#F1F5F9] transition-colors disabled:opacity-50">
+                      Refuser
+                    </button>
+                    <button onClick={() => handleApprove(client)} disabled={isLoading}
+                      className="px-3 py-2 text-xs font-semibold text-white bg-[#4E9B6F] rounded-lg hover:bg-[#3d8058] transition-colors disabled:opacity-50">
+                      {isLoading ? '...' : 'Valider'}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )
+      )}
+
       {/* Barre de recherche */}
-      {clients.length > 0 && (
+      {tab === 'membres' && clients.length > 0 && (
         <div className="mb-4">
           <div className="relative max-w-xs">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94A3B8]" width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -345,7 +417,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
       )}
 
       {/* Liste */}
-      {filteredClients.length === 0 ? (
+      {tab === 'membres' && (filteredClients.length === 0 ? (
         <div className="bg-white border border-[#E2E8F0] rounded-xl">
           {clients.length === 0 ? (
             <EmptyState icon="clients" title="Aucun membre encore"
@@ -444,7 +516,45 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
             )
           })}
         </div>
-      )}
+      ))}
+
+      {/* Modal partage du lien */}
+      <div
+        className={`fixed inset-0 z-50 flex items-center justify-center p-4 transition-opacity duration-150 ${shareModal ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'rgba(0,0,0,0.45)' }}
+        onClick={(e) => { if (e.target === e.currentTarget) setShareModal(false) }}
+      >
+        <div className={`bg-white rounded-2xl border border-[#E2E8F0] w-full max-w-md shadow-xl transition-all duration-150 ${shareModal ? 'translate-y-0 scale-100' : 'translate-y-4 scale-[0.98]'}`}>
+          <div className="px-6 py-5 border-b border-[#E2E8F0] flex items-center justify-between">
+            <h3 className="font-semibold text-[#0D1F3C] tracking-tight">Partager mon lien</h3>
+            <button onClick={() => setShareModal(false)} className="w-7 h-7 rounded-lg flex items-center justify-center text-[#94A3B8] hover:text-[#64748B] hover:bg-[#F1F5F9] transition-colors text-xl">×</button>
+          </div>
+          <div className="px-6 py-5">
+            <p className="text-sm text-[#64748B] mb-4 leading-relaxed">
+              Envoie ce lien unique à autant de personnes que tu veux. Chaque inscription arrive dans <strong className="text-[#0D1F3C]">Demandes reçues</strong> pour que tu la valides.
+            </p>
+
+            <div className="bg-[#F1F5F9] rounded-xl px-4 py-3 mb-4 flex items-center gap-3 min-w-0">
+              <span className="text-xs text-[#64748B] truncate flex-1 font-mono">{shareLink}</span>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={handleCopyShareLink}
+                className="flex-1 py-2.5 border border-[#E2E8F0] text-sm font-medium text-[#0D1F3C] rounded-lg hover:bg-[#F1F5F9] transition-colors flex items-center justify-center gap-2">
+                {shareCopied ? '✓ Copié !' : '📋 Copier le lien'}
+              </button>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`Rejoins mon coaching ici : ${shareLink}`)}`}
+                target="_blank" rel="noopener noreferrer"
+                className="flex-1 py-2.5 bg-[#25D366] text-white text-sm font-medium rounded-lg hover:bg-[#1fb855] transition-colors flex items-center justify-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.118 1.533 5.845L.057 23.57a.75.75 0 00.914.914l5.725-1.476A11.943 11.943 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.933 0-3.742-.521-5.292-1.428l-.38-.223-3.397.875.893-3.317-.243-.394A9.956 9.956 0 012 12C2 6.486 6.486 2 12 2s10 4.486 10 10-4.486 10-10 10z"/></svg>
+                WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Modal ajout client */}
       <div

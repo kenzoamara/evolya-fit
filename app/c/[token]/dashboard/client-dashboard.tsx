@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { formatDateShort, getWeekNumber } from '@/lib/utils'
 import { CheckCircle2, MessageCircle, ChevronRight, Dumbbell } from 'lucide-react'
 import type { Client, Objective, Checkin, Session, ClientReminder } from '@/types/database'
+import { WelcomeGuide } from '@/components/client/welcome-guide'
 
 type PaymentAlert = {
   lateCount: number
@@ -22,9 +23,11 @@ type Props = {
   sessions: Session[]
   lastCoachMessage: { id: string; content: string; sender_role: string; created_at: string; read_by_client: boolean } | null
   coachName: string
+  coachPhoto?: string | null
   token: string
   pendingReminder: ClientReminder | null
   paymentAlert: PaymentAlert
+  coachView?: boolean
 }
 
 function KpiCard({ label, value, sub, color, bg }: { label: string; value: string | number; sub?: string; color?: string; bg?: string }) {
@@ -56,7 +59,7 @@ function fmtAmount(n: number): string {
   return n.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + ' €'
 }
 
-export function ClientDashboard({ client, objectives, checkins, sessions, lastCoachMessage, coachName, token, pendingReminder, paymentAlert }: Props) {
+export function ClientDashboard({ client, objectives, checkins, sessions, lastCoachMessage, coachName, coachPhoto, token, pendingReminder, paymentAlert, coachView = false }: Props) {
   const now = new Date()
   const todayStr = now.toISOString().slice(0, 10)
   const currentWeek = getWeekNumber(now)
@@ -166,10 +169,12 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
               </Link>
             </div>
           </div>
-          <button onClick={handleDismissReminder} disabled={dismissing}
-            className="flex-shrink-0 text-[#94A3B8] hover:text-[#64748B] transition-colors text-lg leading-none mt-0.5">
-            ×
-          </button>
+          {!coachView && (
+            <button onClick={handleDismissReminder} disabled={dismissing}
+              className="flex-shrink-0 text-[#94A3B8] hover:text-[#64748B] transition-colors text-lg leading-none mt-0.5">
+              ×
+            </button>
+          )}
         </div>
       )}
 
@@ -180,9 +185,26 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">
             Bonjour, {client.full_name.split(' ')[0]}
           </h1>
-          <p className="text-[11px] text-[#94A3B8]">Suivi par {coachName}</p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            {coachPhoto
+              ? <img src={coachPhoto} alt={coachName} className="w-4 h-4 rounded-full object-cover" />
+              : <span className="w-4 h-4 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B]">{coachName[0]}</span>
+            }
+            <p className="text-[11px] text-[#94A3B8]">Suivi par {coachName}</p>
+          </div>
         </div>
       </div>
+
+      {/* Guide de bienvenue + contenu drippé (J0–J7) */}
+      {!coachView && (
+        <WelcomeGuide
+          token={token}
+          clientId={client.id}
+          onboardingCompletedAt={client.onboarding_completed_at}
+          coachName={coachName}
+          hasCheckinThisWeek={hasCheckinThisWeek}
+        />
+      )}
 
       {/* Check-in CTA */}
       {!hasCheckinThisWeek && (

@@ -109,10 +109,13 @@ function SidebarContent({ navGroups, active, profile, initials, logout }: Sideba
       <div className="px-3 pb-4 pt-2 shrink-0" style={{ borderTop: '1px solid var(--evolya-border)' }}>
         <div className="flex items-center gap-2.5 px-2 py-2">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 text-white"
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 text-white overflow-hidden"
             style={{ backgroundColor: 'var(--brand)' }}
           >
-            {profile.brand_icon || initials}
+            {profile.brand_icon?.startsWith('http')
+              ? <img src={profile.brand_icon} alt="" className="w-full h-full object-cover" />
+              : (profile.brand_icon || initials)
+            }
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[12.5px] font-semibold text-[--evolya-text] truncate leading-tight">{profile.full_name ?? 'Coach'}</p>
@@ -206,7 +209,7 @@ export function Sidebar({ profile }: Props) {
       label: 'RÉGLAGES',
       items: [
         { id: 'personnalisation', label: 'Personnalisation', href: '/personnalisation', emoji: '🎨', emojiColor: '#7C3AED', emojiBg: '#F5F3FF' },
-        { id: 'nouveautes',       label: 'Suggestions',      href: '/nouveautes-vote',  emoji: '✨', emojiColor: '#D97706', emojiBg: '#FFFBEB', badge: newUpdates },
+        { id: 'nouveautes',       label: 'Nouveautés',       href: '/nouveautes-vote',  emoji: '✨', emojiColor: '#D97706', emojiBg: '#FFFBEB', badge: newUpdates },
         { id: 'parametres',       label: 'Paramètres',       href: '/parametres',       emoji: '⚙️', emojiColor: '#64748B', emojiBg: '#F1F5F9' },
       ],
     },

@@ -8,10 +8,14 @@ import type { Client, Objective, Checkin, Session, ClientReminder } from '@/type
 
 export default async function ClientDashboardPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>
+  searchParams: Promise<Record<string, string>>
 }) {
   const { token } = await params
+  const sp = await searchParams
+  const coachView = sp.coach === '1'
   // Utilise la clé publique (anon) — les politiques RLS "USING (true)" suffisent
   // pour lire objectives/sessions/checkins sans avoir besoin du service_role_key
   const supabase = createSupabaseClient(
@@ -29,8 +33,11 @@ export default async function ClientDashboardPage({
 
   if (!client) redirect(`/c/${token}`)
 
-  // Redirect to onboarding if not yet completed
-  if (!(client as unknown as { onboarding_completed_at: string | null }).onboarding_completed_at) {
+  // Redirect to onboarding only if not coach preview and not yet completed
+  if (
+    !coachView &&
+    !(client as unknown as { onboarding_completed_at: string | null }).onboarding_completed_at
+  ) {
     redirect(`/c/${token}/onboarding`)
   }
 
@@ -41,7 +48,7 @@ export default async function ClientDashboardPage({
   let checkins: Checkin[] = []
   let sessions: Session[] = []
   let messages: { id: string; content: string; sender_role: string; created_at: string; read_by_client: boolean }[] = []
-  let profile: { full_name: string } | null = null
+  let profile: { full_name: string; brand_icon: string | null } | null = null
   let reminders: ClientReminder[] = []
   let rawPayments: { id: string; amount: number; due_date: string; claimed_at: string | null }[] = []
 
@@ -51,7 +58,7 @@ export default async function ClientDashboardPage({
       supabase.from('checkins').select('*').eq('client_id', client.id).order('submitted_at', { ascending: false }),
       supabase.from('sessions').select('id, session_date, notes, created_at').eq('client_id', client.id).order('session_date', { ascending: false }),
       supabase.from('messages').select('id, content, sender_role, created_at, read_by_client').eq('client_id', client.id).eq('sender_role', 'coach').order('created_at', { ascending: false }).limit(1),
-      supabase.from('profiles').select('full_name').eq('id', client.coach_id).single(),
+      supabase.from('profiles').select('full_name, brand_icon').eq('id', client.coach_id).single(),
       supabase.from('client_reminders')
         .select('*')
         .eq('client_id', client.id)
@@ -71,7 +78,7 @@ export default async function ClientDashboardPage({
     checkins = (r1.data ?? []) as Checkin[]
     sessions = (r2.data ?? []) as Session[]
     messages = (r3.data ?? []) as typeof messages
-    profile = (r4.data as unknown as { full_name: string } | null)
+    profile = (r4.data as unknown as { full_name: string; brand_icon: string | null } | null)
     reminders = (r5.data ?? []) as ClientReminder[]
     rawPayments = (r6.data ?? []) as typeof rawPayments
   } catch (err) {
@@ -107,9 +114,11 @@ export default async function ClientDashboardPage({
       sessions={sessions}
       lastCoachMessage={messages[0] ?? null}
       coachName={profile?.full_name ?? 'Votre coach'}
+      coachPhoto={profile?.brand_icon?.startsWith('http') ? profile.brand_icon : null}
       token={token}
       pendingReminder={pendingReminder as ClientReminder | null}
       paymentAlert={paymentAlert}
+      coachView={coachView}
     />
   )
 }

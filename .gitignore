@@ -20,6 +20,14 @@
 .DS_Store
 *.pem
 
+# Android signing secrets — NEVER commit
+*.jks
+*.keystore
+*.apk
+*.aab
+*.idsig
+*.b64.txt
+
 # debug
 npm-debug.log*
 yarn-debug.log*

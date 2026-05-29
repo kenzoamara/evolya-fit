@@ -11,25 +11,22 @@ const AppleLogo = () => (
 )
 
 const GooglePlayLogo = () => (
-  <svg viewBox="0 0 512 512" width="20" height="20" aria-hidden>
-    <path fill="#EA4335" d="M325.3 234.3 104.6 13l280.8 161.2-60.1 60.1z"/>
-    <path fill="#4285F4" d="M47 0C34 6.8 25.3 19.2 25.3 35.3v441.3c0 16.1 8.7 28.5 21.7 35.3l256.6-256L47 0z"/>
-    <path fill="#34A853" d="M104.6 499l220.7-221.3 60.1 60.1L104.6 499z"/>
-    <path fill="#FBBC04" d="M472.2 225.6l-58.9-34.1-65.7 64.5 65.7 64.5 60.1-34.1c18-14.3 18-46.5-1.2-60.8z"/>
+  <svg viewBox="0 0 512 512" width="22" height="22" aria-hidden>
+    <path fill="#4285F4" d="M48 16 48 496 256 256Z"/>
+    <path fill="#EA4335" d="M48 16 380 208 256 256Z"/>
+    <path fill="#34A853" d="M48 496 380 304 256 256Z"/>
+    <path fill="#FBBC04" d="M380 208 462 256 380 304 256 256Z"/>
   </svg>
 )
 
 function StoreBadge({ icon, top, bottom }: { icon: React.ReactNode; top: string; bottom: string }) {
   return (
-    <div className="relative flex items-center gap-2.5 rounded-xl border border-white/15 bg-black px-4 py-2.5">
-      <span className="flex items-center justify-center w-6">{icon}</span>
+    <div className="flex items-center gap-2.5 rounded-xl border border-white/15 bg-black px-4 py-2.5 min-w-[150px]">
+      <span className="flex items-center justify-center w-6 shrink-0">{icon}</span>
       <div className="text-left">
-        <p className="text-[9px] text-white/60 leading-none">{top}</p>
+        <p className="text-[9px] text-white/55 leading-none">{top}</p>
         <p className="text-[14px] font-semibold text-white leading-tight mt-0.5">{bottom}</p>
       </div>
-      <span className="absolute -top-2 -right-2 text-[9px] font-bold uppercase tracking-wide text-white bg-[#4E9B6F] rounded-full px-2 py-0.5">
-        Bientôt
-      </span>
     </div>
   )
 }
@@ -60,28 +57,42 @@ export function Footer() {
     <footer className="bg-gradient-to-b from-[#091528] to-[#040A14] px-6 pt-20 pb-10 relative overflow-hidden">
       <AnimatedBackground mode="mesh" theme="dark" intensity={1} />
       <div className="max-w-5xl mx-auto relative z-[1]">
-        {/* Top row */}
-        <div className="grid md:grid-cols-4 gap-12 pb-16 border-b border-white/[0.06]">
+
+        {/* ── Bloc focal : apps mobiles bientôt ── */}
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 sm:p-8 mb-16 flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="text-center sm:text-left">
+            <span className="inline-block text-[10px] font-bold uppercase tracking-[0.15em] text-[#4E9B6F] mb-2">Bientôt disponible</span>
+            <h3 className="text-[20px] sm:text-[24px] font-bold text-white leading-tight">Emporte ton coaching partout</h3>
+            <p className="text-[13px] text-white/45 mt-1.5 max-w-sm">Les applications iOS et Android arrivent. Tes membres t&apos;auront dans la poche.</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            <StoreBadge icon={<AppleLogo />} top="Bientôt sur" bottom="App Store" />
+            <StoreBadge icon={<GooglePlayLogo />} top="Bientôt sur" bottom="Google Play" />
+          </div>
+        </div>
+
+        {/* ── Marque + navigation ── */}
+        <div className="grid md:grid-cols-4 gap-12 pb-12 border-b border-white/[0.06]">
           {/* Brand col */}
-          <div className="md:col-span-1">
-            <div className="mb-5">
-              <Logo height={51} variant="light" />
+          <div className="md:col-span-2">
+            <div className="mb-4">
+              <Logo height={48} variant="light" />
             </div>
-            <p className="text-[13px] text-white/35 leading-relaxed max-w-[220px]">
-              Gere ton coaching, simplement — pour moins d'outils et plus de resultats.
+            <p className="text-[13px] text-white/40 leading-relaxed max-w-[260px]">
+              Gère ton coaching, simplement — moins d&apos;outils, plus de résultats.
             </p>
           </div>
 
           {/* Link cols */}
           {FOOTER_COLS.map((col, i) => (
             <div key={i}>
-              <h4 className="text-[12px] font-semibold text-white/50 tracking-widest uppercase mb-5">
+              <h4 className="text-[11px] font-bold text-white/70 tracking-[0.15em] uppercase mb-4">
                 {col.title}
               </h4>
-              <ul className="space-y-3">
+              <ul className="space-y-2.5">
                 {col.links.map((link, j) => (
                   <li key={j}>
-                    <Link href={link.href} className="text-[13px] text-white/35 hover:text-white/70 transition-colors">
+                    <Link href={link.href} className="text-[13px] text-white/45 hover:text-white transition-colors">
                       {link.label}
                     </Link>
                   </li>
@@ -91,22 +102,10 @@ export function Footer() {
           ))}
         </div>
 
-        {/* Apps mobiles — bientôt */}
-        <div className="py-10 border-b border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-5">
-          <div className="text-center sm:text-left">
-            <p className="text-[14px] font-semibold text-white/80">Les applications mobiles arrivent</p>
-            <p className="text-[12px] text-white/35 mt-1">Bientôt sur l&apos;App Store et Google Play.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <StoreBadge icon={<AppleLogo />} top="Bientôt sur" bottom="App Store" />
-            <StoreBadge icon={<GooglePlayLogo />} top="Bientôt sur" bottom="Google Play" />
-          </div>
-        </div>
-
-        {/* Bottom row */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+        {/* ── Mention légale (discrète) ── */}
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[12px] text-white/25 order-2 md:order-1">
-            &copy; {year} Evolya. Tous droits reserves.
+            &copy; {year} Evolya. Tous droits réservés.
           </p>
           <div className="flex items-center gap-6 order-1 md:order-2">
             {FOOTER_COLS[1].links.map((link, i) => (

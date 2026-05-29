@@ -2,6 +2,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Mobile client interface safe area ── */
+.client-content-area {
+  padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .client-content-area {
+    padding-bottom: 0;
+  }
+}
+
+/* ── Smooth momentum scroll on iOS ── */
+.overflow-y-auto, .overflow-y-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Prevent overscroll bounce on nav ── */
+nav {
+  overscroll-behavior: none;
+}
+
 @layer base {
   :root {
     /* ── Coach brand (overridden per-coach via layout <style> tag) ── */

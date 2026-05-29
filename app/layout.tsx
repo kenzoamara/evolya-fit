@@ -63,6 +63,13 @@ const playfair = Playfair_Display({
   style: ['normal', 'italic'],
 })
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: '#ffffff',
+}
+
 export const metadata: Metadata = {
   title: "Evolya'Fit — Suivi coach-client",
   description: "La plateforme de suivi coach-client — Centralise le suivi de tes clients, automatise les check-ins et concentre-toi sur ton coaching.",
@@ -81,8 +88,9 @@ export const metadata: Metadata = {
     description: "La plateforme de suivi coach-client — Centralise le suivi de tes clients, automatise les check-ins et concentre-toi sur ton coaching.",
   },
   icons: {
-    icon: '/favicon.ico',
-    apple: '/logo-evolya-icon-v2.png',
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
   },
   appleWebApp: {
     capable: true,

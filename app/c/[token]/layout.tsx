@@ -85,7 +85,7 @@ export default async function ClientLayout({
           token={token}
           paymentBadge={pendingPayments ?? 0}
         />
-        <div className="flex-1 flex flex-col min-w-0 pb-[72px] md:pb-0">
+        <div className="flex-1 flex flex-col min-w-0 client-content-area">
           {children}
         </div>
         <div className="fixed bottom-[80px] right-4 z-40 md:bottom-4">

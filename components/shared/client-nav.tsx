@@ -63,7 +63,7 @@ const buildNav = (base: string, paymentBadge: number, coachView: boolean): NavSe
       items: [
         { href: `${base}/paiement${q}`,    label: 'Paiement',         emoji: '💳', color: '#F59E0B', bg: '#FFFBEB', badge: paymentBadge > 0 ? paymentBadge : undefined },
         { href: `${base}/notes${q}`,       label: 'Notes',            emoji: '📔', color: '#64748B', bg: '#F8FAFC' },
-        { href: `${base}/profil${q}`,      label: 'Profil',           emoji: '👤', color: '#64748B', bg: '#F8FAFC' },
+        { href: `${base}/profil${q}`,      label: 'Profil',           emoji: '🪪', color: '#64748B', bg: '#F8FAFC' },
       ],
     },
   ]

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
+import { sendCoachPushNotification } from '@/lib/push'
 
 export async function POST(req: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -66,6 +67,16 @@ export async function POST(req: Request) {
       .from('clients')
       .update({ last_checkin_at: new Date().toISOString() })
       .eq('id', clientId)
+
+    // Notifier le coach par push notification (fire & forget)
+    if (client.coach_id) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      sendCoachPushNotification(client.coach_id, {
+        title: 'Nouveau check-in',
+        body:  `${client.full_name} vient de compléter son check-in hebdomadaire.`,
+        url:   `${appUrl}/clients/${clientId}`,
+      })
+    }
 
     // Notifier le coach par email
     const coachProfile = (client as any).profiles

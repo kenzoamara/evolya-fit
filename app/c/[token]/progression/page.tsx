@@ -8,10 +8,14 @@ import type { Client, Objective, Checkin, Session } from '@/types/database'
 
 export default async function ClientProgressionPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>
+  searchParams: Promise<Record<string, string>>
 }) {
   const { token } = await params
+  const sp = await searchParams
+  const coachView = sp.coach === '1'
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -76,6 +80,7 @@ export default async function ClientProgressionPage({
         sleepEntries={sleepEntries}
         performanceEntries={performanceEntries}
         token={token}
+        coachView={coachView}
       />
     </main>
   )

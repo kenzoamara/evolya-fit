@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { StatsContent } from './stats-content'
+import { PlanGate } from '@/components/ui/plan-gate'
 
 function getISOWeek(date: Date): { week: number; year: number } {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
@@ -76,6 +77,16 @@ export default async function StatistiquesPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
+
+  const { data: profileCheck } = await supabase.from('profiles').select('plan').eq('id', user.id).single()
+  const userPlan = (profileCheck?.plan ?? 'free') as string
+  if (!['starter', 'growth', 'pro'].includes(userPlan)) {
+    return (
+      <PlanGate featureKey="stats_perf" userPlan={userPlan} fullPage>
+        <div />
+      </PlanGate>
+    )
+  }
 
   const now = new Date()
   const { week: currentWeek, year: currentYear } = getISOWeek(now)

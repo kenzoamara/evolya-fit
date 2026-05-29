@@ -45,14 +45,14 @@ function getStatus(p: Payment): PaymentStatus {
 
 // ── Status config ─────────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<PaymentStatus, { label: string; color: string; bg: string; border: string }> = {
-  paid:    { label: 'Payé',                       color: '#16A34A', bg: '#F0FDF4', border: '#BBF7D0' },
-  claimed: { label: 'En attente de confirmation', color: '#D97706', bg: '#FFFBEB', border: '#FDE68A' },
-  late:    { label: 'En retard',                  color: '#DC2626', bg: '#FEF2F2', border: '#FECACA' },
-  pending: { label: 'À régler',                   color: '#3B82F6', bg: '#EFF6FF', border: '#BFDBFE' },
+  paid:    { label: 'Payé',                       color: 'var(--success)', bg: 'var(--success-bg)', border: '#BBF7D0' },
+  claimed: { label: 'En attente de confirmation', color: 'var(--warning)', bg: 'var(--warning-bg)', border: '#FDE68A' },
+  late:    { label: 'En retard',                  color: 'var(--danger)',  bg: 'var(--danger-bg)',  border: '#FECACA' },
+  pending: { label: 'À régler',                   color: 'var(--info)',    bg: 'var(--info-bg)',    border: '#BFDBFE' },
 }
 
-const COLOR = '#F59E0B'
-const COLOR_BG = '#FFFBEB'
+const COLOR = 'var(--brand)'
+const COLOR_BG = 'var(--brand-bg)'
 
 // ── Confirm modal ─────────────────────────────────────────────────────────────
 function ConfirmModal({

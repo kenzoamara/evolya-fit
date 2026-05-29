@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
+import { PLAN_LABELS } from '@/lib/plan-features'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -11,6 +13,37 @@ export async function POST(req: Request) {
     if (authError || !user) return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 })
 
     const { name, equipment } = await req.json()
+
+    // Vérifier et réinitialiser le compteur mensuel si nécessaire
+    const now = new Date()
+    const currentMonth = now.getMonth() + 1
+    const currentYear = now.getFullYear()
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan, ai_exercises_used, usage_reset_month, usage_reset_year')
+      .eq('id', user.id)
+      .single()
+
+    if (profile) {
+      const needsReset = profile.usage_reset_month !== currentMonth || profile.usage_reset_year !== currentYear
+      if (needsReset) {
+        await supabase.from('profiles').update({
+          ai_exercises_used: 0,
+          ai_programmes_used: 0,
+          usage_reset_month: currentMonth,
+          usage_reset_year: currentYear,
+        }).eq('id', user.id)
+        profile.ai_exercises_used = 0
+      }
+
+      const limits = getPlanLimits(profile.plan)
+      if (!isUnlimited(limits.ai_exercises) && profile.ai_exercises_used >= limits.ai_exercises) {
+        return NextResponse.json({
+          error: `Limite de ${limits.ai_exercises} générations IA atteinte ce mois-ci sur le plan ${PLAN_LABELS[profile.plan ?? 'free'] ?? profile.plan}. Réinitialisation le 1er du mois prochain.`
+        }, { status: 429 })
+      }
+    }
     if (!name?.trim()) return NextResponse.json({ error: 'Nom requis.' }, { status: 400 })
 
     const equipmentList = (equipment ?? 'aucun').trim()
@@ -54,6 +87,13 @@ Règles :
 
     const VALID_CATS = ['force', 'cardio', 'mobilite', 'hiit', 'stretching']
     const VALID_DIFFS = ['debutant', 'intermediaire', 'avance']
+
+    // Incrémenter le compteur
+    if (profile) {
+      await supabase.from('profiles').update({
+        ai_exercises_used: (profile.ai_exercises_used ?? 0) + 1,
+      }).eq('id', user.id)
+    }
 
     return NextResponse.json({
       category:     VALID_CATS.includes(data.category) ? data.category : 'force',

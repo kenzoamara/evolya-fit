@@ -16,6 +16,9 @@ type FormData = {
   weightKg: string
   mainGoal: string
   activityLevel: string
+  parqCardiac: 'yes' | 'no' | ''
+  parqInjuries: 'yes' | 'no' | ''
+  parqMedical: 'yes' | 'no' | ''
   injuries: string
   dietaryHabits: string
   avgSleepHours: string
@@ -94,7 +97,9 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
     firstName: nameParts[0] ?? '',
     lastName:  nameParts.slice(1).join(' '),
     birthDate: '', gender: '', heightCm: '', weightKg: '',
-    mainGoal: '', activityLevel: '', injuries: '', dietaryHabits: '',
+    mainGoal: '', activityLevel: '',
+    parqCardiac: '', parqInjuries: '', parqMedical: '',
+    injuries: '', dietaryHabits: '',
     avgSleepHours: '', sportPerformances: '', dailyCalories: '',
     privacyAccepted: false,
   })
@@ -138,7 +143,7 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
       saveStep({ gender: form.gender, heightCm: form.heightCm, weightKg: form.weightKg })
       setStep(3)
     } else if (step === 3) {
-      saveStep({ mainGoal: form.mainGoal, activityLevel: form.activityLevel, injuries: form.injuries, dietaryHabits: form.dietaryHabits })
+      saveStep({ mainGoal: form.mainGoal, activityLevel: form.activityLevel, parqCardiac: form.parqCardiac, parqInjuries: form.parqInjuries, parqMedical: form.parqMedical, injuries: form.injuries, dietaryHabits: form.dietaryHabits })
       setStep(4)
     } else if (step === 4) {
       finish()
@@ -443,8 +448,52 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
                           ))}
                         </div>
                       </div>
+                      {/* PAR-Q — 3 questions santé */}
                       <div>
-                        <label className="block text-sm font-medium text-[#0D1F3C] mb-1">Blessures ou douleurs</label>
+                        <label className="block text-sm font-medium text-[#0D1F3C] mb-1">Questionnaire de santé</label>
+                        <p className="text-xs text-[#94A3B8] mb-3">Répondez honnêtement — ces infos restent confidentielles entre vous et votre coach.</p>
+                        <div className="space-y-3">
+                          {([
+                            { key: 'parqCardiac',  q: 'Avez-vous des douleurs cardiaques ou thoraciques à l\'effort ?' },
+                            { key: 'parqInjuries', q: 'Avez-vous une blessure ou opération récente limitant votre activité ?' },
+                            { key: 'parqMedical',  q: 'Un médecin vous a-t-il déconseillé certains exercices ?' },
+                          ] as { key: 'parqCardiac' | 'parqInjuries' | 'parqMedical'; q: string }[]).map(({ key, q }) => (
+                            <div key={key} className="bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl px-3.5 py-3">
+                              <p className="text-[13px] text-[#0D1F3C] mb-2.5 leading-snug">{q}</p>
+                              <div className="flex gap-2">
+                                {(['no', 'yes'] as const).map(val => {
+                                  const sel = form[key] === val
+                                  const isYes = val === 'yes'
+                                  return (
+                                    <button
+                                      key={val}
+                                      type="button"
+                                      onClick={() => set(key, val)}
+                                      className={`flex-1 py-2 rounded-lg border-2 text-[13px] font-semibold transition-all duration-150 ${
+                                        !sel ? 'border-[#E2E8F0] bg-white text-[#64748B] hover:border-[#CBD5E1]' : ''
+                                      }`}
+                                      style={sel ? {
+                                        borderColor: isYes ? 'var(--warning)' : 'var(--brand)',
+                                        backgroundColor: isYes ? 'var(--warning-bg)' : 'color-mix(in srgb, var(--brand) 8%, white)',
+                                        color: isYes ? 'var(--warning)' : 'var(--brand)',
+                                      } : {}}
+                                    >
+                                      {val === 'yes' ? 'Oui' : 'Non'}
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-[#0D1F3C] mb-1">
+                          {(form.parqCardiac === 'yes' || form.parqInjuries === 'yes' || form.parqMedical === 'yes')
+                            ? 'Précisez (obligatoire si Oui)'
+                            : 'Blessures ou douleurs'}
+                        </label>
                         <p className="text-xs text-[#94A3B8] mb-2">Zones sensibles, antécédents, contraintes...</p>
                         <textarea rows={2} value={form.injuries} onChange={e => set('injuries', e.target.value)}
                           placeholder="Ex : douleur genou droit, hernie discale..."

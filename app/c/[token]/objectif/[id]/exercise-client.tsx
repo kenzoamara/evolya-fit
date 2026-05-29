@@ -50,9 +50,10 @@ function DonutChart({ progress, label }: { progress: number; label: string }) {
 type Props = {
   objective: Objective
   token: string
+  coachView?: boolean
 }
 
-export function ExerciseClient({ objective, token }: Props) {
+export function ExerciseClient({ objective, token, coachView = false }: Props) {
   const router = useRouter()
   const totalSeries = objective.series_count ?? 1
 
@@ -174,9 +175,9 @@ export function ExerciseClient({ objective, token }: Props) {
         </div>
         {/* Bouton quitter */}
         <button
-          onClick={saved ? handleLeave : undefined}
-          disabled={!saved}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${saved ? 'btn-brand' : 'border border-[#E2E8F0] text-[#94A3B8] cursor-not-allowed'}`}
+          onClick={saved || coachView ? handleLeave : undefined}
+          disabled={!saved && !coachView}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${saved || coachView ? 'btn-brand' : 'border border-[#E2E8F0] text-[#94A3B8] cursor-not-allowed'}`}
           title={saved ? 'Quitter' : 'Enregistrez avant de quitter'}
         >
           {!saved && (
@@ -231,7 +232,7 @@ export function ExerciseClient({ objective, token }: Props) {
             {!completedSeries[0] ? (
               <button
                 onClick={markDistanceDone}
-                disabled={saved}
+                disabled={saved || coachView}
                 className="w-full py-4 btn-brand font-semibold rounded-xl transition-colors disabled:opacity-50 text-base"
               >
                 Marquer comme terminé
@@ -256,7 +257,7 @@ export function ExerciseClient({ objective, token }: Props) {
                 <button
                   key={i}
                   onClick={() => toggleSeries(i)}
-                  disabled={saved}
+                  disabled={saved || coachView}
                   className={`flex flex-col items-center justify-center gap-1 py-4 rounded-xl border-2 transition-all font-medium disabled:cursor-default ${!done ? 'border-[#E2E8F0] bg-white text-[#0D1F3C]' : 'text-white shadow-sm'}`}
                   style={done ? { borderColor: 'var(--brand)', backgroundColor: 'var(--brand)' } : {}}
                 >
@@ -275,7 +276,7 @@ export function ExerciseClient({ objective, token }: Props) {
         )}
 
         {/* Bouton Enregistrer (visible quand tout est fait et pas encore sauvegardé) */}
-        {allDone && !saved && (
+        {allDone && !saved && !coachView && (
           <button
             onClick={handleSave}
             disabled={saving}
@@ -299,7 +300,7 @@ export function ExerciseClient({ objective, token }: Props) {
       </div>
 
       {/* Overlay plein écran quand tout est terminé */}
-      {showOverlay && !saved && (
+      {showOverlay && !saved && !coachView && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl p-8 flex flex-col items-center gap-5">
             {/* Cercle de validation */}

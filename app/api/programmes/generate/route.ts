@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
+import { PLAN_LABELS } from '@/lib/plan-features'
 
 export const maxDuration = 60 // secondes — nécessaire pour les plans Vercel Pro
 
@@ -41,6 +43,37 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Vérifier et réinitialiser le compteur mensuel si nécessaire
+  const now = new Date()
+  const currentMonth = now.getMonth() + 1
+  const currentYear = now.getFullYear()
+
+  const { data: usageProfile } = await supabase
+    .from('profiles')
+    .select('plan, ai_programmes_used, usage_reset_month, usage_reset_year')
+    .eq('id', user.id)
+    .single()
+
+  if (usageProfile) {
+    const needsReset = usageProfile.usage_reset_month !== currentMonth || usageProfile.usage_reset_year !== currentYear
+    if (needsReset) {
+      await supabase.from('profiles').update({
+        ai_exercises_used: 0,
+        ai_programmes_used: 0,
+        usage_reset_month: currentMonth,
+        usage_reset_year: currentYear,
+      }).eq('id', user.id)
+      usageProfile.ai_programmes_used = 0
+    }
+
+    const limits = getPlanLimits(usageProfile.plan)
+    if (!isUnlimited(limits.ai_programmes) && usageProfile.ai_programmes_used >= limits.ai_programmes) {
+      return NextResponse.json({
+        error: `Limite de ${limits.ai_programmes} programmes IA atteinte ce mois-ci sur le plan ${PLAN_LABELS[usageProfile.plan ?? 'free'] ?? usageProfile.plan}. Réinitialisation le 1er du mois prochain.`
+      }, { status: 429 })
+    }
+  }
 
   const { programme_id, title, type, duration_days, description, batch_from, batch_to, total_days } = await req.json()
 
@@ -149,6 +182,13 @@ Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans explication, au for
           }
         }
       }
+    }
+
+    // Incrémenter le compteur (uniquement au premier batch pour éviter les doublons)
+    if (usageProfile && (batch_from === undefined || batch_from === 1)) {
+      await supabase.from('profiles').update({
+        ai_programmes_used: (usageProfile.ai_programmes_used ?? 0) + 1,
+      }).eq('id', user.id)
     }
 
     return NextResponse.json({ days: parsed.days ?? [], total_days: trainingDaysTotal })

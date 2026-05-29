@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import { toast } from 'sonner'
 import {
   ArrowLeft, Plus, Trash2, ChevronDown, ChevronRight,
-  Users, Sparkles, RefreshCw, Copy, Search, GripVertical, BookOpen, X,
+  Users, Sparkles, RefreshCw, Copy, Search, GripVertical, BookOpen, X, Link2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { ProgrammeGeneratingSkeleton } from '@/components/ui/programme-generating-skeleton'
@@ -18,6 +18,7 @@ type Exercise = {
   rest_seconds: number | null
   notes: string | null
   position: number
+  superset_group: string | null
 }
 
 type Day = {
@@ -25,6 +26,7 @@ type Day = {
   day_number: number
   title: string | null
   notes: string | null
+  phase: number
   programme_day_exercises: Exercise[]
 }
 
@@ -79,12 +81,31 @@ type Props = {
   libraryExercises: LibraryExercise[]
   nutritionLibraryItems?: NutritionLibraryItem[]
   habitLibraryItems?: HabitLibraryItem[]
+  aiProgrammesUsed?: number
+  aiProgrammesLimit?: number
 }
 
 function makeId() { return `new-${Date.now()}-${Math.random()}` }
 
 function makeExercise(position: number): Exercise {
-  return { id: makeId(), exercise_name: '', sets: 3, reps: 10, weight_kg: null, rest_seconds: 60, notes: null, position }
+  return { id: makeId(), exercise_name: '', sets: 3, reps: 10, weight_kg: null, rest_seconds: 60, notes: null, position, superset_group: null }
+}
+
+/** Regroupe les exercices par superset_group pour l'affichage */
+function groupExercises(exercises: Exercise[]): Array<{ group: string | null; items: Exercise[] }> {
+  const sorted = [...exercises].sort((a, b) => a.position - b.position)
+  const result: Array<{ group: string | null; items: Exercise[] }> = []
+  for (const ex of sorted) {
+    const g = ex.superset_group ?? null
+    if (!g) {
+      result.push({ group: null, items: [ex] })
+    } else {
+      const existing = result.find(r => r.group === g)
+      if (existing) existing.items.push(ex)
+      else result.push({ group: g, items: [ex] })
+    }
+  }
+  return result
 }
 
 const LIB_CATS = [
@@ -452,11 +473,12 @@ function LibraryPanel({ libraryExercises, nutritionLibraryItems, habitLibraryIte
 }
 
 /* ── Exercise row ── */
-function ExerciseRow({ ex, onChange, onDelete, onAddNext, suggestions, libraryMap, programmeType }: {
+function ExerciseRow({ ex, onChange, onDelete, onAddNext, onToggleSuperset, suggestions, libraryMap, programmeType }: {
   ex: Exercise
   onChange: (field: keyof Exercise, val: string | number | null) => void
   onDelete: () => void
   onAddNext?: () => void
+  onToggleSuperset?: () => void
   suggestions: string[]
   libraryMap: Map<string, LibraryExercise>
   programmeType: string
@@ -527,6 +549,21 @@ function ExerciseRow({ ex, onChange, onDelete, onAddNext, suggestions, libraryMa
               className="w-11 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white" />
             <span className="text-[10px] text-[#CBD5E1]">kg</span>
           </div>
+        )}
+        {isSportif && onToggleSuperset && (
+          <button
+            onClick={onToggleSuperset}
+            className={`p-1 rounded-md transition-colors shrink-0 ${
+              ex.superset_group
+                ? 'text-[#4E9B6F] bg-[#EEF9F3] hover:bg-[#DCF3E8]'
+                : 'text-[#CBD5E1] hover:text-[#4E9B6F]'
+            }`}
+            title={ex.superset_group
+              ? `Retirer du superset ${ex.superset_group} (cliquer pour dissocier)`
+              : "Enchaîner avec l'exercice précédent (superset)"}
+          >
+            <Link2 size={11} />
+          </button>
         )}
         <button onClick={onDelete} className="p-1 text-[#CBD5E1] hover:text-red-400 transition-colors shrink-0">
           <Trash2 size={12} />
@@ -635,20 +672,69 @@ function DayCard({ day, onUpdateTitle, onAddExercise, onUpdateExercise, onDelete
               <p className="text-[12px] text-[#CBD5E1] py-2 text-center">
                 {programmeType === 'nutritionnel' ? 'Aucun repas' : programmeType === 'habitudes' ? 'Aucune habitude' : 'Aucun exercice'}
               </p>
-            ) : (
-              [...day.programme_day_exercises]
-                .sort((a, b) => a.position - b.position)
-                .map((ex, idx, arr) => (
-                  <ExerciseRow key={ex.id} ex={ex}
-                    onChange={(f, v) => onUpdateExercise(ex.id, f, v)}
-                    onDelete={() => onDeleteExercise(ex.id)}
-                    onAddNext={() => { if (idx === arr.length - 1) onAddExercise() }}
-                    suggestions={suggestions}
-                    libraryMap={libraryMap}
-                    programmeType={programmeType}
-                  />
-                ))
-            )}
+            ) : (() => {
+              const groups = groupExercises(day.programme_day_exercises)
+              const allSorted = [...day.programme_day_exercises].sort((a, b) => a.position - b.position)
+              return groups.map((group, gi) => {
+                if (!group.group) {
+                  const ex = group.items[0]
+                  const isLast = gi === groups.length - 1
+                  return (
+                    <ExerciseRow key={ex.id} ex={ex}
+                      onChange={(f, v) => onUpdateExercise(ex.id, f, v)}
+                      onDelete={() => onDeleteExercise(ex.id)}
+                      onAddNext={isLast ? () => onAddExercise() : undefined}
+                      onToggleSuperset={() => {
+                        const sorted = allSorted
+                        const idx = sorted.findIndex(e => e.id === ex.id)
+                        const prev = idx > 0 ? sorted[idx - 1] : null
+                        if (!prev) return
+                        const used = new Set(day.programme_day_exercises.map(e => e.superset_group).filter(Boolean))
+                        const newGroup = ['A','B','C','D','E','F','G','H'].find(l => !used.has(l)) ?? 'A'
+                        if (prev.superset_group) {
+                          onUpdateExercise(ex.id, 'superset_group', prev.superset_group)
+                        } else {
+                          onUpdateExercise(prev.id, 'superset_group', newGroup)
+                          onUpdateExercise(ex.id, 'superset_group', newGroup)
+                        }
+                      }}
+                      suggestions={suggestions}
+                      libraryMap={libraryMap}
+                      programmeType={programmeType}
+                    />
+                  )
+                }
+                // Superset group
+                const isLast = gi === groups.length - 1
+                return (
+                  <div key={group.group} className="border border-[#4E9B6F]/30 rounded-xl overflow-hidden bg-[#F6FDF9] mb-2">
+                    <div className="flex items-center justify-between px-3 py-1 bg-[#EEF9F3] border-b border-[#4E9B6F]/20">
+                      <span className="text-[10px] font-bold text-[#4E9B6F] uppercase tracking-wider">
+                        Superset {group.group} · enchaîner sans repos
+                      </span>
+                    </div>
+                    {group.items.map((ex, iIdx) => (
+                      <ExerciseRow key={ex.id} ex={ex}
+                        onChange={(f, v) => onUpdateExercise(ex.id, f, v)}
+                        onDelete={() => onDeleteExercise(ex.id)}
+                        onAddNext={isLast && iIdx === group.items.length - 1 ? () => onAddExercise() : undefined}
+                        onToggleSuperset={() => {
+                          const members = day.programme_day_exercises.filter(e => e.superset_group === group.group)
+                          onUpdateExercise(ex.id, 'superset_group', null)
+                          if (members.length === 2) {
+                            const other = members.find(e => e.id !== ex.id)
+                            if (other) onUpdateExercise(other.id, 'superset_group', null)
+                          }
+                        }}
+                        suggestions={suggestions}
+                        libraryMap={libraryMap}
+                        programmeType={programmeType}
+                      />
+                    ))}
+                  </div>
+                )
+              })
+            })()}
           </div>
           <div className="flex items-center gap-2 mt-3">
             <button onClick={onAddExercise} className="flex items-center gap-1.5 text-[12px] text-[#4E9B6F] font-medium hover:text-[#3d8058] transition-colors">
@@ -673,13 +759,14 @@ function DayCard({ day, onUpdateTitle, onAddExercise, onUpdateExercise, onDelete
 }
 
 /* ── Main ── */
-export function ProgrammeBuilder({ programme, initialDays, clients, assignments, libraryExercises, nutritionLibraryItems = [], habitLibraryItems = [] }: Props) {
+export function ProgrammeBuilder({ programme, initialDays, clients, assignments, libraryExercises, nutritionLibraryItems = [], habitLibraryItems = [], aiProgrammesUsed: initialAiUsed = 0, aiProgrammesLimit = -1 }: Props) {
   const [days, setDays]                           = useState<Day[]>(initialDays)
   const [savingDay, setSavingDay]                 = useState<string | null>(null)
   const [autoSavingDay, setAutoSavingDay]         = useState<string | null>(null)
   const [addingDay, setAddingDay]                 = useState(false)
   const [generating, setGenerating]               = useState(false)
   const [generateProgress, setGenerateProgress]   = useState('')
+  const [aiUsedCount, setAiUsedCount]             = useState(initialAiUsed)
   const [showAssign, setShowAssign]               = useState(false)
   const [assignClientId, setAssignClientId]       = useState(clients[0]?.id ?? '')
   const [assignStart, setAssignStart]             = useState(() => {
@@ -690,6 +777,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
   const [activeAssignments, setActiveAssignments] = useState<Assignment[]>(assignments)
   const [sessionAssigned, setSessionAssigned]     = useState<string[]>([])
   const [showLibrary, setShowLibrary]             = useState(false)
+  const [selectedPhase, setSelectedPhase]         = useState<number | null>(null)
 
   const daysRef = useRef(days)
   useEffect(() => { daysRef.current = days }, [days])
@@ -715,6 +803,16 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
     }
     return Array.from(names)
   }, [days, libraryExercises])
+
+  // Périodisation : phases calculées depuis les jours existants
+  const phases = useMemo(() => {
+    const ps = new Set(days.map(d => d.phase ?? 1))
+    return Array.from(ps).sort((a, b) => a - b)
+  }, [days])
+  const maxPhase = phases.length > 0 ? Math.max(...phases) : 1
+  const visibleDays = selectedPhase !== null
+    ? days.filter(d => (d.phase ?? 1) === selectedPhase)
+    : days
 
   useEffect(() => {
     if (initialDays.length === 0 && programme.description !== undefined) {
@@ -751,6 +849,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
         rest_seconds: 60,
         notes: libEx.instructions || null,
         position: day.programme_day_exercises.length,
+        superset_group: null,
       }
       return prev.map(d => d.id !== dayId ? d : {
         ...d,
@@ -833,6 +932,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
     setDays(savedDays)
     setGenerating(false)
     setGenerateProgress('')
+    setAiUsedCount(c => c + 1)
     toast.success(`${savedDays.length} jours générés par l'IA`)
   }
 
@@ -889,17 +989,24 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
     if (!silent) toast.success(`Jour ${day.day_number} sauvegardé`)
   }
 
-  async function addDay() {
+  async function addDay(phase?: number) {
     setAddingDay(true)
+    const targetPhase = phase ?? selectedPhase ?? 1
     const res = await fetch('/api/programmes/days', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ programme_id: programme.id, day_number: days.length + 1 }),
+      body: JSON.stringify({ programme_id: programme.id, day_number: days.length + 1, phase: targetPhase }),
     })
     const data = await res.json()
     setAddingDay(false)
     if (data.error) { toast.error(data.error); return }
-    setDays(prev => [...prev, { ...data.day, programme_day_exercises: [] }])
+    setDays(prev => [...prev, { ...data.day, phase: targetPhase, programme_day_exercises: [] }])
+  }
+
+  async function addPhase() {
+    const newPhase = maxPhase + 1
+    await addDay(newPhase)
+    setSelectedPhase(newPhase)
   }
 
   function deleteDay(dayId: string) {
@@ -1030,6 +1137,12 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
               <p className="text-[12px] text-[#94A3B8] mt-0.5">{days.length} jour{days.length !== 1 ? 's' : ''} · {programme.type}</p>
             </div>
             <div className="flex items-center gap-2">
+              <span className="text-[11px] text-[#94A3B8] hidden sm:block">
+                {aiProgrammesLimit === -1
+                  ? `${aiUsedCount} génération${aiUsedCount !== 1 ? 's' : ''} ce mois`
+                  : `${aiUsedCount}/${aiProgrammesLimit} ce mois · renouvellement le 1er`
+                }
+              </span>
               {days.length > 0 && (
                 <button
                   onClick={handleRegenerate}
@@ -1071,13 +1184,51 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
             </div>
           )}
 
+          {/* Périodisation — onglets de phases (sport uniquement, si > 1 phase ou programme non vide) */}
+          {programme.type === 'sportif' && days.length > 0 && (
+            <div className="flex items-center gap-1.5 mb-4 overflow-x-auto pb-1 shrink-0">
+              <button
+                onClick={() => setSelectedPhase(null)}
+                className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+                  selectedPhase === null
+                    ? 'text-white'
+                    : 'text-[#64748B] bg-[#F1F5F9] hover:bg-[#E2E8F0]'
+                }`}
+                style={selectedPhase === null ? { backgroundColor: 'var(--brand)' } : {}}
+              >
+                Tout · {days.length}j
+              </button>
+              {phases.map(p => (
+                <button
+                  key={p}
+                  onClick={() => setSelectedPhase(p)}
+                  className={`shrink-0 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-colors ${
+                    selectedPhase === p
+                      ? 'text-white'
+                      : 'text-[#64748B] bg-[#F1F5F9] hover:bg-[#E2E8F0]'
+                  }`}
+                  style={selectedPhase === p ? { backgroundColor: 'var(--brand)' } : {}}
+                >
+                  Phase {p} · {days.filter(d => (d.phase ?? 1) === p).length}j
+                </button>
+              ))}
+              <button
+                onClick={addPhase}
+                disabled={addingDay}
+                className="shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-[12px] font-medium text-[#4E9B6F] bg-[#EEF9F3] hover:bg-[#DCF3E8] transition-colors disabled:opacity-50"
+              >
+                <Plus size={11} /> Phase
+              </button>
+            </div>
+          )}
+
           {/* Loading state */}
           {generating ? (
             <ProgrammeGeneratingSkeleton progress={generateProgress} />
           ) : (
             <>
               <div className="space-y-3">
-                {days.map(day => (
+                {visibleDays.map(day => (
                   <DayCard
                     key={day.id}
                     day={day}
@@ -1098,7 +1249,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
                 ))}
 
                 <button
-                  onClick={addDay}
+                  onClick={() => addDay()}
                   disabled={addingDay}
                   className="w-full py-3 border-2 border-dashed border-[#E2E8F0] rounded-xl text-[13px] text-[#94A3B8] font-medium hover:border-[#4E9B6F] hover:text-[#4E9B6F] transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                 >

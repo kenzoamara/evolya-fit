@@ -6,6 +6,7 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { getPlanLabel, formatDate, getDaysUntil } from '@/lib/utils'
 import type { Profile } from '@/types/database'
+import { PlanGate } from '@/components/ui/plan-gate'
 
 // ── Modale suppression compte ──────────────────────────────────────────────
 function DeleteAccountModal({
@@ -276,7 +277,7 @@ export function SettingsContent({ profile }: Props) {
   const [inactivityThreshold, setInactivityThreshold] = useState(profile.inactivity_threshold_days ?? 7)
   const [savingAutomation, setSavingAutomation] = useState(false)
 
-  const isActive = profile.plan_status === 'active' && profile.plan !== 'trial'
+  const isActive = profile.plan_status === 'active' && profile.plan !== 'trial' && !!profile.stripe_customer_id
   const trialDaysLeft = profile.trial_ends_at ? getDaysUntil(profile.trial_ends_at) : 0
   const referralCode = profile.referral_code
   const referralCount = profile.referral_count ?? 0
@@ -518,6 +519,20 @@ export function SettingsContent({ profile }: Props) {
           >
             {savingAutomation ? 'Sauvegarde...' : 'Sauvegarder'}
           </button>
+
+          <PlanGate featureKey="rapports_hebdo" userPlan={profile.plan ?? 'free'}>
+            <div className="rounded-lg border border-[#E2E8F0] p-4">
+              <p className="text-sm font-medium text-[#0D1F3C] mb-1">Rapport hebdomadaire automatique</p>
+              <p className="text-xs text-[#94A3B8]">Recevez chaque lundi un rapport complet sur l&apos;activite de vos membres.</p>
+            </div>
+          </PlanGate>
+
+          <PlanGate featureKey="rappels_checkin" userPlan={profile.plan ?? 'free'}>
+            <div className="rounded-lg border border-[#E2E8F0] p-4">
+              <p className="text-sm font-medium text-[#0D1F3C] mb-1">Rappels automatiques de check-in</p>
+              <p className="text-xs text-[#94A3B8]">Envoi automatique de rappels a vos membres pour qu&apos;ils soumettent leur check-in hebdomadaire.</p>
+            </div>
+          </PlanGate>
         </div>
       </section>
 

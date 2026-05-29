@@ -19,8 +19,8 @@ type Props = {
   coachView?: boolean
 }
 
-const COLOR = '#F59E0B'
-const COLOR_BG = '#FFFBEB'
+const COLOR = 'var(--brand)'
+const COLOR_BG = 'var(--brand-bg)'
 const COLOR_BORDER = '#FDE68A'
 
 function formatDate(d: string) {

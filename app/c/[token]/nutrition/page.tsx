@@ -15,8 +15,8 @@ const MEAL_TYPES = [
   { key: 'collation', label: 'Collation', emoji: '🍎' },
 ]
 
-const COLOR = '#22C55E'
-const COLOR_BG = '#F0FDF4'
+const COLOR = 'var(--brand)'
+const COLOR_BG = 'var(--brand-bg)'
 const COLOR_LIGHT = '#DCFCE7'
 
 function todayStr() {

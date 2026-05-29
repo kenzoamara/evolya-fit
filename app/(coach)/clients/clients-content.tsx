@@ -1,12 +1,13 @@
 ﻿'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { EmptyState } from '@/components/shared/empty-state'
 import type { Profile, Client, Objective, Checkin, Session } from '@/types/database'
+import { getPlanLimits } from '@/lib/plan-limits'
 
 type ClientWithRelations = Client & {
   objectives: Objective[]
@@ -93,7 +94,8 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
 
   useEffect(() => {
     if (upgraded) {
-      toast.success(`Plan ${profile.plan} activé — ${profile.client_limit} membres disponibles`)
+      const newLimit = getPlanLimits(profile.plan).clients
+      toast.success(`Plan activé — ${newLimit === -1 ? 'membres illimités' : `${newLimit} membres disponibles`}`)
       // Nettoyer le param de l'URL sans reload
       window.history.replaceState({}, '', '/clients')
     }
@@ -116,6 +118,54 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
   const [editLoading, setEditLoading] = useState(false)
 
   const now = new Date()
+
+  // ── CSV import ──────────────────────────────────────────────────────────────
+  const [csvLoading, setCsvLoading] = useState(false)
+  const csvInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleCSVImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCsvLoading(true)
+    try {
+      const text = await file.text()
+      const lines = text.trim().split('\n').map(l => l.trim()).filter(Boolean)
+      if (lines.length < 2) { toast.error('Le fichier CSV est vide ou ne contient qu\'un en-tête.'); setCsvLoading(false); return }
+
+      // Detect separator (comma or semicolon)
+      const sep = lines[0].includes(';') ? ';' : ','
+      const header = lines[0].split(sep).map(h => h.toLowerCase().replace(/["\s]/g, ''))
+      const colNom = header.findIndex(h => h === 'nom' || h === 'name' || h === 'fullname' || h === 'full_name' || h === 'prenom' || h === 'firstname')
+      const colEmail = header.findIndex(h => h === 'email' || h === 'mail' || h === 'courriel')
+
+      if (colNom === -1 || colEmail === -1) {
+        toast.error('Le CSV doit contenir des colonnes "nom" (ou "name") et "email".')
+        setCsvLoading(false); if (csvInputRef.current) csvInputRef.current.value = ''; return
+      }
+
+      const rows = lines.slice(1).map(l => {
+        const cols = l.split(sep).map(c => c.replace(/^["']|["']$/g, '').trim())
+        return { nom: cols[colNom] ?? '', email: cols[colEmail] ?? '' }
+      }).filter(r => r.nom && r.email && r.email.includes('@'))
+
+      if (rows.length === 0) { toast.error('Aucune ligne valide trouvée (nom + email requis).'); setCsvLoading(false); return }
+
+      const res = await fetch('/api/clients/import-csv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clients: rows }),
+      })
+      const data = await res.json()
+      if (data.error) { toast.error(data.error); setCsvLoading(false); return }
+      toast.success(`${data.created} athlète${data.created > 1 ? 's' : ''} importé${data.created > 1 ? 's' : ''}${data.skipped > 0 ? ` (${data.skipped} doublon${data.skipped > 1 ? 's' : ''} ignoré${data.skipped > 1 ? 's' : ''})` : ''}`)
+      router.refresh()
+    } catch {
+      toast.error('Erreur lors de la lecture du fichier CSV.')
+    } finally {
+      setCsvLoading(false)
+      if (csvInputRef.current) csvInputRef.current.value = ''
+    }
+  }
 
   function openEditName(client: ClientWithRelations, e: React.MouseEvent) {
     e.preventDefault()
@@ -166,7 +216,9 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
   )
 
   const activeClients = clients.filter((c) => c.status === 'active').length
-  const limitReached = profile.client_limit !== 9999 && activeClients >= profile.client_limit
+  const clientMax = getPlanLimits(profile.plan).clients
+  const limitReached = clientMax !== -1 && activeClients >= clientMax
+  const limitNear = !limitReached && clientMax !== -1 && activeClients >= clientMax - 2
 
   async function handleAddClient(e: React.FormEvent) {
     e.preventDefault()
@@ -217,21 +269,37 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
             )}
           </div>
         </div>
-        {limitReached ? (
-          <button onClick={() => router.push('/plans')}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#D4A853] hover:bg-[#c49940] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]">
-            ⚡ Plan supérieur
-          </button>
-        ) : (
-          <button onClick={() => setShowAddModal(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#4E9B6F] hover:bg-[#3d8058] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
-            style={{ boxShadow: '0 1px 2px rgba(97,128,112,0.2)' }}>
+        <div className="flex items-center gap-2">
+          {/* CSV import */}
+          <input ref={csvInputRef} type="file" accept=".csv,text/csv" className="hidden" onChange={handleCSVImport} />
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            disabled={csvLoading}
+            title="Importer des athlètes depuis un fichier CSV (colonnes : nom, email)"
+            className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFB] text-[#374151] text-sm font-medium rounded-lg transition-all active:scale-[0.98] disabled:opacity-50"
+          >
             <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-              <path d="M6.5 1.5v10M1.5 6.5h10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+              <path d="M6.5 9V1M3 6l3.5 3.5L10 6M1.5 11.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Ajouter
+            {csvLoading ? 'Import...' : 'CSV'}
           </button>
-        )}
+
+          {limitReached ? (
+            <button onClick={() => router.push('/plans')}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#D4A853] hover:bg-[#c49940] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]">
+              ⚡ Plan supérieur
+            </button>
+          ) : (
+            <button onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2.5 bg-[#4E9B6F] hover:bg-[#3d8058] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
+              style={{ boxShadow: '0 1px 2px rgba(97,128,112,0.2)' }}>
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                <path d="M6.5 1.5v10M1.5 6.5h10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
+              </svg>
+              Ajouter
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Barre de recherche */}
@@ -253,16 +321,26 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
       {limitReached && (
         <div className="mb-4 bg-[#FFFBEB] border border-[#D4A853]/40 rounded-xl px-4 py-4 flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#D4A853]/10 flex items-center justify-center flex-shrink-0 text-lg">⚡</div>
+            <div className="w-9 h-9 rounded-lg bg-[#D4A853]/10 flex items-center justify-center flex-shrink-0">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1.5L1 14.5h14L8 1.5Z" stroke="#D4A853" strokeWidth="1.5" strokeLinejoin="round"/><path d="M8 6v3.5" stroke="#D4A853" strokeWidth="1.5" strokeLinecap="round"/><circle cx="8" cy="12" r="0.75" fill="#D4A853"/></svg>
+            </div>
             <div>
-              <p className="text-sm font-semibold text-[#0D1F3C]">Limite de {profile.client_limit} membres atteinte</p>
-              <p className="text-xs text-[#64748B] mt-0.5">Passez au plan supérieur pour continuer à ajouter des membres.</p>
+              <p className="text-sm font-semibold text-[#0D1F3C]">Limite de {clientMax} membres atteinte</p>
+              <p className="text-xs text-[#64748B] mt-0.5">Passez au plan superieur pour continuer a ajouter des membres.</p>
             </div>
           </div>
           <button onClick={() => router.push('/plans')}
             className="flex-shrink-0 px-4 py-2 bg-[#D4A853] hover:bg-[#c49940] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98] whitespace-nowrap">
-            Upgrader →
+            Upgrader
           </button>
+        </div>
+      )}
+      {limitNear && (
+        <div className="mb-4 bg-[#FFFBEB] border border-amber-200 rounded-xl px-4 py-3 flex items-center justify-between gap-4">
+          <p className="text-[12px] text-amber-700">
+            Il vous reste <strong>{clientMax - activeClients} place{clientMax - activeClients > 1 ? 's' : ''}</strong> sur votre plan ({activeClients}/{clientMax} membres).
+          </p>
+          <a href="/plans" className="text-[11px] font-semibold text-amber-700 underline whitespace-nowrap">Voir les plans</a>
         </div>
       )}
 

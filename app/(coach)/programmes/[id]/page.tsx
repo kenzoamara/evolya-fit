@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ProgrammeBuilder } from './programme-builder'
+import { getPlanLimits } from '@/lib/plan-limits'
 
 export default async function ProgrammePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
@@ -19,6 +20,15 @@ export default async function ProgrammePage({ params }: { params: Promise<{ id: 
     .single()
   if (!programme) redirect('/programmes')
 
+  const { data: profileData } = await supabase.from('profiles').select('plan, ai_programmes_used, usage_reset_month, usage_reset_year').eq('id', user.id).single()
+  const now = new Date()
+  const currentMonth = now.getMonth() + 1
+  const currentYear = now.getFullYear()
+  const aiProgrammesUsed = (profileData?.usage_reset_month === currentMonth && profileData?.usage_reset_year === currentYear)
+    ? (profileData?.ai_programmes_used ?? 0)
+    : 0
+  const aiProgrammesLimit = getPlanLimits(profileData?.plan ?? 'free').ai_programmes
+
   const admin = createAdminClient()
 
   const [
@@ -31,7 +41,7 @@ export default async function ProgrammePage({ params }: { params: Promise<{ id: 
   ] = await Promise.all([
     supabase
       .from('programme_days')
-      .select('id, day_number, title, notes, programme_day_exercises(id, exercise_name, sets, reps, weight_kg, rest_seconds, notes, position)')
+      .select('id, day_number, title, notes, phase, programme_day_exercises(id, exercise_name, sets, reps, weight_kg, rest_seconds, notes, position, superset_group)')
       .eq('programme_id', id)
       .order('day_number', { ascending: true }),
 
@@ -78,6 +88,8 @@ export default async function ProgrammePage({ params }: { params: Promise<{ id: 
       libraryExercises={(libraryExercises ?? []) as Parameters<typeof ProgrammeBuilder>[0]['libraryExercises']}
       nutritionLibraryItems={(nutritionLibraryItems ?? []) as Parameters<typeof ProgrammeBuilder>[0]['nutritionLibraryItems']}
       habitLibraryItems={(habitLibraryItems ?? []) as Parameters<typeof ProgrammeBuilder>[0]['habitLibraryItems']}
+      aiProgrammesUsed={aiProgrammesUsed}
+      aiProgrammesLimit={aiProgrammesLimit}
     />
   )
 }

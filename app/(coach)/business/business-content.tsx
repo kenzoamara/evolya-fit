@@ -8,6 +8,7 @@ import { AnimatedBarCard } from '@/components/coach/animated-bar-card'
 import { getPlanLabel } from '@/lib/utils'
 import type { Profile } from '@/types/database'
 import { toast } from 'sonner'
+import { PlanGate } from '@/components/ui/plan-gate'
 
 type ClientRow = { id: string; full_name: string; status: string; created_at: string }
 
@@ -652,11 +653,18 @@ export function BusinessContent({ profile, clients }: Props) {
                 </div>
               </div>
             )}
+            <PlanGate featureKey="rappels_paiement" userPlan={profile.plan ?? 'free'}>
+              <div className="bg-white rounded-xl border border-[#F1F5F9] p-4">
+                <p className="text-[13px] font-semibold text-[#0D1F3C] mb-1">Rappels automatiques de paiement</p>
+                <p className="text-[11px] text-[#94A3B8]">Rappels envoyes automatiquement aux membres en retard.</p>
+              </div>
+            </PlanGate>
           </>
         )}
 
         {/* ── Croissance ───────────────────────────────────────────────────── */}
         {tab === 'croissance' && (
+          <PlanGate featureKey="stats_croissance" userPlan={profile.plan ?? 'free'}>
           <>
             {/* Growth KPIs */}
             <div className="grid grid-cols-2 gap-3">
@@ -786,6 +794,7 @@ export function BusinessContent({ profile, clients }: Props) {
               </div>
             </div>
           </>
+          </PlanGate>
         )}
 
       </div>

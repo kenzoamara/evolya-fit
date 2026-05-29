@@ -7,10 +7,14 @@ import type { Objective } from '@/types/database'
 
 export default async function ObjectifPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string; id: string }>
+  searchParams: Promise<Record<string, string>>
 }) {
   const { token, id } = await params
+  const sp = await searchParams
+  const coachView = sp.coach === '1'
 
   const supabase = createSupabaseClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -39,6 +43,7 @@ export default async function ObjectifPage({
     <ExerciseClient
       objective={objective as Objective}
       token={token}
+      coachView={coachView}
     />
   )
 }

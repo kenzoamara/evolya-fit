@@ -17,7 +17,7 @@ type Props = {
 const MONTHS_FR = ['jan', 'fév', 'mar', 'avr', 'mai', 'juin', 'juil', 'aoû', 'sep', 'oct', 'nov', 'déc']
 
 function fmt(iso: string) {
-  const d = new Date(iso)
+  const d = new Date(iso + 'T00:00:00')
   return `${d.getDate()} ${MONTHS_FR[d.getMonth()]}`
 }
 
@@ -62,7 +62,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
   const weightData = useMemo(() => {
     const last12 = localEntries.slice(-12)
     return last12.map(e => ({ label: fmt(e.date), poids: e.weight_kg }))
-  }, [weightEntries])
+  }, [localEntries])
 
   const weightMin = weightData.length > 0 ? Math.min(...weightData.map(d => d.poids)) : 0
   const weightMax = weightData.length > 0 ? Math.max(...weightData.map(d => d.poids)) : 100
@@ -119,7 +119,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: '#FFF1F2' }}>📊</div>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: 'var(--brand-bg)' }}>📊</div>
         <h1 className="text-[20px] font-bold text-[#0D1F3C]">Statistiques</h1>
       </div>
 
@@ -138,7 +138,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                 value={weightInput}
                 onChange={e => setWeightInput(e.target.value)}
                 placeholder="70.5"
-                className="w-full px-3 py-2.5 bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl text-[13px] focus:outline-none focus:border-[#F43F5E]"
+                className="w-full px-3 py-2.5 bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl text-[13px] focus:outline-none focus:border-[var(--brand)]"
               />
             </div>
             <div className="flex-1">
@@ -148,14 +148,14 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                 value={weightDate}
                 onChange={e => setWeightDate(e.target.value)}
                 max={todayStr}
-                className="w-full px-3 py-2.5 bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl text-[13px] focus:outline-none focus:border-[#F43F5E]"
+                className="w-full px-3 py-2.5 bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl text-[13px] focus:outline-none focus:border-[var(--brand)]"
               />
             </div>
             <button
               type="submit"
               disabled={savingWeight || !weightInput}
               className="px-5 py-2.5 rounded-xl text-[13px] font-bold text-white transition-opacity disabled:opacity-40 shrink-0"
-              style={{ background: '#F43F5E' }}
+              style={{ background: 'var(--brand)' }}
             >
               {savingWeight ? '…' : 'Sauvegarder'}
             </button>
@@ -176,8 +176,8 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
               </div>
               {weightDelta !== null && (
                 <div className="px-2.5 py-1 rounded-lg text-[12px] font-semibold" style={{
-                  background: weightDelta <= 0 ? '#F0FDF4' : '#FFF1F2',
-                  color: weightDelta <= 0 ? '#22C55E' : '#F43F5E',
+                  background: weightDelta <= 0 ? 'var(--success-bg)' : 'var(--danger-bg)',
+                  color: weightDelta <= 0 ? 'var(--success)' : 'var(--danger)',
                 }}>
                   {weightDelta > 0 ? '+' : ''}{weightDelta} kg
                 </div>
@@ -189,7 +189,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                 <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false} interval="preserveStartEnd" />
                 <YAxis domain={[weightMin - 2, weightMax + 2]} tick={{ fontSize: 10, fill: '#CBD5E1' }} axisLine={false} tickLine={false} tickFormatter={v => `${v}kg`} />
                 <Tooltip formatter={(v) => [`${v} kg`, 'Poids']} contentStyle={{ fontSize: 12, border: '1px solid #E2E8F0', borderRadius: 8 }} />
-                <Line type="monotone" dataKey="poids" stroke="#F43F5E" strokeWidth={2.5} dot={{ fill: '#F43F5E', r: 3, strokeWidth: 0 }} connectNulls />
+                <Line type="monotone" dataKey="poids" stroke="var(--brand)" strokeWidth={2.5} dot={{ fill: 'var(--brand)', r: 3, strokeWidth: 0 }} connectNulls />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -209,7 +209,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                 <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 10, fill: '#CBD5E1' }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v) => [`${v}`, 'Séances']} contentStyle={{ fontSize: 12, border: '1px solid #E2E8F0', borderRadius: 8 }} />
-                <Bar dataKey="count" fill="#F97316" radius={[4, 4, 0, 0]} fillOpacity={0.9} />
+                <Bar dataKey="count" fill="var(--brand)" radius={[4, 4, 0, 0]} fillOpacity={0.9} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -226,7 +226,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                     className="w-full rounded-lg transition-all"
                     style={{
                       height: 60,
-                      background: '#FAF5FF',
+                      background: 'var(--brand-bg)',
                       position: 'relative',
                       overflow: 'hidden',
                     }}
@@ -236,14 +236,14 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                         position: 'absolute',
                         bottom: 0, left: 0, right: 0,
                         height: `${d.pct}%`,
-                        background: '#A855F7',
+                        background: 'var(--brand)',
                         borderRadius: '4px 4px 0 0',
                         transition: 'height 0.4s ease',
                       }}
                     />
                   </div>
                   <p className="text-[9px] text-[#94A3B8] capitalize">{d.label}</p>
-                  <p className="text-[10px] font-bold" style={{ color: d.pct === 100 ? '#A855F7' : '#64748B' }}>{d.pct}%</p>
+                  <p className="text-[10px] font-bold" style={{ color: d.pct === 100 ? 'var(--brand)' : '#64748B' }}>{d.pct}%</p>
                 </div>
               ))}
             </div>
@@ -260,7 +260,7 @@ export function StatistiquesView({ token, coachView = false, weightEntries, work
                 <XAxis dataKey="label" tick={{ fontSize: 9, fill: '#94A3B8' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 10, fill: '#CBD5E1' }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v) => [`${v} kcal`, '']} contentStyle={{ fontSize: 12, border: '1px solid #E2E8F0', borderRadius: 8 }} />
-                <Bar dataKey="calories" fill="#22C55E" radius={[4, 4, 0, 0]} fillOpacity={0.85} />
+                <Bar dataKey="calories" fill="var(--brand)" radius={[4, 4, 0, 0]} fillOpacity={0.85} />
               </BarChart>
             </ResponsiveContainer>
           </div>

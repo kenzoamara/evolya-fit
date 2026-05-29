@@ -180,7 +180,7 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px] bg-[#EEF2FF]">🏠</div>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: 'var(--brand-bg)' }}>🏠</div>
         <div>
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">
             Bonjour, {client.full_name.split(' ')[0]}
@@ -247,8 +247,8 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
           className="flex items-center gap-4 rounded-xl px-4 py-4 mb-6 border transition-opacity hover:opacity-90"
           style={
             paymentAlert.lateCount > 0
-              ? { background: '#FEF2F2', borderColor: '#FECACA' }
-              : { background: '#FFFBEB', borderColor: '#FDE68A' }
+              ? { background: 'var(--danger-bg)', borderColor: '#FECACA' }
+              : { background: 'var(--warning-bg)', borderColor: '#FDE68A' }
           }
         >
           {/* Icon */}
@@ -257,7 +257,7 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
             style={paymentAlert.lateCount > 0 ? { background: '#FEE2E2' } : { background: '#FEF3C7' }}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke={paymentAlert.lateCount > 0 ? '#DC2626' : '#D97706'}
+              stroke={paymentAlert.lateCount > 0 ? 'var(--danger)' : 'var(--warning)'}
               strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
             </svg>

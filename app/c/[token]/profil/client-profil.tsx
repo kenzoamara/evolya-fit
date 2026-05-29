@@ -177,7 +177,7 @@ export function ClientProfil({ client, coachName, coachingType, coachPhoto }: Pr
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-1">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px] bg-[#F8FAFC]">👤</div>
+        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px] bg-[#F8FAFC]">🪪</div>
         <div>
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">Mon profil</h1>
         </div>

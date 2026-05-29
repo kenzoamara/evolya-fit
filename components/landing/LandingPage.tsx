@@ -6,10 +6,10 @@ import { FeaturesPills } from './sections/FeaturesPills'
 import { DashboardPreview } from './sections/DashboardPreview'
 import { HowItWorks } from './sections/HowItWorks'
 import { BeforeAfter } from './sections/BeforeAfter'
-import { IncludedInAllPlans } from './sections/IncludedInAllPlans'
 import { Pricing } from './sections/Pricing'
 import { FAQ } from './sections/FAQ'
 import { Contact } from './sections/Contact'
+import { Referral } from './sections/Referral'
 import { Footer } from './sections/Footer'
 
 export default function LandingPage() {
@@ -30,14 +30,14 @@ export default function LandingPage() {
       <HowItWorks />
       {/* 7 — Avant / Après */}
       <BeforeAfter />
-      {/* 8 — Tout est inclus (bridge vers pricing) */}
-      <IncludedInAllPlans />
-      {/* 9 — Les offres */}
+      {/* 8 — Les offres */}
       <Pricing />
       {/* 10 — Objections */}
       <FAQ />
       {/* 11 — Contact */}
       <Contact />
+      {/* 12 — Parrainage */}
+      <Referral />
       <Footer />
     </div>
   )

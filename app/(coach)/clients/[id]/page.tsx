@@ -26,14 +26,14 @@ export default async function ClientDetailPage({
 
   if (!user) redirect('/auth/login')
 
-  const { data: client } = await supabase
-    .from('clients')
-    .select('*')
-    .eq('id', id)
-    .eq('coach_id', user.id)
-    .single()
+  const [{ data: client }, { data: profileData }] = await Promise.all([
+    supabase.from('clients').select('*').eq('id', id).eq('coach_id', user.id).single(),
+    supabase.from('profiles').select('plan').eq('id', user.id).single(),
+  ])
 
   if (!client) notFound()
+
+  const userPlan = (profileData?.plan ?? 'free') as string
 
   const adminClient = createAdminClient()
 
@@ -103,6 +103,7 @@ export default async function ClientDetailPage({
       workoutLogs={workoutLogs}
       latePaymentsCount={latePaymentsCount}
       isCoach
+      userPlan={userPlan}
     />
   )
 }

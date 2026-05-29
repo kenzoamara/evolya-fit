@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { programme_id, day_number, title, exercises } = await req.json()
+  const { programme_id, day_number, title, exercises, phase } = await req.json()
 
   // Verify ownership
   const { data: prog } = await supabase.from('programmes').select('id').eq('id', programme_id).eq('coach_id', user.id).single()
@@ -15,20 +15,21 @@ export async function POST(req: NextRequest) {
 
   const { data: day, error } = await supabase
     .from('programme_days')
-    .insert({ programme_id, day_number, title: title || `Jour ${day_number}` })
+    .insert({ programme_id, day_number, title: title || `Jour ${day_number}`, phase: phase ?? 1 })
     .select()
     .single()
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   // Insert exercises if provided
   if (exercises?.length) {
-    const rows = exercises.map((ex: { exercise_name: string; sets?: number; reps?: number; weight_kg?: number; notes?: string }, i: number) => ({
+    const rows = exercises.map((ex: { exercise_name: string; sets?: number; reps?: number; weight_kg?: number; notes?: string; superset_group?: string | null }, i: number) => ({
       programme_day_id: day.id,
       exercise_name: ex.exercise_name,
       sets: ex.sets ?? null,
       reps: ex.reps ?? null,
       weight_kg: ex.weight_kg ?? null,
       notes: ex.notes ?? null,
+      superset_group: ex.superset_group ?? null,
       position: i,
     }))
     await supabase.from('programme_day_exercises').insert(rows)
@@ -42,7 +43,7 @@ export async function PATCH(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { day_id, title, exercises } = await req.json()
+  const { day_id, title, exercises, phase } = await req.json()
 
   // Verify ownership via join
   const { data: day } = await supabase
@@ -59,11 +60,15 @@ export async function PATCH(req: NextRequest) {
     await supabase.from('programme_days').update({ title }).eq('id', day_id)
   }
 
+  if (phase !== undefined) {
+    await supabase.from('programme_days').update({ phase }).eq('id', day_id)
+  }
+
   if (exercises !== undefined) {
     // Replace all exercises for this day
     await supabase.from('programme_day_exercises').delete().eq('programme_day_id', day_id)
     if (exercises.length) {
-      const rows = exercises.map((ex: { exercise_name: string; sets?: number; reps?: number; weight_kg?: number; rest_seconds?: number; notes?: string }, i: number) => ({
+      const rows = exercises.map((ex: { exercise_name: string; sets?: number; reps?: number; weight_kg?: number; rest_seconds?: number; notes?: string; superset_group?: string | null }, i: number) => ({
         programme_day_id: day_id,
         exercise_name: ex.exercise_name,
         sets: ex.sets ?? null,
@@ -71,6 +76,7 @@ export async function PATCH(req: NextRequest) {
         weight_kg: ex.weight_kg ?? null,
         rest_seconds: ex.rest_seconds ?? null,
         notes: ex.notes ?? null,
+        superset_group: ex.superset_group ?? null,
         position: i,
       }))
       await supabase.from('programme_day_exercises').insert(rows)

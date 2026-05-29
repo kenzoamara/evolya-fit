@@ -23,6 +23,7 @@ type Props = {
   sleepEntries: SleepEntry[]
   performanceEntries: PerformanceEntry[]
   token: string
+  coachView?: boolean
 }
 
 const GOAL_LABELS: Record<string, string> = {
@@ -174,10 +175,10 @@ function PerfGrouped({ entries }: { entries: PerformanceEntry[] }) {
 // ─── Sport ───────────────────────────────────────────────────────────────────
 
 function SportView({
-  client, sessions, objectives, performanceEntries, clientId, token,
+  client, sessions, objectives, performanceEntries, clientId, token, coachView = false,
 }: {
   client: Client; sessions: Session[]; objectives: Objective[]
-  performanceEntries: PerformanceEntry[]; clientId: string; token: string
+  performanceEntries: PerformanceEntry[]; clientId: string; token: string; coachView?: boolean
 }) {
   const router = useRouter()
   const today = todayStr()
@@ -275,7 +276,7 @@ function SportView({
                 placeholder="Contexte, conditions…" className={inputCls} />
             </div>
             <div className="flex gap-2">
-              <button onClick={savePerfEntry} disabled={perfSaving || !perfLabel.trim() || !perfValue}
+              <button onClick={savePerfEntry} disabled={perfSaving || !perfLabel.trim() || !perfValue || coachView}
                 className="px-4 py-2 btn-brand text-[13px] font-medium rounded-lg disabled:opacity-50">
                 {perfSaving ? 'Enregistrement…' : 'Sauvegarder'}
               </button>
@@ -345,10 +346,10 @@ function latestMeasVal(entries: BodyMeasurement[], key: keyof BodyMeasurement): 
 }
 
 function NutritionView({
-  client, weightEntries, bodyMeasurements, clientId, token,
+  client, weightEntries, bodyMeasurements, clientId, token, coachView = false,
 }: {
   client: Client; weightEntries: WeightEntry[]; bodyMeasurements: BodyMeasurement[]
-  clientId: string; token: string
+  clientId: string; token: string; coachView?: boolean
 }) {
   const router = useRouter()
   const bmi = calcBmi(client.height_cm, client.weight_kg)
@@ -508,7 +509,7 @@ function NutritionView({
               <input type="number" value={weightVal} onChange={e => setWeightVal(e.target.value)}
                 placeholder="70" min={30} max={300} step={0.1}
                 className="flex-1 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[var(--brand)]" />
-              <button onClick={saveWeight} disabled={weightSaving || !weightVal}
+              <button onClick={saveWeight} disabled={weightSaving || !weightVal || coachView}
                 className="px-4 py-2 btn-brand text-[13px] font-medium rounded-lg disabled:opacity-50">
                 {weightSaving ? '…' : 'OK'}
               </button>
@@ -582,7 +583,7 @@ function NutritionView({
             </div>
             <div className="flex gap-2">
               <button onClick={saveMeasurements}
-                disabled={measSaving || (!neck && !shoulders && !chest && !waist && !hips && !lBicep && !rBicep && !lForearm && !rForearm && !lThigh && !rThigh)}
+                disabled={measSaving || (!neck && !shoulders && !chest && !waist && !hips && !lBicep && !rBicep && !lForearm && !rForearm && !lThigh && !rThigh) || coachView}
                 className="px-4 py-2 btn-brand text-[13px] font-medium rounded-lg disabled:opacity-50">
                 {measSaving ? 'Enregistrement…' : 'Sauvegarder'}
               </button>
@@ -636,10 +637,10 @@ function NutritionView({
 // ─── Habitudes ────────────────────────────────────────────────────────────────
 
 function HabiudesView({
-  client, checkins, sleepEntries, clientId, token,
+  client, checkins, sleepEntries, clientId, token, coachView = false,
 }: {
   client: Client; checkins: Checkin[]
-  sleepEntries: SleepEntry[]; clientId: string; token: string
+  sleepEntries: SleepEntry[]; clientId: string; token: string; coachView?: boolean
 }) {
   const router = useRouter()
   const now = new Date()
@@ -714,7 +715,7 @@ function HabiudesView({
               <input type="number" value={sleepHours} onChange={e => setSleepHours(e.target.value)}
                 placeholder="7.5" min={0.5} max={24} step={0.5}
                 className="flex-1 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[var(--brand)]" />
-              <button onClick={saveSleep} disabled={sleepSaving || !sleepHours}
+              <button onClick={saveSleep} disabled={sleepSaving || !sleepHours || coachView}
                 className="px-4 py-2 btn-brand text-[13px] font-medium rounded-lg disabled:opacity-50">
                 {sleepSaving ? '…' : 'OK'}
               </button>
@@ -765,6 +766,7 @@ function HabiudesView({
 export function ClientProgresView({
   client, sessions, objectives, checkins,
   weightEntries, bodyMeasurements, sleepEntries, performanceEntries, token,
+  coachView = false,
 }: Props) {
   const [section, setSection] = useState<Section>('sport')
 
@@ -787,15 +789,15 @@ export function ClientProgresView({
 
       {section === 'sport' && (
         <SportView client={client} sessions={sessions} objectives={objectives}
-          performanceEntries={performanceEntries} clientId={client.id} token={token} />
+          performanceEntries={performanceEntries} clientId={client.id} token={token} coachView={coachView} />
       )}
       {section === 'nutrition' && (
         <NutritionView client={client} weightEntries={weightEntries} bodyMeasurements={bodyMeasurements}
-          clientId={client.id} token={token} />
+          clientId={client.id} token={token} coachView={coachView} />
       )}
       {section === 'habitudes' && (
         <HabiudesView client={client} checkins={checkins} sleepEntries={sleepEntries}
-          clientId={client.id} token={token} />
+          clientId={client.id} token={token} coachView={coachView} />
       )}
     </div>
   )

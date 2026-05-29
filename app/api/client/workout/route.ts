@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
   // Get exercises for that day
   const { data: exercises } = await supabase
     .from('programme_day_exercises')
-    .select('id, exercise_name, sets, reps, weight_kg, rest_seconds, notes, position')
+    .select('id, exercise_name, sets, reps, weight_kg, rest_seconds, notes, position, superset_group')
     .eq('programme_day_id', dayTemplate.id)
     .order('position', { ascending: true })
 

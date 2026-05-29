@@ -92,14 +92,14 @@ function RestTimer({ seconds, onSkip }: { seconds: number; onSkip: () => void })
         <p className="text-[13px] font-semibold text-[#94A3B8] mb-4 uppercase tracking-wide">Repos</p>
         <div className="relative inline-flex items-center justify-center mb-5">
           <svg width={100} height={100} className="-rotate-90">
-            <circle cx={50} cy={50} r={r} fill="none" stroke="#FFF7ED" strokeWidth={8} />
-            <circle cx={50} cy={50} r={r} fill="none" stroke="#F97316" strokeWidth={8}
+            <circle cx={50} cy={50} r={r} fill="none" stroke="var(--brand-bg)" strokeWidth={8} />
+            <circle cx={50} cy={50} r={r} fill="none" stroke="var(--brand)" strokeWidth={8}
               strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)} strokeLinecap="round"
               style={{ transition: 'stroke-dashoffset 0.9s linear' }} />
           </svg>
           <span className="absolute text-[28px] font-bold text-[#0D1F3C]">{remaining}</span>
         </div>
-        <button onClick={onSkip} className="w-full py-3 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-2" style={{ background: '#F97316' }}>
+        <button onClick={onSkip} className="w-full py-3 rounded-2xl text-[14px] font-bold text-white flex items-center justify-center gap-2" style={{ background: 'var(--brand)' }}>
           <SkipForward size={16} /> Passer
         </button>
       </div>
@@ -141,7 +141,7 @@ function ExerciseInput({ value, onChange, exercises }: { value: string; onChange
         <div className="absolute top-full left-0 right-0 z-20 mt-1 bg-white border border-[#E2E8F0] rounded-xl shadow-lg overflow-hidden">
           {suggestions.map(s => (
             <button key={s} onMouseDown={() => { onChange(s); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-[13px] text-[#0D1F3C] hover:bg-[#FFF7ED] transition-colors">
+              className="w-full text-left px-3 py-2 text-[13px] text-[#0D1F3C] hover:bg-[var(--brand-bg)] transition-colors">
               {s}
             </button>
           ))}
@@ -155,7 +155,7 @@ function ExerciseInput({ value, onChange, exercises }: { value: string; onChange
 
 function HistoryPanel({ history, loading }: { history: HistoryLog[]; loading: boolean }) {
   const [expanded, setExpanded] = useState<string | null>(null)
-  if (loading) return <div className="text-center py-10"><div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin mx-auto" /></div>
+  if (loading) return <div className="text-center py-10"><div className="w-5 h-5 border-2 border-[var(--brand)] border-t-transparent rounded-full animate-spin mx-auto" /></div>
   if (history.length === 0) return (
     <div className="text-center py-12">
       <span className="text-4xl">💪</span>
@@ -177,7 +177,7 @@ function HistoryPanel({ history, loading }: { history: HistoryLog[]; loading: bo
         return (
           <div key={log.id} className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
             <button onClick={() => setExpanded(isOpen ? null : log.id)} className="w-full flex items-center gap-3 px-4 py-3.5 text-left">
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#FFF7ED' }}>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: 'var(--brand-bg)' }}>
                 <span className="text-[18px]">💪</span>
               </div>
               <div className="flex-1 min-w-0">
@@ -188,7 +188,7 @@ function HistoryPanel({ history, loading }: { history: HistoryLog[]; loading: bo
                 </p>
               </div>
               <div className="flex items-center gap-2">
-                {log.completed && <CheckCircle2 size={16} className="text-[#F97316]" />}
+                {log.completed && <CheckCircle2 size={16} className="text-[var(--brand)]" />}
                 {isOpen ? <ChevronUp size={16} className="text-[#94A3B8]" /> : <ChevronDown size={16} className="text-[#94A3B8]" />}
               </div>
             </button>
@@ -344,7 +344,7 @@ function FreeSession({ token, exercises: exerciseList, memory, onSaved, coachVie
         !coachView && <button
           onClick={() => { setSessionStarted(true); addExercise() }}
           className="w-full mb-4 py-3.5 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 shadow-lg"
-          style={{ background: '#F97316', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}
+          style={{ background: 'var(--brand)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}
         >
           <Play size={18} fill="white" /> Démarrer une séance libre
         </button>
@@ -356,10 +356,10 @@ function FreeSession({ token, exercises: exerciseList, memory, onSaved, coachVie
               const mem = ex.name ? memory[ex.name] : null
               return (
                 <div key={ex.localId} className="bg-white rounded-2xl border overflow-hidden transition-colors"
-                  style={{ borderColor: allDone ? '#FDBA74' : '#E2E8F0' }}>
-                  <div className="flex items-center gap-2 px-4 py-3" style={allDone ? { background: '#FFF7ED' } : {}}>
+                  style={{ borderColor: allDone ? 'var(--brand-border)' : '#E2E8F0' }}>
+                  <div className="flex items-center gap-2 px-4 py-3" style={allDone ? { background: 'var(--brand-bg)' } : {}}>
                     <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[12px] font-bold flex-shrink-0"
-                      style={{ background: allDone ? '#F97316' : '#F1F5F9', color: allDone ? '#fff' : '#64748B' }}>
+                      style={{ background: allDone ? 'var(--brand)' : '#F1F5F9', color: allDone ? '#fff' : '#64748B' }}>
                       {allDone ? '✓' : exIdx + 1}
                     </div>
                     <ExerciseInput value={ex.name} onChange={v => updateExName(ex.localId, v)} exercises={exerciseList} />
@@ -369,7 +369,7 @@ function FreeSession({ token, exercises: exerciseList, memory, onSaved, coachVie
                   </div>
 
                   {mem && (
-                    <p className="text-[11px] text-[#64748B] bg-[#FFF7ED] px-4 py-1.5 border-b border-[#FDBA74]">
+                    <p className="text-[11px] text-[#64748B] bg-[var(--brand-bg)] px-4 py-1.5 border-b border-[var(--brand-border)]">
                       Dernière fois : {mem.reps ? `${mem.reps} reps` : ''}{mem.reps && mem.weight ? ' · ' : ''}{mem.weight ? `${mem.weight} kg` : ''}
                     </p>
                   )}
@@ -383,35 +383,35 @@ function FreeSession({ token, exercises: exerciseList, memory, onSaved, coachVie
                     </div>
                     {ex.sets.map((s, i) => (
                       <div key={i} className="grid grid-cols-[32px_1fr_1fr_40px] gap-2 items-center py-1.5 rounded-lg px-1 transition-colors"
-                        style={s.done ? { background: s.isPR ? '#FFFBEB' : '#FFF7ED' } : {}}>
-                        <span className="text-center text-[12px] font-semibold" style={{ color: s.done ? '#F97316' : '#64748B' }}>{i + 1}</span>
+                        style={s.done ? { background: s.isPR ? '#FFFBEB' : 'var(--brand-bg)' } : {}}>
+                        <span className="text-center text-[12px] font-semibold" style={{ color: s.done ? 'var(--brand)' : '#64748B' }}>{i + 1}</span>
                         <input type="number" min={0} value={s.reps}
                           onChange={e => updateSet(ex.localId, i, 'reps', e.target.value)}
                           disabled={s.done}
                           className="text-center text-[13px] font-semibold border rounded-xl px-2 py-2 focus:outline-none disabled:opacity-60"
-                          style={{ borderColor: s.done ? '#FDBA74' : '#E2E8F0', background: s.done ? '#FFF7ED' : '#F8FAFB' }}
+                          style={{ borderColor: s.done ? 'var(--brand-border)' : '#E2E8F0', background: s.done ? 'var(--brand-bg)' : '#F8FAFB' }}
                           placeholder="—" />
                         <input type="number" min={0} step={0.5} value={s.weight}
                           onChange={e => updateSet(ex.localId, i, 'weight', e.target.value)}
                           disabled={s.done}
                           className="text-center text-[13px] font-semibold border rounded-xl px-2 py-2 focus:outline-none disabled:opacity-60"
-                          style={{ borderColor: s.done ? '#FDBA74' : '#E2E8F0', background: s.done ? '#FFF7ED' : '#F8FAFB' }}
+                          style={{ borderColor: s.done ? 'var(--brand-border)' : '#E2E8F0', background: s.done ? 'var(--brand-bg)' : '#F8FAFB' }}
                           placeholder="—" />
                         {s.done ? (
                           <div className="flex items-center justify-center">
-                            {s.isPR ? <span className="text-[16px]">🏆</span> : <CheckCircle2 size={20} color="#F97316" />}
+                            {s.isPR ? <span className="text-[16px]">🏆</span> : <CheckCircle2 size={20} color="var(--brand)" />}
                           </div>
                         ) : (
                           <button onClick={() => completeSet(ex.localId, i, ex.name)}
                             className="flex items-center justify-center w-8 h-8 rounded-xl border-2 mx-auto transition-colors"
-                            style={{ borderColor: '#F97316' }}>
-                            <CheckCircle2 size={16} color="#F97316" />
+                            style={{ borderColor: 'var(--brand)' }}>
+                            <CheckCircle2 size={16} color="var(--brand)" />
                           </button>
                         )}
                       </div>
                     ))}
                     <button onClick={() => addSet(ex.localId)}
-                      className="mt-2 w-full py-1.5 rounded-lg text-[11px] font-semibold border border-dashed border-[#E2E8F0] text-[#94A3B8] hover:border-[#F97316] hover:text-[#F97316] transition-colors flex items-center justify-center gap-1">
+                      className="mt-2 w-full py-1.5 rounded-lg text-[11px] font-semibold border border-dashed border-[#E2E8F0] text-[#94A3B8] hover:border-[var(--brand)] hover:text-[var(--brand)] transition-colors flex items-center justify-center gap-1">
                       <Plus size={11} /> Série
                     </button>
                   </div>
@@ -421,14 +421,14 @@ function FreeSession({ token, exercises: exerciseList, memory, onSaved, coachVie
           </div>
 
           <button onClick={addExercise}
-            className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 border-dashed border-[#FDBA74] text-[#F97316] flex items-center justify-center gap-2 hover:bg-[#FFF7ED] transition-colors">
+            className="w-full mb-4 py-3 rounded-2xl text-[13px] font-bold border-2 border-dashed border-[var(--brand-border)] text-[var(--brand)] flex items-center justify-center gap-2 hover:bg-[var(--brand-bg)] transition-colors">
             <Plus size={15} /> Ajouter un exercice
           </button>
 
           <button onClick={handleSave}
             disabled={saving || exercises.filter(e => e.name.trim()).length === 0}
             className="w-full py-4 rounded-2xl text-[15px] font-bold text-white transition-opacity disabled:opacity-40 shadow-lg"
-            style={{ background: '#F97316', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
+            style={{ background: 'var(--brand)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}>
             {saving ? 'Enregistrement…' : totalSets > 0
               ? `Terminer (${allDoneCount}/${totalSets} séries) ✓`
               : 'Terminer la séance ✓'}
@@ -588,7 +588,7 @@ export default function SportPage() {
 
   if (loading) return (
     <div className="flex-1 flex items-center justify-center min-h-screen">
-      <div className="w-5 h-5 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+      <div className="w-5 h-5 border-2 border-[var(--brand)] border-t-transparent rounded-full animate-spin" />
     </div>
   )
 
@@ -612,7 +612,7 @@ export default function SportPage() {
 
         {/* Header */}
         <div className="flex items-center gap-3 mb-5">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: '#FFF7ED' }}>💪</div>
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: 'var(--brand-bg)' }}>💪</div>
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">Sport</h1>
         </div>
 
@@ -621,7 +621,7 @@ export default function SportPage() {
           {tabs.map(t => (
             <button key={t} onClick={() => setTab(t)}
               className="flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors"
-              style={tab === t ? { background: '#F97316', color: '#fff' } : { color: '#64748B' }}>
+              style={tab === t ? { background: 'var(--brand)', color: '#fff' } : { color: '#64748B' }}>
               {tabLabels[t]}
             </button>
           ))}
@@ -643,11 +643,11 @@ export default function SportPage() {
 
         {/* Séance du jour (programme) */}
         {tab === 'jour' && data && !data.day && (
-          <div className="flex items-start gap-3 bg-[#FFF7ED] border border-[#FDBA74] rounded-2xl p-4 mb-5">
+          <div className="flex items-start gap-3 bg-[var(--brand-bg)] border border-[var(--brand-border)] rounded-2xl p-4 mb-5">
             <span className="text-[18px] mt-0.5">⏳</span>
             <div>
-              <p className="text-[13px] font-semibold text-[#9A3412]">{data.assignment.programme.title}</p>
-              <p className="text-[12px] text-[#C2410C] mt-0.5">Ton coach est en train de préparer ton programme. Les exercices apparaîtront ici dès qu'il sera prêt.</p>
+              <p className="text-[13px] font-semibold" style={{ color: 'var(--brand-dark)' }}>{data.assignment.programme.title}</p>
+              <p className="text-[12px] mt-0.5" style={{ color: 'var(--brand)' }}>Ton coach est en train de préparer ton programme. Les exercices apparaîtront ici dès qu'il sera prêt.</p>
             </div>
           </div>
         )}
@@ -656,14 +656,14 @@ export default function SportPage() {
           <>
             {done ? (
               <div className="text-center py-10">
-                <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4" style={{ background: '#FFF7ED' }}>
-                  <CheckCircle2 size={36} color="#F97316" />
+                <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4" style={{ background: 'var(--brand-bg)' }}>
+                  <CheckCircle2 size={36} color="var(--brand)" />
                 </div>
                 <p className="text-[22px] font-bold text-[#0D1F3C] mb-1">Séance terminée !</p>
                 <p className="text-[14px] text-[#64748B]">Jour {data.dayNumber} · {data.assignment.programme.title}</p>
                 <button onClick={() => setTab('historique')}
                   className="mt-6 px-6 py-2.5 rounded-xl text-[13px] font-semibold mx-auto flex items-center gap-2"
-                  style={{ background: '#FFF7ED', color: '#F97316' }}>
+                  style={{ background: 'var(--brand-bg)', color: 'var(--brand)' }}>
                   Voir l'historique
                 </button>
               </div>
@@ -679,18 +679,18 @@ export default function SportPage() {
                     </div>
                     <div className="text-right">
                       <p className="text-[11px] text-[#94A3B8]">Progression</p>
-                      <p className="text-[15px] font-bold" style={{ color: '#F97316' }}>{Math.round((data.effectiveDay / data.totalDays) * 100)}%</p>
+                      <p className="text-[15px] font-bold" style={{ color: 'var(--brand)' }}>{Math.round((data.effectiveDay / data.totalDays) * 100)}%</p>
                     </div>
                   </div>
-                  <div className="w-full bg-[#FFF7ED] rounded-full h-1.5">
-                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${Math.min(100, (data.effectiveDay / data.totalDays) * 100)}%`, background: '#F97316' }} />
+                  <div className="w-full bg-[var(--brand-bg)] rounded-full h-1.5">
+                    <div className="h-1.5 rounded-full transition-all" style={{ width: `${Math.min(100, (data.effectiveDay / data.totalDays) * 100)}%`, background: 'var(--brand)' }} />
                   </div>
                 </div>
 
                 {!sessionStarted && !coachView && (
                   <button onClick={() => setSessionStarted(true)}
                     className="w-full mb-4 py-3.5 rounded-2xl text-[15px] font-bold text-white flex items-center justify-center gap-2 shadow-lg"
-                    style={{ background: '#F97316', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
+                    style={{ background: 'var(--brand)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}>
                     <Play size={18} fill="white" /> Démarrer la séance
                   </button>
                 )}
@@ -702,10 +702,10 @@ export default function SportPage() {
                     const mem = memory[ex.exercise_name]
                     return (
                       <div key={ex.id} className="bg-white rounded-2xl border transition-colors overflow-hidden"
-                        style={{ borderColor: allDone ? '#FDBA74' : '#E2E8F0' }}>
-                        <div className="flex items-center gap-3 px-4 py-3.5" style={allDone ? { background: '#FFF7ED' } : {}}>
+                        style={{ borderColor: allDone ? 'var(--brand-border)' : '#E2E8F0' }}>
+                        <div className="flex items-center gap-3 px-4 py-3.5" style={allDone ? { background: 'var(--brand-bg)' } : {}}>
                           <div className="w-8 h-8 rounded-xl flex items-center justify-center text-[14px] font-bold flex-shrink-0"
-                            style={{ background: allDone ? '#F97316' : '#F1F5F9', color: allDone ? '#fff' : '#64748B' }}>
+                            style={{ background: allDone ? 'var(--brand)' : '#F1F5F9', color: allDone ? '#fff' : '#64748B' }}>
                             {allDone ? '✓' : exIdx + 1}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -721,7 +721,7 @@ export default function SportPage() {
 
                         {/* Memory hint */}
                         {mem && !allDone && (
-                          <p className="text-[11px] text-[#64748B] bg-[#FFF7ED] px-4 py-1.5 border-b border-[#FDBA74]">
+                          <p className="text-[11px] text-[#64748B] bg-[var(--brand-bg)] px-4 py-1.5 border-b border-[var(--brand-border)]">
                             Dernière fois : {mem.reps ? `${mem.reps} reps` : ''}{mem.reps && mem.weight ? ' · ' : ''}{mem.weight ? `${mem.weight} kg` : ''}
                           </p>
                         )}
@@ -739,30 +739,30 @@ export default function SportPage() {
                           </div>
                           {exSets.map((s, i) => (
                             <div key={i} className="grid grid-cols-[32px_1fr_1fr_40px] gap-2 items-center py-1.5 rounded-lg px-1 transition-colors"
-                              style={s.done ? { background: s.isPR ? '#FFFBEB' : '#FFF7ED' } : {}}>
-                              <span className="text-center text-[12px] font-semibold" style={{ color: s.done ? '#F97316' : '#64748B' }}>{i + 1}</span>
+                              style={s.done ? { background: s.isPR ? '#FFFBEB' : 'var(--brand-bg)' } : {}}>
+                              <span className="text-center text-[12px] font-semibold" style={{ color: s.done ? 'var(--brand)' : '#64748B' }}>{i + 1}</span>
                               <input type="number" min={0} value={s.reps}
                                 onChange={e => updateSet(ex.id, i, 'reps', e.target.value)}
                                 disabled={s.done || !sessionStarted}
                                 className="text-center text-[13px] font-semibold border rounded-xl px-2 py-2 focus:outline-none disabled:opacity-60 transition-colors"
-                                style={{ borderColor: s.done ? '#FDBA74' : '#E2E8F0', background: s.done ? '#FFF7ED' : '#F8FAFB' }}
+                                style={{ borderColor: s.done ? 'var(--brand-border)' : '#E2E8F0', background: s.done ? 'var(--brand-bg)' : '#F8FAFB' }}
                                 placeholder="—" />
                               <input type="number" min={0} step={0.5} value={s.weight}
                                 onChange={e => updateSet(ex.id, i, 'weight', e.target.value)}
                                 disabled={s.done || !sessionStarted}
                                 className="text-center text-[13px] font-semibold border rounded-xl px-2 py-2 focus:outline-none disabled:opacity-60 transition-colors"
-                                style={{ borderColor: s.done ? '#FDBA74' : '#E2E8F0', background: s.done ? '#FFF7ED' : '#F8FAFB' }}
+                                style={{ borderColor: s.done ? 'var(--brand-border)' : '#E2E8F0', background: s.done ? 'var(--brand-bg)' : '#F8FAFB' }}
                                 placeholder="—" />
                               {s.done ? (
                                 <div className="flex items-center justify-center">
-                                  {s.isPR ? <span className="text-[16px]">🏆</span> : <CheckCircle2 size={20} color="#F97316" />}
+                                  {s.isPR ? <span className="text-[16px]">🏆</span> : <CheckCircle2 size={20} color="var(--brand)" />}
                                 </div>
                               ) : (
                                 <button disabled={!sessionStarted}
                                   onClick={() => completeSet(ex.id, i, ex.rest_seconds, ex.exercise_name)}
                                   className="flex items-center justify-center w-8 h-8 rounded-xl border-2 mx-auto transition-colors disabled:opacity-30"
-                                  style={{ borderColor: '#F97316' }}>
-                                  <CheckCircle2 size={16} color="#F97316" />
+                                  style={{ borderColor: 'var(--brand)' }}>
+                                  <CheckCircle2 size={16} color="var(--brand)" />
                                 </button>
                               )}
                             </div>
@@ -776,7 +776,7 @@ export default function SportPage() {
                 {sessionStarted && (
                   <button onClick={handleFinish} disabled={saving || !allSetsDone}
                     className="w-full mt-5 py-4 rounded-2xl text-[15px] font-bold text-white transition-opacity disabled:opacity-40 shadow-lg"
-                    style={{ background: '#F97316', boxShadow: '0 4px 20px rgba(249,115,22,0.3)' }}>
+                    style={{ background: 'var(--brand)', boxShadow: '0 4px 20px rgba(0,0,0,0.12)' }}>
                     {saving ? 'Enregistrement…' : allSetsDone ? 'Terminer la séance ✓'
                       : `${data.day.exercises.reduce((n, ex) => n + (sets[ex.id] ?? []).filter(s => s.done).length, 0)} / ${data.day.exercises.reduce((n, ex) => n + (sets[ex.id]?.length ?? 0), 0)} séries complétées`}
                   </button>

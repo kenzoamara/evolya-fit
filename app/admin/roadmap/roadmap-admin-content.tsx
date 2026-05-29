@@ -22,11 +22,13 @@ const ITEM_TYPES: { value: RoadmapItem['type']; label: string }[] = [
   { value: 'released', label: 'Disponible' },
 ]
 const STATUS_FILTERS: { value: Suggestion['status'] | 'all'; label: string }[] = [
-  { value: 'all', label: 'Toutes' },
-  { value: 'pending', label: 'En attente' },
-  { value: 'approved', label: 'Approuvées' },
-  { value: 'planned', label: 'Planifiées' },
-  { value: 'rejected', label: 'Refusées' },
+  { value: 'all',         label: 'Toutes' },
+  { value: 'pending',     label: 'En attente' },
+  { value: 'approved',    label: 'Approuvées' },
+  { value: 'planned',     label: 'Planifiées' },
+  { value: 'in_progress', label: 'En cours' },
+  { value: 'delivered',   label: 'Livrées' },
+  { value: 'rejected',    label: 'Refusées' },
 ]
 
 function TypeBadge({ type }: { type: RoadmapItem['type'] }) {
@@ -36,13 +38,18 @@ function TypeBadge({ type }: { type: RoadmapItem['type'] }) {
 }
 
 function SuggStatusBadge({ status }: { status: Suggestion['status'] }) {
-  const map = {
-    pending: 'bg-yellow-50 text-yellow-700 border-yellow-200',
-    approved: 'bg-green-50 text-green-700 border-green-200',
-    planned: 'bg-blue-50 text-blue-700 border-blue-200',
-    rejected: 'bg-red-50 text-red-700 border-red-200',
+  const map: Record<string, string> = {
+    pending:     'bg-yellow-50 text-yellow-700 border-yellow-200',
+    approved:    'bg-green-50 text-green-700 border-green-200',
+    planned:     'bg-blue-50 text-blue-700 border-blue-200',
+    in_progress: 'bg-orange-50 text-orange-700 border-orange-200',
+    delivered:   'bg-teal-50 text-teal-700 border-teal-200',
+    rejected:    'bg-red-50 text-red-700 border-red-200',
   }
-  const labels = { pending: 'En attente', approved: 'Approuvée', planned: 'Planifiée', rejected: 'Refusée' }
+  const labels: Record<string, string> = {
+    pending: 'En attente', approved: 'Approuvée', planned: 'Planifiée',
+    in_progress: 'En cours', delivered: 'Livrée', rejected: 'Refusée',
+  }
   return (
     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${map[status]}`}>
       {labels[status]}
@@ -354,6 +361,24 @@ export function RoadmapAdminContent({ adminName, roadmapItems: initial, suggesti
                           className="text-xs px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors disabled:opacity-50"
                         >
                           Planifier
+                        </button>
+                      )}
+                      {sugg.status !== 'in_progress' && (
+                        <button
+                          onClick={() => moderateSugg(sugg, 'in_progress')}
+                          disabled={moderating === sugg.id}
+                          className="text-xs px-2.5 py-1.5 rounded-lg bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors disabled:opacity-50"
+                        >
+                          En cours
+                        </button>
+                      )}
+                      {sugg.status !== 'delivered' && (
+                        <button
+                          onClick={() => moderateSugg(sugg, 'delivered')}
+                          disabled={moderating === sugg.id}
+                          className="text-xs px-2.5 py-1.5 rounded-lg bg-teal-50 text-teal-700 border border-teal-200 hover:bg-teal-100 transition-colors disabled:opacity-50"
+                        >
+                          Livrer
                         </button>
                       )}
                       {sugg.status !== 'rejected' && (

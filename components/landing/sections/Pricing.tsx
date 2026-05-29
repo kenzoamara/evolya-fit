@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -6,9 +6,227 @@ import dynamic from 'next/dynamic'
 
 const NumberFlow = dynamic(() => import('@number-flow/react'), { ssr: false })
 
-type Metric = {
-  label: string
-  value: string
+type Feature = { label: string; included: boolean }
+type Category = { name: string; items: Feature[] }
+
+const PLAN_FEATURES: Record<string, Category[]> = {
+  free: [
+    {
+      name: 'Membres & Contenu',
+      items: [
+        { label: '1 membre maximum', included: true },
+        { label: '100 exercices de bibliothèque', included: true },
+        { label: '10 générations IA d\'exercices', included: true },
+        { label: '1 génération de programme', included: true },
+      ],
+    },
+    {
+      name: 'Coaching & Séances',
+      items: [
+        { label: 'Agenda intégré', included: true },
+        { label: 'Chrono & validation de séance', included: true },
+        { label: 'Check-in hebdomadaire', included: true },
+        { label: 'Notes de séance', included: false },
+        { label: 'Suivi des séances en direct', included: false },
+      ],
+    },
+    {
+      name: 'Suivi des progrès',
+      items: [
+        { label: 'Suivi du poids', included: true },
+        { label: 'Suivi sportif', included: true },
+        { label: 'Suivi nutritionnel', included: true },
+        { label: 'Suivi des mensurations', included: false },
+        { label: 'Statistiques de performance & PR', included: false },
+        { label: 'Suivi des habitudes', included: false },
+      ],
+    },
+    {
+      name: 'Communication & Engagement',
+      items: [
+        { label: 'Relance des membres inactifs', included: false },
+        { label: 'Messagerie intégrée', included: false },
+        { label: 'Rappels automatiques de check-in', included: false },
+      ],
+    },
+    {
+      name: 'Paiements & Analytics',
+      items: [
+        { label: 'Gestion des impayés', included: true },
+        { label: 'Rappels automatiques de paiement', included: false },
+        { label: 'Rapports hebdomadaires automatiques', included: false },
+        { label: 'Statistiques de croissance', included: false },
+      ],
+    },
+    {
+      name: 'Personnalisation',
+      items: [
+        { label: '2 thèmes disponibles', included: true },
+        { label: 'Mode clair / sombre', included: true },
+        { label: 'Photo de profil', included: false },
+        { label: 'Blog', included: false },
+        { label: 'Calculatrice intégrée', included: false },
+      ],
+    },
+  ],
+  starter: [
+    {
+      name: 'Membres & Contenu',
+      items: [
+        { label: '10 membres maximum', included: true },
+        { label: '500 exercices de bibliothèque', included: true },
+        { label: '150 générations IA d\'exercices', included: true },
+        { label: '100 générations de programmes', included: true },
+      ],
+    },
+    {
+      name: 'Coaching & Séances',
+      items: [
+        { label: 'Agenda intégré', included: true },
+        { label: 'Chrono, validation & notes de séance', included: true },
+        { label: 'Suivi des séances en direct', included: true },
+        { label: 'Check-in hebdomadaire', included: true },
+      ],
+    },
+    {
+      name: 'Suivi des progrès',
+      items: [
+        { label: 'Suivi du poids', included: true },
+        { label: 'Statistiques de performance & PR', included: true },
+        { label: 'Suivi sportif', included: true },
+        { label: 'Suivi nutritionnel', included: true },
+        { label: 'Suivi des mensurations', included: false },
+        { label: 'Suivi des habitudes', included: false },
+      ],
+    },
+    {
+      name: 'Communication & Engagement',
+      items: [
+        { label: 'Messagerie intégrée', included: true },
+        { label: 'Relance des membres inactifs', included: true },
+        { label: 'Rappels automatiques de check-in', included: false },
+      ],
+    },
+    {
+      name: 'Paiements & Analytics',
+      items: [
+        { label: 'Gestion des impayés', included: true },
+        { label: 'Rappels automatiques de paiement', included: true },
+        { label: 'Rapports hebdomadaires automatiques', included: true },
+        { label: 'Statistiques de croissance', included: false },
+      ],
+    },
+    {
+      name: 'Personnalisation',
+      items: [
+        { label: '5 thèmes disponibles', included: true },
+        { label: 'Mode clair / sombre', included: true },
+        { label: 'Photo de profil', included: false },
+        { label: 'Blog', included: false },
+        { label: 'Calculatrice intégrée', included: false },
+      ],
+    },
+  ],
+  growth: [
+    {
+      name: 'Membres & Contenu',
+      items: [
+        { label: '25 membres maximum', included: true },
+        { label: '1 000 exercices de bibliothèque', included: true },
+        { label: '300 générations IA d\'exercices', included: true },
+        { label: '200 générations de programmes', included: true },
+      ],
+    },
+    {
+      name: 'Coaching & Séances',
+      items: [
+        { label: 'Agenda intégré', included: true },
+        { label: 'Chrono, validation & notes de séance', included: true },
+        { label: 'Suivi des séances en direct', included: true },
+        { label: 'Check-in hebdomadaire', included: true },
+        { label: 'Rappels automatiques de check-in', included: true },
+      ],
+    },
+    {
+      name: 'Suivi des progrès',
+      items: [
+        { label: 'Suivi du poids', included: true },
+        { label: 'Suivi des mensurations', included: true },
+        { label: 'Statistiques de performance & PR', included: true },
+        { label: 'Suivi sportif', included: true },
+        { label: 'Suivi nutritionnel', included: true },
+        { label: 'Suivi des habitudes', included: true },
+      ],
+    },
+    {
+      name: 'Communication & Engagement',
+      items: [
+        { label: 'Messagerie intégrée', included: true },
+        { label: 'Relance des membres inactifs', included: true },
+      ],
+    },
+    {
+      name: 'Paiements & Analytics',
+      items: [
+        { label: 'Gestion des impayés', included: true },
+        { label: 'Rappels automatiques de paiement', included: true },
+        { label: 'Rapports hebdomadaires automatiques', included: true },
+        { label: 'Statistiques de croissance', included: true },
+      ],
+    },
+    {
+      name: 'Personnalisation',
+      items: [
+        { label: 'Thèmes illimités', included: true },
+        { label: 'Photo de profil', included: true },
+        { label: 'Mode clair / sombre', included: true },
+        { label: 'Blog limité', included: true },
+        { label: 'Calculatrice intégrée', included: true },
+      ],
+    },
+  ],
+  pro: [
+    {
+      name: 'Membres & Contenu',
+      items: [
+        { label: 'Membres illimités', included: true },
+        { label: 'Exercices de bibliothèque illimités', included: true },
+        { label: 'Générations IA d\'exercices illimitées', included: true },
+        { label: 'Générations de programmes illimitées', included: true },
+      ],
+    },
+    {
+      name: 'Coaching & Séances',
+      items: [
+        { label: 'Toutes les fonctionnalités incluses', included: true },
+      ],
+    },
+    {
+      name: 'Suivi des progrès',
+      items: [
+        { label: 'Toutes les fonctionnalités incluses', included: true },
+      ],
+    },
+    {
+      name: 'Communication & Engagement',
+      items: [
+        { label: 'Toutes les fonctionnalités incluses', included: true },
+      ],
+    },
+    {
+      name: 'Paiements & Analytics',
+      items: [
+        { label: 'Toutes les fonctionnalités incluses', included: true },
+      ],
+    },
+    {
+      name: 'Personnalisation',
+      items: [
+        { label: 'Blog complet (articles exclusifs)', included: true },
+        { label: 'Toutes les fonctionnalités incluses', included: true },
+      ],
+    },
+  ],
 }
 
 type Plan = {
@@ -20,92 +238,8 @@ type Plan = {
   monthly: number
   annualMonthly: number
   annualTotal: number
-  emoji: string | null
-  inherits?: string
-  metrics: Metric[]
-  additions: string[]
+  metrics: { label: string; value: string }[]
 }
-
-function IconTarget({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="9" stroke={color} strokeWidth="1.8"/>
-      <circle cx="12" cy="12" r="5" stroke={color} strokeWidth="1.8"/>
-      <circle cx="12" cy="12" r="1.5" fill={color}/>
-    </svg>
-  )
-}
-
-function IconRocket({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M12 2C12 2 7 7 7 13c0 2.5 2 4 5 4s5-1.5 5-4c0-6-5-11-5-11z" stroke={color} strokeWidth="1.8" strokeLinejoin="round"/>
-      <path d="M9 17l-2 4M15 17l2 4" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-      <circle cx="12" cy="11" r="2" stroke={color} strokeWidth="1.6"/>
-    </svg>
-  )
-}
-
-function IconCrown({ color }: { color: string }) {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <path d="M3 17l2-8 4.5 4L12 5l2.5 8L19 9l2 8H3z" stroke={color} strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"/>
-      <path d="M3 17h18" stroke={color} strokeWidth="1.8" strokeLinecap="round"/>
-    </svg>
-  )
-}
-
-/* ─── Données ───────────────────────────────────────────────── */
-
-const ALL_FEATURES: string[] = [
-  // Programmes & IA
-  '3 types de programmes : sportif · nutritionnel · habitudes',
-  'Génération IA de programmes (Claude Haiku)',
-  'Génération IA d\'exercices (description, muscles, instructions)',
-  'Éditeur de programmes drag & drop',
-  'Panneau bibliothèque intégré à l\'éditeur',
-  'Filtres bibliothèque (catégorie, niveau, équipement)',
-  'Duplication de programmes',
-  'Assignation de programmes à un ou plusieurs membres',
-  // Bibliothèque globale
-  'Bibliothèque exercices sport (600+)',
-  'Bibliothèque plans nutrition (300)',
-  'Bibliothèque habitudes (100)',
-  // Gestion des clients
-  'Invitation membre via lien magique (sans compte)',
-  'Profil & onboarding client complet',
-  'Messagerie directe coach-membre',
-  'Notes partagées coach-membre',
-  'Objectifs clients (création & suivi de statut)',
-  'Planification des séances + suivi des présences',
-  'Check-ins hebdomadaires (Q&A + score énergie)',
-  'Gestion des paiements clients (facturation manuelle)',
-  // Espace membre
-  'Espace membre dédié (dashboard, profil, onboarding)',
-  'Workout tracking — exercices du jour et historique',
-  'Suivi des habitudes + streaks',
-  'Suivi nutrition & macros',
-  'Suivi de progression (poids, performances, mesures)',
-  'Statistiques personnelles et records',
-  'Agenda séances (vue membre)',
-  'Bilan de progression PDF (mensuel)',
-  'Notifications push web (membre)',
-  // Outils coach
-  'Planning hebdomadaire coach (agenda)',
-  'Dashboard métriques business (revenus, LTV, churn)',
-  'Calculatrice métabolique intégrée',
-  // Automatisation
-  'Email check-in automatique chaque samedi',
-  'Rappels membres inactifs automatiques',
-  'Rappels streaks automatiques (7j, 30j…)',
-  'Rapport hebdo coach automatique chaque lundi',
-  'Relances paiements en retard automatiques',
-  // Personnalisation & compliance
-  'Identité visuelle personnalisée (couleurs, police, logo)',
-  'Export des données RGPD (CSV / PDF)',
-  'Votes roadmap — influencez les prochaines fonctionnalités',
-  'Support prioritaire',
-]
 
 const PLANS: Plan[] = [
   {
@@ -116,89 +250,73 @@ const PLANS: Plan[] = [
     monthly: 0,
     annualMonthly: 0,
     annualTotal: 0,
-    emoji: null,
     metrics: [
       { label: 'Membre', value: '1' },
-      { label: 'Programmes IA/mois', value: '1' },
-      { label: 'Biblio exercices', value: '165' },
+      { label: 'Générations IA/mois', value: '1' },
+      { label: 'Biblio exercices', value: '100' },
     ],
-    additions: ALL_FEATURES,
   },
   {
     id: 'starter',
     name: 'Lancement',
     clientLabel: "Jusqu'à 10 membres",
-    emoji: 'target',
     monthly: 19,
     annualMonthly: 15,
     annualTotal: 180,
     metrics: [
       { label: 'Membres', value: '10' },
-      { label: 'Générations IA/mois', value: '~80' },
-      { label: 'Accès biblio plans', value: '+650' },
+      { label: 'Générations IA/mois', value: '150' },
+      { label: 'Biblio exercices', value: '500' },
     ],
-    additions: ALL_FEATURES,
   },
   {
     id: 'growth',
     name: 'Croissance',
     clientLabel: "Jusqu'à 25 membres",
-    emoji: 'rocket',
     popular: true,
     monthly: 29,
     annualMonthly: 23,
     annualTotal: 275,
     metrics: [
       { label: 'Membres', value: '25' },
-      { label: 'Générations IA/mois', value: '~150' },
-      { label: 'Accès biblio plans', value: '+1K' },
+      { label: 'Générations IA/mois', value: '300' },
+      { label: 'Biblio exercices', value: '1 000' },
     ],
-    additions: ALL_FEATURES,
   },
   {
     id: 'pro',
     name: 'Pro',
     clientLabel: "Jusqu'à 45 membres",
-    emoji: 'crown',
     monthly: 49,
     annualMonthly: 39,
     annualTotal: 470,
     metrics: [
       { label: 'Membres', value: '45' },
       { label: 'Générations IA', value: 'Illimitées' },
-      { label: 'Accès biblio plans', value: 'Illimité' },
+      { label: 'Biblio exercices', value: 'Illimitée' },
     ],
-    additions: ALL_FEATURES,
   },
 ]
 
-/* ─── Bandeau métriques ─────────────────────────────────────── */
-
-function MetricsBand({ metrics, popular }: { metrics: Metric[]; popular?: boolean }) {
+function MetricsBand({ metrics, popular }: { metrics: { label: string; value: string }[]; popular?: boolean }) {
   return (
     <div
       className="rounded-xl grid grid-cols-3 overflow-hidden"
       style={{
-        background: popular ? 'rgba(255,255,255,0.05)' : '#F7F9FB',
+        background: popular ? 'rgba(255,255,255,0.06)' : '#F7F9FB',
         border: popular ? '1px solid rgba(255,255,255,0.08)' : '1px solid #EDF0F3',
       }}
     >
       {metrics.map((m, i) => (
-        <div key={i} className="flex flex-col items-center justify-center py-4 px-2 relative text-center">
+        <div key={i} className="flex flex-col items-center justify-center py-3 px-1 relative text-center">
           {i > 0 && (
-            <div
-              className="absolute left-0 inset-y-3 w-px"
-              style={{ background: popular ? 'rgba(255,255,255,0.08)' : '#E8ECF0' }}
-            />
+            <div className="absolute left-0 inset-y-2 w-px"
+              style={{ background: popular ? 'rgba(255,255,255,0.08)' : '#E8ECF0' }} />
           )}
-          <span className={`font-black leading-none tracking-tight ${
-            popular ? 'text-white' : 'text-[#0D1F3C]'
-          } ${m.value.length > 4 ? 'text-[13px]' : 'text-[17px]'}`}>
+          <span className={`font-black leading-none tracking-tight ${popular ? 'text-white' : 'text-[#0D1F3C]'} ${m.value.length > 4 ? 'text-[11px]' : 'text-[15px]'}`}>
             {m.value}
           </span>
-          <span className={`text-[9px] font-medium mt-1.5 text-center leading-[1.3] ${
-            popular ? 'text-white/40' : 'text-[#94A3B8]'
-          }`}>
+          <span className={`text-[8.5px] font-medium mt-1 text-center leading-[1.3] ${popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>
             {m.label}
           </span>
         </div>
@@ -207,34 +325,51 @@ function MetricsBand({ metrics, popular }: { metrics: Metric[]; popular?: boolea
   )
 }
 
-/* ─── Liste des ajouts ──────────────────────────────────────── */
-
-function AdditionsList({ items, popular }: { items: string[]; popular?: boolean }) {
+function FeatureList({ categories, popular }: { categories: Category[]; popular?: boolean }) {
   return (
-    <ul className="flex flex-col gap-2">
-      {items.map((item, i) => (
-        <li key={i} className="flex items-start gap-2.5">
-          <div
-            className="w-[16px] h-[16px] rounded-full flex-shrink-0 flex items-center justify-center mt-[1px]"
-            style={{ background: 'rgba(78,155,111,0.18)' }}
-          >
-            <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-              <path d="M1.5 4l2 2 3-3.5" stroke="#4E9B6F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <span className={`text-[12px] leading-snug ${popular ? 'text-white/65' : 'text-[#4A5568]'}`}>
-            {item}
-          </span>
-        </li>
+    <div className="flex flex-col gap-4">
+      {categories.map((cat, ci) => (
+        <div key={ci}>
+          <p className={`text-[10px] font-bold uppercase tracking-[0.12em] mb-2 ${popular ? 'text-white/30' : 'text-[#94A3B8]'}`}>
+            {cat.name}
+          </p>
+          <ul className="flex flex-col gap-1.5">
+            {cat.items.map((item, fi) => (
+              <li key={fi} className="flex items-start gap-2">
+                {item.included ? (
+                  <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center mt-[2px]"
+                    style={{ background: 'rgba(78,155,111,0.18)' }}>
+                    <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
+                      <path d="M1.5 4l2 2 3-3.5" stroke="#4E9B6F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                ) : (
+                  <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center mt-[2px]"
+                    style={{ background: popular ? 'rgba(255,255,255,0.06)' : '#F1F5F9' }}>
+                    <svg width="6" height="6" viewBox="0 0 8 8" fill="none">
+                      <path d="M2 2l4 4M6 2L2 6" stroke={popular ? 'rgba(255,255,255,0.25)' : '#CBD5E1'} strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                )}
+                <span className={`text-[11.5px] leading-snug ${
+                  item.included
+                    ? popular ? 'text-white/70' : 'text-[#374151]'
+                    : popular ? 'text-white/25' : 'text-[#C4CDD6]'
+                }`}>
+                  {item.label}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       ))}
-    </ul>
+    </div>
   )
 }
 
-/* ─── Carte plan payant ─────────────────────────────────────── */
-
 function PlanCard({ plan, annual }: { plan: Plan; annual: boolean }) {
   const price = annual ? plan.annualMonthly : plan.monthly
+  const features = PLAN_FEATURES[plan.id]
 
   return (
     <div className="relative">
@@ -250,7 +385,7 @@ function PlanCard({ plan, annual }: { plan: Plan; annual: boolean }) {
       )}
 
       <div
-        className={`rounded-2xl p-6 flex flex-col gap-5 relative overflow-hidden ${plan.popular ? 'pt-10' : ''}`}
+        className={`rounded-2xl flex flex-col gap-4 relative overflow-hidden ${plan.popular ? 'pt-10 px-6 pb-6' : 'pt-6 px-6 pb-6'}`}
         style={plan.popular ? {
           background: 'linear-gradient(145deg, #0f2318 0%, #0D1F3C 55%, #0a1a2e 100%)',
           boxShadow: '0 0 0 2px #4E9B6F, 0 20px 60px rgba(13,31,60,0.35)',
@@ -269,135 +404,84 @@ function PlanCard({ plan, annual }: { plan: Plan; annual: boolean }) {
           </>
         )}
 
-        {/* Icône + nombre d'membres */}
-        <div className="flex items-center gap-2.5 relative">
-          {plan.emoji && (
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
-              style={{ background: 'rgba(78,155,111,0.15)', border: '1px solid rgba(78,155,111,0.30)' }}>
-              {plan.emoji === 'target' && <IconTarget color="#4E9B6F" />}
-              {plan.emoji === 'rocket' && <IconRocket color="#4E9B6F" />}
-              {plan.emoji === 'crown'  && <IconCrown  color="#4E9B6F" />}
-            </div>
-          )}
-          <span className="inline-flex items-center text-[11px] font-semibold px-2.5 py-1 rounded-full"
-            style={plan.popular ? {
-              color: '#4E9B6F', background: 'rgba(78,155,111,0.15)', border: '1px solid rgba(78,155,111,0.30)',
-            } : {
-              color: '#4E9B6F', background: 'rgba(78,155,111,0.09)', border: '1px solid rgba(78,155,111,0.22)',
-            }}>
-            {plan.clientLabel}
-          </span>
-        </div>
-
         {/* Nom */}
-        <div className="relative">
-          <h3 className={`font-bold leading-tight tracking-[-0.02em] ${plan.popular ? 'text-white text-[22px]' : 'text-[#0D1F3C] text-[19px]'}`}>
-            {plan.name}
-          </h3>
-        </div>
+        <h3 className={`font-bold leading-tight tracking-[-0.02em] ${plan.popular ? 'text-white text-[22px]' : 'text-[#0D1F3C] text-[20px]'}`}>
+          {plan.name}
+        </h3>
 
-        <div className={`border-t relative ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
+        <div className={`border-t ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
 
         {/* Prix */}
-        <div className="relative">
-          <div className="flex items-baseline gap-1 flex-wrap">
-            <span className={`font-black leading-none tracking-tight flex items-baseline ${plan.popular ? 'text-white text-[64px]' : 'text-[#0D1F3C] text-[60px]'}`}>
-              <NumberFlow value={price} />
-              <span className={`ml-1 font-bold ${plan.popular ? 'text-white/45 text-[26px]' : 'text-[#94A3B8] text-[24px]'}`}>€</span>
-            </span>
-            {annual && (
-              <span className={`text-[13px] font-medium line-through leading-none ${plan.popular ? 'text-white/25' : 'text-[#CBD5E1]'}`}>
-                {plan.monthly} €
-              </span>
-            )}
-            <span className={`text-[13px] font-medium ${plan.popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>/ mois</span>
-          </div>
-          {annual
-            ? <p className={`text-[11.5px] mt-1.5 ${plan.popular ? 'text-white/35' : 'text-[#94A3B8]'}`}>soit {plan.annualTotal} € facturés annuellement</p>
-            : <div className="h-[18px]" />
-          }
+        <div>
+          {plan.free ? (
+            <div>
+              <p className={`text-[42px] font-black leading-none tracking-tight ${plan.popular ? 'text-white' : 'text-[#0D1F3C]'}`}>
+                Gratuit
+              </p>
+              <p className={`text-[12px] mt-1.5 ${plan.popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>
+                Pour toujours · sans carte
+              </p>
+            </div>
+          ) : (
+            <div>
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className={`font-black leading-none tracking-tight flex items-baseline ${plan.popular ? 'text-white text-[56px]' : 'text-[#0D1F3C] text-[52px]'}`}>
+                  <NumberFlow value={price} />
+                  <span className={`ml-1 font-bold ${plan.popular ? 'text-white/45 text-[24px]' : 'text-[#94A3B8] text-[22px]'}`}>€</span>
+                </span>
+                {annual && (
+                  <span className={`text-[14px] font-medium line-through leading-none ${plan.popular ? 'text-white/25' : 'text-[#CBD5E1]'}`}>
+                    {plan.monthly} €
+                  </span>
+                )}
+                <span className={`text-[13px] font-medium ${plan.popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>/ mois</span>
+              </div>
+              {annual
+                ? <p className={`text-[11.5px] mt-1.5 ${plan.popular ? 'text-white/35' : 'text-[#94A3B8]'}`}>soit {plan.annualTotal} € facturés annuellement</p>
+                : <div className="h-[18px]" />
+              }
+            </div>
+          )}
         </div>
+
+        {/* Métriques */}
+        <MetricsBand metrics={plan.metrics} popular={plan.popular} />
 
         {/* CTA */}
         <Link
           href={`/auth/signup?plan=${plan.id}_${annual ? 'annual' : 'monthly'}`}
-          className={`flex items-center justify-center gap-2 text-[13.5px] font-semibold py-3 rounded-xl transition-colors duration-150 relative ${
+          className={`flex items-center justify-center gap-2 text-[13.5px] font-semibold py-3 rounded-xl transition-colors duration-150 ${
             plan.popular
               ? 'bg-[#4E9B6F] text-white hover:bg-[#3d8058]'
+              : plan.free
+              ? 'bg-[#0D1F3C] text-white hover:bg-[#152E55]'
               : 'bg-[#F4F6F8] text-[#0D1F3C] hover:bg-[#EBEEF2]'
           }`}
         >
-          Commencer
+          {plan.free ? 'Commencer gratuitement' : 'Commencer'}
           <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
             <path d="M3 7.5h9M8.5 3.5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </Link>
 
-        <div className={`border-t relative ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
+        <div className={`border-t ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
 
-        {/* Métriques clés */}
-        <MetricsBand metrics={plan.metrics} popular={plan.popular} />
+        {/* Features */}
+        <FeatureList categories={features} popular={plan.popular} />
 
-        {/* Hérite + ajoute */}
-        <div className="relative">
-          {plan.inherits && (
-            <p className={`text-[10.5px] font-semibold uppercase tracking-[0.12em] mb-3 ${plan.popular ? 'text-white/30' : 'text-[#94A3B8]'}`}>
-              {plan.inherits}
-            </p>
-          )}
-          <AdditionsList items={plan.additions} popular={plan.popular} />
-        </div>
-
-        {/* Note */}
-        <p className={`flex items-center gap-1.5 text-[11px] relative ${plan.popular ? 'text-white/35' : 'text-[#B0BAC6]'}`}>
-          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-            <path d="M2 6.5l2.5 2.5L10 3" stroke="#4E9B6F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Essai gratuit 14 jours · Sans carte bancaire
-        </p>
-      </div>
-    </div>
-  )
-}
-
-/* ─── Carte Découverte ──────────────────────────────────────── */
-
-function FreeCard({ plan }: { plan: Plan }) {
-  return (
-    <div className="mt-6 mx-auto" style={{ maxWidth: '700px' }}>
-      <div className="rounded-2xl border border-[#E8ECF0] bg-white px-6 pt-5 pb-6"
-        style={{ boxShadow: '0 2px 8px rgba(13,31,60,0.05)' }}>
-
-        <div className="flex items-center justify-between gap-4 mb-5">
-          <div>
-            <p className="text-[11px] font-semibold text-[#4E9B6F] tracking-widest uppercase mb-1">{plan.clientLabel}</p>
-            <h3 className="text-[26px] sm:text-[30px] font-black tracking-tight text-[#0D1F3C] leading-none">{plan.name}</h3>
-            <p className="text-[11.5px] text-[#B0BAC6] mt-1.5">Gratuit · Sans carte bancaire</p>
-          </div>
-          <Link
-            href="/auth/signup?plan=free"
-            className="flex items-center gap-2 bg-[#F4F6F8] hover:bg-[#EBEEF2] border border-[#E2E8F0] text-[#0D1F3C] text-[13px] font-semibold px-5 py-2.5 rounded-xl transition-colors duration-150 flex-shrink-0"
-          >
-            Commencer
-            <svg width="13" height="13" viewBox="0 0 15 15" fill="none">
-              <path d="M3 7.5h9M8.5 3.5l4 4-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+        {/* Note bas */}
+        {!plan.free && (
+          <p className={`flex items-center gap-1.5 text-[11px] ${plan.popular ? 'text-white/30' : 'text-[#B0BAC6]'}`}>
+            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+              <path d="M2 6.5l2.5 2.5L10 3" stroke="#4E9B6F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-          </Link>
-        </div>
-
-        <div className="border-t border-[#F1F5F9] mb-5" />
-
-        <div className="flex gap-3 mb-5">
-          <MetricsBand metrics={plan.metrics} />
-        </div>
-
-        <AdditionsList items={plan.additions} />
+            Essai gratuit 14 jours · Sans carte bancaire
+          </p>
+        )}
       </div>
     </div>
   )
 }
-
-/* ─── Section principale ────────────────────────────────────── */
 
 export function Pricing() {
   const [annual, setAnnual] = useState(false)
@@ -413,6 +497,8 @@ export function Pricing() {
       </div>
 
       <div className="max-w-5xl mx-auto relative z-[1]">
+
+        {/* Header */}
         <div className="text-center mb-14">
           <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#4E9B6F] mb-4">Tarification</p>
           <h2 className="text-[34px] md:text-[42px] font-bold text-[#0D1F3C] tracking-[-0.02em] mb-4 leading-tight">
@@ -424,6 +510,7 @@ export function Pricing() {
           </p>
         </div>
 
+        {/* Toggle */}
         <div className="flex justify-center mb-12">
           <div className="flex items-center bg-white border border-[#E2E8F0] rounded-full p-1 gap-0.5 shadow-sm">
             <button
@@ -450,22 +537,23 @@ export function Pricing() {
           </div>
         </div>
 
+        {/* Plans payants */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
           {paidPlans.map((plan) => (
             <div
               key={plan.id}
               className="relative"
-              style={plan.popular
-                ? { transform: 'translateY(-16px)', zIndex: 10 }
-                : { marginTop: '16px' }
-              }
+              style={plan.popular ? { transform: 'translateY(-16px)', zIndex: 10 } : { marginTop: '16px' }}
             >
               <PlanCard plan={plan} annual={annual} />
             </div>
           ))}
         </div>
 
-        <FreeCard plan={freePlan} />
+        {/* Plan Découverte */}
+        <div className="mt-6 mx-auto max-w-[700px]">
+          <PlanCard plan={freePlan} annual={annual} />
+        </div>
 
         <p className="text-center text-[11px] text-[#C0C8D4] mt-7">
           Aucune carte bancaire requise · Résiliable à tout moment

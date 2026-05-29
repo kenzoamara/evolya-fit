@@ -12,7 +12,9 @@ const TOOLS = [
     desc: "Construis des programmes sportifs, nutritionnels ou d'habitudes et assigne-les à tes membres instantanément — l'IA génère et tu valides.",
     bullets: [
       'Programmes sportifs, nutritionnels & habitudes',
-      'Génération d\'exercices par IA personnalisable',
+      'Génération de programmes par IA personnalisable',
+      'Bibliothèque de +1 000 exercices, plans nutrition & habitudes',
+      'Glisser-déposer les exercices pour composer tes séances',
       'Suivi de complétion en temps réel',
     ],
   },
@@ -39,6 +41,7 @@ const TOOLS = [
       'Suivi des mesures corporelles et poids',
       'Statistiques de performance et records',
       'Objectifs avec progression visuelle',
+      'Calculatrice métabolique intégrée (IMC, calories, métabolisme de base)',
     ],
   },
   {
@@ -55,6 +58,20 @@ const TOOLS = [
     ],
   },
   {
+    id: 'espace-membre',
+    emoji: '📱',
+    label: 'Espace membre',
+    title: 'Tes membres ont leur propre espace — sur mobile et PC.',
+    desc: "Chaque membre accède à son espace personnel via un lien unique — sans app à télécharger. Ils voient leur programme, suivent leur progression et restent engagés entre les séances.",
+    bullets: [
+      'Accès instantané via lien unique — aucune app à installer',
+      'Programme, agenda & habitudes accessibles depuis mobile',
+      'Suivi des objectifs, mesures et statistiques en temps réel',
+      'Messagerie intégrée et historique des séances',
+      'Paiements en ligne et reçus automatiques',
+    ],
+  },
+  {
     id: 'business',
     emoji: '📈',
     label: 'Business',
@@ -63,6 +80,7 @@ const TOOLS = [
     bullets: [
       'Alertes membres inactifs + relance en 1 clic',
       'Impayés centralisés avec rappels auto J+3 / J+7 / J+14',
+      'Encaissement en ligne via Stripe — directement depuis la plateforme',
       'Rapport hebdomadaire automatique chaque lundi',
       'Statistiques de croissance et de rétention',
     ],

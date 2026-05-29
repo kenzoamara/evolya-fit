@@ -32,9 +32,10 @@ export default async function DashboardPage() {
     client_id: string
     clients: { full_name: string }
   }[] = []
+  let hasMessage = false
 
   try {
-    const [r0, r1, r2, r3] = await Promise.all([
+    const [r0, r1, r2, r3, r4] = await Promise.all([
       admin
         .from('clients')
         .select('id, full_name, status, objectives(*), checkins(*), sessions(id, session_date, session_time, created_at)')
@@ -58,11 +59,18 @@ export default async function DashboardPage() {
         .lte('session_date', in7DaysStr)
         .order('session_date', { ascending: true })
         .order('session_time', { ascending: true }),
+      admin
+        .from('messages')
+        .select('id', { count: 'exact', head: true })
+        .eq('sender_id', user.id)
+        .eq('sender_role', 'coach')
+        .limit(1),
     ])
     clients = (r0.data ?? []) as typeof clients
     programmes = (r1.data ?? []) as typeof programmes
     tasks = (r2.data ?? []) as typeof tasks
     upcomingSessions = (r3.data ?? []) as unknown as typeof upcomingSessions
+    hasMessage = (r4.count ?? 0) > 0
   } catch (err) {
     console.error('[dashboard] data fetch error:', err)
     throw err
@@ -76,6 +84,7 @@ export default async function DashboardPage() {
       tasks={tasks}
       upcomingSessions={upcomingSessions}
       todayStr={todayStr}
+      hasMessage={hasMessage}
     />
   )
 }

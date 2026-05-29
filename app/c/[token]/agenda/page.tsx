@@ -32,8 +32,8 @@ const DAYS_FR_FULL = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi
 const MONTHS_FR = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre']
 const MONTHS_FR_SHORT = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.']
 
-const COLOR = '#3B82F6'
-const COLOR_BG = '#EFF6FF'
+const COLOR = 'var(--brand)'
+const COLOR_BG = 'var(--brand-bg)'
 const HOURS = Array.from({ length: 17 }, (_, i) => i + 6)
 
 function toDateStr(d: Date): string {
@@ -94,7 +94,7 @@ function DayDots({ events }: { events: DayEvent[] }) {
   return (
     <div className="flex items-center justify-center gap-0.5 mt-0.5">
       {hasWorkout && (
-        <div className="w-1.5 h-1.5 rounded-full" style={{ background: '#F97316' }} />
+        <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--brand)' }} />
       )}
       {hasSession && !hasAttended && !hasMissed && (
         <div className="w-1.5 h-1.5 rounded-full" style={{ background: COLOR }} />
@@ -368,12 +368,12 @@ function WeekView({
             const isToday = dateStr === todayStr
             return (
               <div key={i} className="py-2.5 text-center border-l border-[#F1F5F9]">
-                <p className={`text-[10px] font-semibold uppercase tracking-wider ${isToday ? 'text-[#3B82F6]' : 'text-[#94A3B8]'}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-wider ${isToday ? 'text-[var(--brand)]' : 'text-[#94A3B8]'}`}>
                   {DAYS_FR_FULL[i].slice(0, 3)}
                 </p>
                 <div className={`text-[14px] font-bold mt-0.5 mx-auto w-7 h-7 flex items-center justify-center rounded-full ${
-                  isToday ? 'bg-[#3B82F6] text-white' : 'text-[#0D1F3C]'
-                }`}>
+                  isToday ? 'text-white' : 'text-[#0D1F3C]'
+                }`} style={isToday ? { background: 'var(--brand)' } : {}}>
                   {day.getDate()}
                 </div>
               </div>
@@ -623,7 +623,7 @@ export default function AgendaPage() {
               <p className="text-[10px] font-medium text-[#94A3B8] mt-0.5">Avec coach</p>
             </div>
             <div className="bg-white border border-[#E2E8F0] rounded-2xl p-3 text-center">
-              <p className="text-[20px] font-bold text-[#F97316]">
+              <p className="text-[20px] font-bold text-[var(--brand)]">
                 {monthWorkouts.length + attendedCount > 0
                   ? Math.round((monthWorkouts.length / Math.max(1, new Date().getDate())) * 7)
                   : 0}
@@ -635,7 +635,7 @@ export default function AgendaPage() {
           {/* Legend */}
           <div className="flex items-center gap-4 mt-3 px-1">
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full" style={{ background: '#F97316' }} />
+              <div className="w-2 h-2 rounded-full" style={{ background: 'var(--brand)' }} />
               <span className="text-[11px] text-[#94A3B8]">Séance sport</span>
             </div>
             <div className="flex items-center gap-1.5">

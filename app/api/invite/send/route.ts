@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
+import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
+import { PLAN_LABELS } from '@/lib/plan-features'
 
 export async function POST(req: Request) {
   const resend = new Resend(process.env.RESEND_API_KEY)
@@ -24,7 +26,7 @@ export async function POST(req: Request) {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('full_name, client_limit')
+      .select('full_name, plan')
       .eq('id', user.id)
       .single()
 
@@ -32,7 +34,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Profil introuvable.' }, { status: 404 })
     }
 
-    // Vérifier la limite clients
+    // Vérifier la limite clients selon le plan
+    const limits = getPlanLimits(profile.plan)
     const adminClient = createAdminClient()
     const { count } = await adminClient
       .from('clients')
@@ -40,9 +43,12 @@ export async function POST(req: Request) {
       .eq('coach_id', user.id)
       .eq('status', 'active')
 
-    if (profile.client_limit !== 9999 && (count ?? 0) >= profile.client_limit) {
+    if (!isUnlimited(limits.clients) && (count ?? 0) >= limits.clients) {
+      const nextPlan = profile.plan === 'free' || profile.plan === 'trial' ? 'Lancement'
+        : profile.plan === 'starter' ? 'Croissance'
+        : 'Pro'
       return NextResponse.json({
-        error: `Limite de ${profile.client_limit} clients atteinte. Passez au plan Standard.`
+        error: `Limite de ${limits.clients} client${limits.clients > 1 ? 's' : ''} atteinte sur le plan ${PLAN_LABELS[profile.plan] ?? profile.plan}. Passez au plan ${nextPlan}.`
       }, { status: 403 })
     }
 

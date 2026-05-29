@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
   // All days with exercise count
   const { data: days } = await supabase
     .from('programme_days')
-    .select('id, day_number, title, programme_day_exercises(id)')
+    .select('id, day_number, title, phase, programme_day_exercises(id)')
     .eq('programme_id', prog.id)
     .order('day_number', { ascending: true })
 
@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
     id: d.id,
     day_number: d.day_number,
     title: d.title,
+    phase: (d as { phase?: number }).phase ?? 1,
     exercise_count: Array.isArray(d.programme_day_exercises) ? d.programme_day_exercises.length : 0,
     completed: completedDayIds.has(d.id),
     is_today: d.day_number === effectiveDay,

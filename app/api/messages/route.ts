@@ -1,6 +1,7 @@
 ﻿import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
+import { sendCoachPushNotification } from '@/lib/push'
 
 // GET /api/messages?token=xxx  (client via magic token)
 // GET /api/messages?clientId=xxx  (coach authenticated)
@@ -100,6 +101,15 @@ export async function POST(req: Request) {
       }).select().single()
 
       if (error) return NextResponse.json({ error: 'Erreur envoi.' }, { status: 500 })
+
+      // Notifier le coach par push notification (fire & forget)
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      sendCoachPushNotification(client.coach_id, {
+        title: 'Nouveau message',
+        body:  content.trim().length > 80 ? content.trim().slice(0, 80) + '…' : content.trim(),
+        url:   `${appUrl}/messages?clientId=${client.id}`,
+      })
+
       return NextResponse.json({ message })
     }
 

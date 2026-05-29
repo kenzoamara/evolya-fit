@@ -11,6 +11,7 @@ import type { Profile } from '@/types/database'
 import type { Exercise, NutritionItem, HabitTemplate } from './page'
 import { NutritionView } from './nutrition-view'
 import { HabitudesView } from './habitudes-view'
+import { getPlanLimits } from '@/lib/plan-limits'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -20,6 +21,9 @@ type Props = {
   nutritionItems: NutritionItem[]
   habitTemplates: HabitTemplate[]
   coachId: string
+  exerciseLimit?: number
+  aiExercisesUsed?: number
+  aiExercisesLimit?: number
 }
 
 type LibraryTheme = 'sport' | 'nutrition' | 'habitudes'
@@ -34,12 +38,12 @@ const THEMES = [
 ]
 
 const CATEGORIES = [
-  { id: 'tous',       label: 'Tous',          color: '#64748B', bg: '#F1F5F9' },
-  { id: 'force',      label: '🦾 Force',      color: '#3B82F6', bg: '#EFF6FF' },
-  { id: 'cardio',     label: '🏃 Cardio',     color: '#EF4444', bg: '#FEF2F2' },
-  { id: 'hiit',       label: '⚡ HIIT',       color: '#F59E0B', bg: '#FFFBEB' },
-  { id: 'mobilite',   label: '🧘 Mobilité',   color: '#8B5CF6', bg: '#F5F3FF' },
-  { id: 'stretching', label: '🤸 Stretching', color: '#0EA5E9', bg: '#F0F9FF' },
+  { id: 'tous',       label: 'Tous',           color: '#64748B', bg: '#F1F5F9' },
+  { id: 'force',      label: '🦾 Force',       color: '#3B82F6', bg: '#EFF6FF' },
+  { id: 'cardio',     label: '🔥 Cardio',      color: '#EF4444', bg: '#FEF2F2' },
+  { id: 'hiit',       label: '⚡ HIIT',        color: '#F59E0B', bg: '#FFFBEB' },
+  { id: 'mobilite',   label: '🌀 Mobilité',    color: '#8B5CF6', bg: '#F5F3FF' },
+  { id: 'stretching', label: '🎯 Etirement',   color: '#0EA5E9', bg: '#F0F9FF' },
 ] as const
 
 const DIFFICULTY_LABELS: Record<Exercise['difficulty'], string> = {
@@ -59,7 +63,7 @@ const CATEGORY_LABELS: Record<Exercise['category'], string> = {
   cardio:     'Cardio',
   hiit:       'HIIT',
   mobilite:   'Mobilité',
-  stretching: 'Stretching',
+  stretching: 'Etirement',
 }
 
 const MUSCLE_GROUPS = [
@@ -179,12 +183,18 @@ function ExerciseCard({ ex, isOwn, onDelete, onAddToProgramme }: {
 // ─── Composant principal ──────────────────────────────────────────────────────
 
 export function ExercicesContent({
-  profile: _profile,
+  profile,
   exercises: initialExercises,
   nutritionItems,
   habitTemplates,
   coachId,
+  exerciseLimit,
+  aiExercisesUsed: initialAiUsed = 0,
+  aiExercisesLimit = -1,
 }: Props) {
+
+  const limits = getPlanLimits(profile.plan)
+  const visibleThemes = THEMES.filter(t => t.id !== 'habitudes' || limits.habitudes)
 
   // ── Thème ──
   const [theme, setTheme]       = useState<LibraryTheme>('sport')
@@ -278,6 +288,7 @@ export function ExercicesContent({
   const [instructions, setInstructions] = useState('')
   const [saving, setSaving]           = useState(false)
   const [generating, setGenerating]   = useState(false)
+  const [aiUsedCount, setAiUsedCount] = useState(initialAiUsed)
 
   function toggleEquipment(eq: string) {
     if (eq === 'aucun') { setEquipment(['aucun']); return }
@@ -309,6 +320,7 @@ export function ExercicesContent({
     setMuscles(data.muscles.join(', '))
     setDifficulty(data.difficulty)
     setInstructions(data.instructions)
+    setAiUsedCount(c => c + 1)
     toast.success('Champs remplis par l\'IA.')
   }
 
@@ -464,7 +476,7 @@ export function ExercicesContent({
           style={{ maxHeight: themeOpen ? '80px' : '0px', opacity: themeOpen ? 1 : 0, marginTop: themeOpen ? '8px' : '0px' }}
         >
           <div className="flex gap-2">
-            {THEMES.map(t => {
+            {visibleThemes.map(t => {
               const Icon = t.icon
               const active = theme === t.id
               return (
@@ -549,6 +561,16 @@ export function ExercicesContent({
               })}
             </div>
           </div>
+
+          {/* Bannière limite bibliothèque */}
+          {exerciseLimit && exerciseLimit !== -1 && (
+            <div className="mx-6 mb-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3 shrink-0">
+              <p className="text-[12px] text-amber-700">
+                Bibliothèque limitée a <strong>{exerciseLimit} exercices</strong> sur votre plan actuel.
+              </p>
+              <a href="/plans" className="text-[11px] font-semibold text-amber-700 underline whitespace-nowrap">Passer a un plan superieur</a>
+            </div>
+          )}
 
           {/* Liste */}
           <div className="flex-1 overflow-y-auto px-6 pb-6">
@@ -689,6 +711,12 @@ export function ExercicesContent({
                     <Sparkles size={14} />
                     {generating ? 'Génération en cours…' : 'Remplir par l\'IA'}
                   </button>
+                  <p className="text-center text-[11px] text-[#94A3B8]">
+                    {aiExercisesLimit === -1
+                      ? `${aiUsedCount} génération${aiUsedCount !== 1 ? 's' : ''} ce mois — illimité`
+                      : `${aiUsedCount} / ${aiExercisesLimit} génération${aiExercisesLimit !== 1 ? 's' : ''} ce mois · renouvellement le 1er`
+                    }
+                  </p>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[13px] font-medium text-[#0D1F3C] mb-1.5">Catégorie</label>
@@ -698,7 +726,7 @@ export function ExercicesContent({
                         <option value="cardio">Cardio</option>
                         <option value="hiit">HIIT</option>
                         <option value="mobilite">Mobilité</option>
-                        <option value="stretching">Stretching</option>
+                        <option value="stretching">Etirement</option>
                       </select>
                     </div>
                     <div>

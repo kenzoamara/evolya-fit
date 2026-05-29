@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, RoadmapItem, Suggestion, Vote } from '@/types/database'
+import { PlanGate } from '@/components/ui/plan-gate'
 
 type Tab = 'blog' | 'updates' | 'vote'
 
@@ -22,6 +23,7 @@ const BLOG_POSTS = [
     category: 'Coaching',
     readTime: '4 min',
     date: '2025-05-10',
+    pro_only: false,
   },
   {
     id: '2',
@@ -30,6 +32,7 @@ const BLOG_POSTS = [
     category: 'Relation client',
     readTime: '3 min',
     date: '2025-04-28',
+    pro_only: false,
   },
   {
     id: '3',
@@ -38,6 +41,25 @@ const BLOG_POSTS = [
     category: 'Psychologie',
     readTime: '5 min',
     date: '2025-04-15',
+    pro_only: false,
+  },
+  {
+    id: '4',
+    title: 'Fidélisation avancée : les indicateurs que les meilleurs coaches surveillent',
+    excerpt: 'LTV, taux de churn, score d\'engagement — comment lire vos métriques business pour anticiper les départs et maximiser la rétention de vos clients.',
+    category: 'Business',
+    readTime: '6 min',
+    date: '2025-05-20',
+    pro_only: true,
+  },
+  {
+    id: '5',
+    title: 'Créer une offre premium : tarification, valeur et positionnement',
+    excerpt: 'Comment justifier des tarifs plus élevés, structurer vos offres et attirer des clients qui paient sans négocier. Une méthode en 4 étapes pour les coaches ambitieux.',
+    category: 'Business',
+    readTime: '7 min',
+    date: '2025-05-05',
+    pro_only: true,
   },
 ]
 
@@ -77,7 +99,9 @@ function TypeBadge({ type }: { type: RoadmapItem['type'] }) {
 
 // ─── TAB BLOG ────────────────────────────────────────────────────────────────
 
-function BlogTab() {
+function BlogTab({ plan }: { plan: string }) {
+  const isPro = plan === 'pro'
+
   return (
     <div>
       <div className="mb-6">
@@ -86,39 +110,87 @@ function BlogTab() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {BLOG_POSTS.map(post => (
-          <article
-            key={post.id}
-            className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden flex flex-col hover:shadow-sm transition-shadow"
-          >
-            {/* Illustration placeholder */}
-            <div
-              className="h-32 w-full flex items-center justify-center flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%)' }}
+        {BLOG_POSTS.map(post => {
+          const locked = post.pro_only && !isPro
+          return (
+            <article
+              key={post.id}
+              className="bg-white border border-[#E2E8F0] rounded-xl overflow-hidden flex flex-col hover:shadow-sm transition-shadow relative"
             >
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="opacity-30">
-                <path d="M6 8h20M6 14h20M6 20h12" stroke="#0D1F3C" strokeWidth="2" strokeLinecap="round"/>
-              </svg>
-            </div>
+              {/* Badge Pro */}
+              {post.pro_only && (
+                <div className="absolute top-3 right-3 z-10">
+                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#0D1F3C] text-white">
+                    <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                      <path d="M3 17l2-8 4.5 4L12 5l2.5 8L19 9l2 8H3z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" strokeLinecap="round"/>
+                    </svg>
+                    Pro
+                  </span>
+                </div>
+              )}
 
-            <div className="p-4 flex flex-col flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-[#F1F5F9] text-[#64748B]'}`}>
-                  {post.category}
-                </span>
-                <span className="text-[11px] text-[#94A3B8]">{post.readTime} de lecture</span>
+              {/* Illustration */}
+              <div
+                className="h-32 w-full flex items-center justify-center flex-shrink-0 relative"
+                style={{ background: 'linear-gradient(135deg, #F1F5F9 0%, #E2E8F0 100%)' }}
+              >
+                {locked && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-[#F1F5F9]/80 backdrop-blur-[2px]">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0110 0v4"/>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+                {!locked && (
+                  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" className="opacity-30">
+                    <path d="M6 8h20M6 14h20M6 20h12" stroke="#0D1F3C" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                )}
               </div>
-              <h3 className="text-sm font-semibold text-[#0D1F3C] leading-snug mb-2">{post.title}</h3>
-              <p className="text-xs text-[#64748B] leading-relaxed flex-1">{post.excerpt}</p>
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F1F5F9]">
-                <span className="text-[11px] text-[#94A3B8]">{formatBlogDate(post.date)}</span>
-                <span className="text-xs font-medium text-[#64748B] cursor-default select-none">
-                  Bientôt disponible
-                </span>
+
+              <div className="p-4 flex flex-col flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${CATEGORY_COLORS[post.category] ?? 'bg-[#F1F5F9] text-[#64748B]'}`}>
+                    {post.category}
+                  </span>
+                  <span className="text-[11px] text-[#94A3B8]">{post.readTime} de lecture</span>
+                </div>
+                <h3 className={`text-sm font-semibold leading-snug mb-2 ${locked ? 'text-[#94A3B8]' : 'text-[#0D1F3C]'}`}>
+                  {post.title}
+                </h3>
+                {locked ? (
+                  <div className="flex-1">
+                    <div className="space-y-1.5">
+                      <div className="h-2.5 bg-[#F1F5F9] rounded-full w-full" />
+                      <div className="h-2.5 bg-[#F1F5F9] rounded-full w-4/5" />
+                      <div className="h-2.5 bg-[#F1F5F9] rounded-full w-3/5" />
+                    </div>
+                    <a
+                      href="/plans"
+                      className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#4E9B6F] hover:underline"
+                    >
+                      Passer au plan Pro
+                      <svg width="10" height="10" viewBox="0 0 15 15" fill="none">
+                        <path d="M3 7.5h9M8.5 3.5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </a>
+                  </div>
+                ) : (
+                  <p className="text-xs text-[#64748B] leading-relaxed flex-1">{post.excerpt}</p>
+                )}
+                <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F1F5F9]">
+                  <span className="text-[11px] text-[#94A3B8]">{formatBlogDate(post.date)}</span>
+                  <span className="text-xs font-medium text-[#64748B] cursor-default select-none">
+                    Bientôt disponible
+                  </span>
+                </div>
               </div>
-            </div>
-          </article>
-        ))}
+            </article>
+          )
+        })}
       </div>
 
       <div className="mt-6 bg-[#F8FAFB] border border-[#E2E8F0] rounded-xl px-5 py-4 text-center">
@@ -651,7 +723,11 @@ export function NouveautesTabs({ profile, roadmapItems, suggestions, myVotes }: 
       </div>
 
       {/* Content */}
-      {tab === 'blog' && <BlogTab />}
+      {tab === 'blog' && (
+        <PlanGate featureKey="blog" userPlan={profile.plan ?? 'free'} fullPage>
+          <BlogTab plan={profile.plan ?? 'decouverte'} />
+        </PlanGate>
+      )}
       {tab === 'updates' && <UpdatesTab roadmapItems={roadmapItems} />}
       {tab === 'vote' && (
         <VoteTab

@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Calendar, Users, CheckSquare, ArrowRight, Plus, Check, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import type { Profile } from '@/types/database'
+import { PlanGate } from '@/components/ui/plan-gate'
+import { OnboardingChecklist } from '@/components/coach/onboarding-checklist'
 
 type SessionRow = { id: string; session_date: string; session_time: string | null; created_at: string }
 type ClientRow = {
@@ -32,6 +34,7 @@ type Props = {
   tasks: Task[]
   upcomingSessions: UpcomingSession[]
   todayStr: string
+  hasMessage: boolean
 }
 
 const LS_KEY = 'evolya_recent_client_visits'
@@ -99,7 +102,7 @@ function getWeekStart(now: Date): Date {
   return d
 }
 
-export function DashboardContent({ profile, clients, programmes, tasks: initialTasks, upcomingSessions, todayStr }: Props) {
+export function DashboardContent({ profile, clients, programmes, tasks: initialTasks, upcomingSessions, todayStr, hasMessage }: Props) {
   const now = new Date()
   const weekStart = getWeekStart(now)
   const weekEnd = new Date(weekStart)
@@ -291,7 +294,17 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
         </Link>
       </div>
 
+      {/* Checklist d'onboarding coach */}
+      <OnboardingChecklist
+        coachId={profile.id}
+        hasBranding={!!(profile.brand_color_primary || profile.brand_color_accent || profile.brand_icon)}
+        hasClients={clients.length > 0}
+        hasProgrammes={programmes.length > 0}
+        hasMessage={hasMessage}
+      />
+
       {/* Alerte inactivité */}
+      <PlanGate featureKey="relance_inactifs" userPlan={profile.plan ?? 'free'}>
       {inactiveAlerts.length > 0 && (
         <div className="mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--evolya-card)', border: '1px solid var(--evolya-border)' }}>
           <div className="flex items-center gap-2 px-5 py-3.5 border-b" style={{ borderColor: 'var(--evolya-border)' }}>
@@ -370,6 +383,7 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
           </div>
         </div>
       )}
+      </PlanGate>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 sm:gap-4 mb-6">

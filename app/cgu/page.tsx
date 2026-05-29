@@ -2,8 +2,8 @@
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: "Conditions Générales d'Utilisation — Evolyafit",
-  description: "Conditions Générales d'Utilisation de Evolyafit, plateforme SaaS de suivi coach-client.",
+  title: "Conditions Générales d'Utilisation — Evolya'Fit",
+  description: "Conditions Générales d'Utilisation de Evolya'Fit, plateforme SaaS de suivi coach-client.",
 }
 
 export default function CGUPage() {
@@ -27,12 +27,12 @@ export default function CGUPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-[#0D1F3C] border-b border-[#E2E8F0] pb-2">1. Objet et définitions</h2>
           <p className="text-sm text-[#0D1F3C] leading-relaxed">
-            Les présentes CGU régissent l'accès et l'utilisation de la plateforme Evolya, accessible à l'adresse <strong>https://www.evolyafit.fr</strong>, éditée par Evolya (auto-entrepreneur, France).
+            Les présentes CGU régissent l'accès et l'utilisation de la plateforme Evolya&apos;Fit, accessible à l'adresse <strong>https://www.evolyafit.fr</strong>, éditée par Evolya (auto-entrepreneur, France).
           </p>
           <div className="text-sm text-[#64748B] leading-relaxed space-y-1">
-            <p><strong>« Service »</strong> : la plateforme SaaS Evolya permettant aux coachs de gérer le suivi de leurs membres (check-ins, séances, programmes, progression, messagerie).</p>
-            <p><strong>« Coach »</strong> : toute personne physique ou morale ayant souscrit à un abonnement Evolya (utilisateur B2B).</p>
-            <p><strong>« Membre »</strong> : toute personne suivie par un coach via Evolya, accédant au service via un lien personnalisé sans création de compte.</p>
+            <p><strong>« Service »</strong> : la plateforme SaaS Evolya&apos;Fit permettant aux coachs de gérer le suivi de leurs athlètes (check-ins, séances, programmes, progression, messagerie).</p>
+            <p><strong>« Coach »</strong> : toute personne physique ou morale ayant souscrit à un abonnement Evolya&apos;Fit (utilisateur B2B).</p>
+            <p><strong>« Athlète »</strong> : toute personne suivie par un coach via Evolya&apos;Fit, accédant au service via un lien personnalisé sécurisé sans création de compte.</p>
             <p><strong>« Contenu »</strong> : données, textes, notes, check-ins, programmes et messages créés ou publiés par les utilisateurs sur la plateforme.</p>
             <p><strong>« Nous » / « Evolya »</strong> : l'entreprise éditrice du service.</p>
           </div>
@@ -52,17 +52,20 @@ export default function CGUPage() {
         <section className="space-y-3">
           <h2 className="text-xl font-semibold text-[#0D1F3C] border-b border-[#E2E8F0] pb-2">3. Plans, tarification et facturation</h2>
           <div className="text-sm text-[#0D1F3C] leading-relaxed space-y-2">
-            <p><strong>Periode d'essai :</strong> Evolya propose une periode d'essai gratuite de 14 jours a la creation du compte. Aucune carte bancaire n'est requise pendant l'essai.</p>
-            <p><strong>Plans payants :</strong></p>
-            <ul className="list-disc list-inside text-[#64748B] space-y-1 ml-2">
-              <li><strong>Découverte :</strong> 1 membre — gratuit, sans limite de durée</li>
-              <li><strong>Lancement :</strong> Jusqu'à 10 membres — 19 €/mois (ou 15 €/mois en annuel)</li>
-              <li><strong>Croissance :</strong> Jusqu'à 25 membres — 29 €/mois (ou 23 €/mois en annuel, soit 275 €/an)</li>
-              <li><strong>Pro :</strong> Jusqu'à 45 membres — 49 €/mois (ou 39 €/mois en annuel, soit 470 €/an)</li>
+            <p><strong>Période d&apos;essai :</strong> Evolya&apos;Fit propose une période d&apos;essai gratuite de 14 jours à la création du compte. Aucune carte bancaire n&apos;est requise pendant l&apos;essai. La période d&apos;essai peut être prolongée de 7 jours supplémentaires via un code de parrainage valide (21 jours au total).</p>
+            <p><strong>Plans disponibles :</strong></p>
+            <ul className="list-disc list-inside text-[#64748B] space-y-1.5 ml-2">
+              <li><strong>Essai (trial) :</strong> gratuit 14 jours, 1 athlète — toutes les fonctionnalités de base</li>
+              <li><strong>Starter :</strong> jusqu&apos;à 10 athlètes — tarif mensuel ou annuel affiché sur la page Tarifs</li>
+              <li><strong>Growth :</strong> jusqu&apos;à 25 athlètes — tarif mensuel ou annuel affiché sur la page Tarifs</li>
+              <li><strong>Pro :</strong> jusqu&apos;à 45 athlètes — tarif mensuel ou annuel affiché sur la page Tarifs</li>
+              <li><strong>Scale :</strong> jusqu&apos;à 80 athlètes — tarif mensuel ou annuel affiché sur la page Tarifs</li>
+              <li><strong>Elite :</strong> jusqu&apos;à 150 athlètes — tarif mensuel ou annuel affiché sur la page Tarifs</li>
+              <li><strong>Unlimited :</strong> athlètes illimités — tarif mensuel ou annuel affiché sur la page Tarifs</li>
             </ul>
-            <p>Les prix sont affichés en euros TTC sur la page de tarification. Evolya se réserve le droit de modifier ses tarifs avec un préavis de <strong>30 jours</strong> par email.</p>
-            <p><strong>Paiement :</strong> Les paiements sont traités exclusivement par Stripe. Les données bancaires ne transitent jamais par nos serveurs (certification PCI DSS niveau 1 de Stripe). En cas d'impayé, le service peut être suspendu après 5 jours.</p>
-            <p><strong>Remboursement :</strong> Les abonnements mensuels ne sont pas remboursables au prorata. En cas de résiliation, l'accès reste actif jusqu'à la fin de la période payée.</p>
+            <p>Les prix exacts sont affichés en euros TTC sur la <strong>page de tarification</strong> du site. Evolya&apos;Fit se réserve le droit de modifier ses tarifs avec un préavis de <strong>30 jours</strong> par email. Les modifications tarifaires ne s&apos;appliquent pas aux abonnements annuels en cours jusqu&apos;à leur renouvellement.</p>
+            <p><strong>Paiement :</strong> Les paiements sont traités exclusivement par Stripe. Les données bancaires ne transitent jamais par nos serveurs (certification PCI DSS niveau 1 de Stripe). En cas d&apos;impayé, le service peut être suspendu après 5 jours.</p>
+            <p><strong>Remboursement :</strong> Les abonnements mensuels ne sont pas remboursables au prorata. En cas de résiliation, l&apos;accès reste actif jusqu&apos;à la fin de la période payée.</p>
           </div>
         </section>
 

@@ -8,8 +8,8 @@ import { Plus, Trash2 } from 'lucide-react'
 type Habit = { id: string; name: string; emoji: string; position: number; source?: string }
 type HabitLog = { habit_id: string; date: string; completed: boolean }
 
-const COLOR     = '#A855F7'
-const COLOR_BG  = '#FAF5FF'
+const COLOR     = 'var(--brand)'
+const COLOR_BG  = 'var(--brand-bg)'
 const COLOR_LIGHT = '#E9D5FF'
 const DAYS_FR   = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim']
 const EMOJI_OPTIONS = ['✅', '💧', '🕯️', '📚', '👟', '💤', '🥗', '💊', '🧠', '🎯', '🦶', '🛏️']

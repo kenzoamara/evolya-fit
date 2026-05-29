@@ -11,5 +11,5 @@ export default async function PersonnalisationPage() {
   const { data: profile } = await supabase.from('profiles').select('*').eq('id', user.id).single()
   if (!profile) redirect('/auth/login')
 
-  return <PersonnalisationContent profile={profile as Profile} />
+  return <PersonnalisationContent profile={profile as Profile} userPlan={(profile as Profile).plan ?? 'free'} />
 }

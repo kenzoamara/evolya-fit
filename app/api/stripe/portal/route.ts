@@ -22,7 +22,8 @@ export async function GET() {
       .single()
 
     if (!profile?.stripe_customer_id) {
-      return NextResponse.json({ error: 'Aucun abonnement actif.' }, { status: 400 })
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      return NextResponse.redirect(`${appUrl}/plans`)
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
@@ -33,7 +34,23 @@ export async function GET() {
 
     return NextResponse.redirect(portalSession.url)
   } catch (err) {
-    console.error('[stripe/portal]', err)
-    return NextResponse.json({ error: 'Erreur Stripe.' }, { status: 500 })
+    const msg = err instanceof Error ? err.message : String(err)
+    console.error('[stripe/portal]', msg)
+
+    // ID de test utilisé avec une clé live — on purge et on redirige vers les plans
+    if (msg.includes('a similar object exists in test mode')) {
+      const supabase = await createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('profiles').update({
+          stripe_customer_id: null,
+          stripe_subscription_id: null,
+        }).eq('id', user.id)
+      }
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+      return NextResponse.redirect(`${appUrl}/plans`)
+    }
+
+    return NextResponse.json({ error: `Erreur Stripe : ${msg}` }, { status: 500 })
   }
 }

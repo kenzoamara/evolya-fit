@@ -156,12 +156,49 @@ export default function PaiementPage() {
   const [loading, setLoading] = useState(true)
   const [claimTarget, setClaimTarget] = useState<Payment | null>(null)
 
+  // Packs en ligne (Stripe Connect)
+  const [offers, setOffers] = useState<{ id: string; name: string; price_cents: number; sessions_count: number | null }[]>([])
+  const [creditsRemaining, setCreditsRemaining] = useState(0)
+  const [paymentsEnabled, setPaymentsEnabled] = useState(false)
+  const [buyingId, setBuyingId] = useState<string | null>(null)
+
   useEffect(() => {
     fetch(`/api/client/payments?token=${token}`)
       .then(r => r.json())
       .then(d => { setPayments(d.payments ?? []); setLoading(false) })
       .catch(() => setLoading(false))
+
+    fetch(`/api/payments/offers?token=${token}`)
+      .then(r => r.json())
+      .then(d => {
+        setOffers(d.offers ?? [])
+        setPaymentsEnabled(d.paymentsEnabled ?? false)
+        setCreditsRemaining((d.entitlements ?? []).reduce((s: number, e: { sessions_remaining: number | null }) => s + (e.sessions_remaining ?? 0), 0))
+      })
+      .catch(() => {})
+
+    const sp = new URLSearchParams(window.location.search)
+    if (sp.get('paid') === '1') { toast.success('Paiement réussi — merci !'); window.history.replaceState({}, '', `/c/${token}/paiement`) }
+    if (sp.get('canceled') === '1') { window.history.replaceState({}, '', `/c/${token}/paiement`) }
   }, [token])
+
+  async function handleBuy(offerId: string) {
+    setBuyingId(offerId)
+    try {
+      const res = await fetch('/api/payments/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, offerId }),
+      })
+      const data = await res.json()
+      if (data.url) { window.location.href = data.url; return }
+      toast.error(data.error ?? 'Paiement indisponible.')
+    } catch {
+      toast.error('Erreur réseau.')
+    } finally {
+      setBuyingId(null)
+    }
+  }
 
   // ── KPIs ──────────────────────────────────────────────────────────────────
   const totalDue = payments.filter(p => !p.paid_date).reduce((s, p) => s + p.amount, 0)
@@ -199,12 +236,51 @@ export default function PaiementPage() {
         </div>
         <div>
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">Paiements</h1>
-          <p className="text-[12px] text-[#94A3B8]">Suivi de tes règlements avec ton coach</p>
+          <p className="text-[12px] text-[#94A3B8]">Règle tes packs et suis tes paiements</p>
         </div>
       </div>
 
-      {/* Empty state */}
+      {/* Crédits de séances restants */}
+      {creditsRemaining > 0 && (
+        <div className="mb-5 rounded-2xl px-4 py-3.5 flex items-center gap-3" style={{ background: COLOR_BG }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: COLOR }}>
+            <span className="text-white text-[16px] font-bold">{creditsRemaining}</span>
+          </div>
+          <div>
+            <p className="text-[13px] font-semibold text-[#0D1F3C]">{creditsRemaining} séance{creditsRemaining > 1 ? 's' : ''} restante{creditsRemaining > 1 ? 's' : ''}</p>
+            <p className="text-[12px] text-[#64748B]">Décomptées au fur et à mesure de tes séances.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Packs à acheter en ligne */}
+      {paymentsEnabled && offers.length > 0 && !isCoachView && (
+        <div className="mb-6">
+          <p className="text-[12px] font-semibold text-[#64748B] uppercase tracking-wide mb-2.5">Packs de séances</p>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {offers.map(o => (
+              <div key={o.id} className="bg-white border border-[#E2E8F0] rounded-2xl p-4 flex flex-col">
+                <p className="text-[14px] font-bold text-[#0D1F3C]">{o.name}</p>
+                <p className="text-[12px] text-[#94A3B8] mb-3">{o.sessions_count} séances</p>
+                <p className="text-[22px] font-bold text-[#0D1F3C] mb-3">{fmtAmount(o.price_cents / 100)}</p>
+                <button
+                  onClick={() => handleBuy(o.id)}
+                  disabled={buyingId === o.id}
+                  className="mt-auto w-full py-2.5 rounded-xl text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-50"
+                  style={{ background: COLOR }}
+                >
+                  {buyingId === o.id ? 'Redirection…' : 'Régler en ligne'}
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="text-[11px] text-[#94A3B8] mt-2">Paiement sécurisé par Stripe. Tu recevras un reçu par email.</p>
+        </div>
+      )}
+
+      {/* Empty state — uniquement si vraiment rien (ni paiement, ni pack, ni crédit) */}
       {payments.length === 0 ? (
+        (offers.length === 0 && creditsRemaining === 0) ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: COLOR_BG }}>
             <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke={COLOR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -217,6 +293,7 @@ export default function PaiementPage() {
             Ton coach n'a pas encore enregistré de paiement pour toi.
           </p>
         </div>
+        ) : null
       ) : (
         <>
           {/* KPI cards */}

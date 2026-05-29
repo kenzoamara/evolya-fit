@@ -27,7 +27,52 @@ export type Profile = {
   brand_icon: string | null
   theme_mode: 'light' | 'dark' | 'auto' | null
   inactivity_threshold_days: number
+  connect_account_id: string | null
+  connect_charges_enabled: boolean
+  connect_status: 'none' | 'pending' | 'active' | 'restricted'
   created_at: string
+}
+
+export type PaymentOffer = {
+  id: string
+  coach_id: string
+  type: 'pack' | 'subscription'
+  name: string
+  price_cents: number
+  currency: string
+  sessions_count: number | null
+  interval: string | null
+  stripe_price_id: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export type ClientEntitlement = {
+  id: string
+  client_id: string
+  coach_id: string
+  offer_id: string | null
+  type: string
+  status: 'active' | 'completed' | 'refunded' | 'canceled'
+  sessions_remaining: number | null
+  created_at: string
+}
+
+export type Transaction = {
+  id: string
+  coach_id: string
+  client_id: string | null
+  offer_id: string | null
+  amount_cents: number
+  fee_cents: number
+  currency: string
+  type: 'pack' | 'subscription' | 'manual'
+  status: 'paid' | 'refunded' | 'failed'
+  stripe_session_id: string | null
+  stripe_payment_intent_id: string | null
+  created_at: string
+  // join optionnel
+  client?: { full_name: string } | null
 }
 
 export type AuditLog = {

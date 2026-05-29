@@ -212,6 +212,7 @@ export function Sidebar({ profile }: Props) {
       label: 'PILOTAGE',
       items: [
         { id: 'business',     label: 'Business',     href: '/business',     emoji: '📊', emojiColor: '#4E9B6F', emojiBg: '#EEF9F3' },
+        { id: 'paiements',    label: 'Paiements',    href: '/paiements',    emoji: '💳', emojiColor: '#16A34A', emojiBg: '#F0FDF4' },
         { id: 'statistiques', label: 'Statistiques', href: '/statistiques', emoji: '📈', emojiColor: '#3B82F6', emojiBg: '#EFF6FF' },
         { id: 'calcul',       label: 'Calcul',       href: '/calcul',       emoji: '🧮', emojiColor: '#DB2777', emojiBg: '#FCE7F3' },
       ],

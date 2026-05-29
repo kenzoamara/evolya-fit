@@ -116,6 +116,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: session.url })
   } catch (err) {
     console.error('[stripe/checkout]', err)
-    return NextResponse.json({ error: 'Erreur Stripe.' }, { status: 500 })
+    const msg = err instanceof Error ? err.message : 'Erreur inconnue'
+    return NextResponse.json({ error: `Erreur Stripe: ${msg}` }, { status: 500 })
   }
 }

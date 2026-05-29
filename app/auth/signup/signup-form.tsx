@@ -222,10 +222,15 @@ export function SignupForm() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ priceKey: planParam }),
       })
-      const { url } = await res.json()
-      if (url) { window.location.href = url; return }
-    } catch { /* non-bloquant */ }
-    router.push('/dashboard')
+      const data = await res.json()
+      if (data.url) { window.location.href = data.url; return }
+      // Erreur Stripe : afficher le message et rester sur la page
+      toast.error(data.error ?? 'Impossible de créer la session de paiement. Réessayez.')
+      setLoading(false)
+    } catch {
+      toast.error('Erreur réseau. Vérifiez votre connexion et réessayez.')
+      setLoading(false)
+    }
   }
 
   return (

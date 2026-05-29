@@ -1,0 +1,28 @@
+TITLE (max 30 chars):
+Evolya'Fit - Coach Tracking
+
+SHORT DESCRIPTION Play Store (max 80 chars):
+Your member space to track your progress with your sports coach.
+
+LONG DESCRIPTION Play Store (max 4000 chars):
+Evolya'Fit is the mobile app connecting every athlete with their coach.
+
+Your coach invited you to Evolya'Fit? Find everything here:
+
+WEEKLY CHECK-IN
+Complete your weekly check-in: weight, energy, sleep, notes. Your coach sees your progress in real time and adapts your programme accordingly.
+
+DIRECT MESSAGING
+Ask your coach questions directly in the app. Get advice, encouragement, and feedback without delay.
+
+TRAINING PROGRAMME
+View your personalised programme week by week. Each session details exercises, sets, reps, and rest times. Supersets are grouped so you can flow through without breaks.
+
+GOAL TRACKING
+Your monthly goals appear on your dashboard. Track your progress and stay motivated.
+
+REAL-TIME NOTIFICATIONS
+Get notified the moment your coach replies or updates your programme.
+
+---
+Evolya'Fit is exclusive to clients of coaches using the Evolya platform. If you haven't received an invitation, contact your coach.

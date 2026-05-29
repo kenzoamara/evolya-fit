@@ -4,12 +4,83 @@ import { useEffect } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
+const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? ''
+const PUSH_PROMPTED_KEY = 'push_coach_prompted'
+
+/** Convertit la VAPID public key base64url en ArrayBuffer pour navigator.pushManager */
+function urlBase64ToArrayBuffer(base64String: string): ArrayBuffer {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4)
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = atob(base64)
+  const bytes = new Uint8Array(raw.length)
+  for (let i = 0; i < raw.length; i++) {
+    bytes[i] = raw.charCodeAt(i)
+  }
+  return bytes.buffer as ArrayBuffer
+}
+
+async function registerCoachPush(): Promise<void> {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return
+    if (!VAPID_PUBLIC_KEY) return
+
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToArrayBuffer(VAPID_PUBLIC_KEY),
+    })
+
+    await fetch('/api/push/coach-subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subscription: sub.toJSON() }),
+    })
+  } catch {
+    // silent — ne pas bloquer si push non supporté ou refusé
+  }
+}
+
 type Props = {
   coachId: string
   plan: string
 }
 
 export function NotificationProvider({ coachId, plan }: Props) {
+  // Enregistrement Web Push — demande permission si pas encore accordée
+  useEffect(() => {
+    if (!('Notification' in window)) return
+
+    const permission = Notification.permission
+    if (permission === 'granted') {
+      // Déjà accordé — s'assurer que la subscription est à jour
+      registerCoachPush()
+      return
+    }
+
+    if (permission === 'denied') return
+
+    // 'default' — proposer une seule fois par session
+    const alreadyPrompted = sessionStorage.getItem(PUSH_PROMPTED_KEY)
+    if (alreadyPrompted) return
+    sessionStorage.setItem(PUSH_PROMPTED_KEY, '1')
+
+    // Toast avec bouton pour activer
+    toast.info('Activez les notifications pour être alerté en temps réel.', {
+      duration: 12000,
+      action: {
+        label: 'Activer',
+        onClick: async () => {
+          const result = await Notification.requestPermission()
+          if (result === 'granted') {
+            await registerCoachPush()
+            toast.success('Notifications activées.')
+          }
+        },
+      },
+    })
+  }, [coachId])
+
   useEffect(() => {
     const supabase = createClient()
 

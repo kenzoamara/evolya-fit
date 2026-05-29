@@ -9,6 +9,10 @@ export type Profile = {
   stripe_subscription_id: string | null
   trial_ends_at: string | null
   client_limit: number
+  ai_exercises_used: number
+  ai_programmes_used: number
+  usage_reset_month: number
+  usage_reset_year: number
   coaching_type: string | null
   last_visited_roadmap: string | null
   referral_code: string | null
@@ -89,21 +93,40 @@ export type RoadmapItem = {
   created_at: string
 }
 
+export type SuggestionStatus = 'pending' | 'approved' | 'rejected' | 'planned' | 'in_progress' | 'delivered'
+
 export type Suggestion = {
   id: string
   coach_id: string
   title: string
   description: string | null
-  status: 'pending' | 'approved' | 'rejected' | 'planned'
+  status: SuggestionStatus
   vote_count: number
+  dislike_count: number
+  comment_count: number
   created_at: string
+  // join optionnel
+  coach?: { full_name: string | null } | null
 }
+
+export type SuggestionComment = {
+  id: string
+  suggestion_id: string
+  coach_id: string
+  content: string
+  created_at: string
+  // join optionnel
+  coach?: { full_name: string | null } | null
+}
+
+export type VoteType = 'up' | 'down'
 
 export type Vote = {
   id: string
   coach_id: string
   item_id: string | null
   suggestion_id: string | null
+  vote_type: VoteType | null
   created_at: string
 }
 
@@ -134,6 +157,9 @@ export type Client = {
   sport_performances: string | null
   daily_calories_estimated: number | null
   onboarding_completed_at: string | null
+  parq_cardiac: boolean | null
+  parq_injuries: boolean | null
+  parq_medical: boolean | null
 }
 
 export type ClientReminder = {

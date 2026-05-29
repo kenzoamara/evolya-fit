@@ -1,0 +1,29 @@
+SPECIFICATIONS SCREENSHOTS STORES
+==================================
+
+Play Store (obligatoire) :
+- 2 a 8 screenshots par device
+- Taille : 1080 x 1920 px (portrait) ou 1920 x 1080 px (paysage)
+- Format : PNG ou JPEG
+- Max 8 Mo par image
+
+App Store (obligatoire) :
+- 6.7" iPhone (iPhone 15 Pro Max) : 1290 x 2796 px - OBLIGATOIRE
+- 5.5" iPhone (legacy) : 1242 x 2208 px - recommande
+- iPad Pro 12.9" : 2048 x 2732 px - si universal app
+
+ECRANS A CAPTURER (priorite) :
+1. Tableau de bord client (objectifs + progression)
+2. Programme d'entrainement (liste des seances)
+3. Detail d'une seance (exercices avec supersets)
+4. Check-in hebdomadaire
+5. Messagerie coach-client
+6. Page de connexion / bienvenue
+
+OUTIL RECOMMANDE :
+- Chrome DevTools > Device toolbar > iPhone 14 Pro (390 x 844) puis zoom 3x
+- Ou directement sur un vrai iPhone via l'app TestFlight
+
+ASTUCE :
+Prendre des screenshots avec des donnees realistes (pas vides).
+Utiliser le compte de demo avec des donnees pre-remplies.

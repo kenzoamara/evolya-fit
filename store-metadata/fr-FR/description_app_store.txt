@@ -1,0 +1,28 @@
+NOM App Store (max 30 car.) :
+Evolya'Fit
+
+SOUS-TITRE App Store (max 30 car.) :
+Suivi coach & programme sport
+
+MOTS-CLES App Store (max 100 car., séparés par virgules - PAS d'espaces) :
+coach,sport,programme,musculation,fitness,suivi,nutrition,objectif,checkin,entrainement
+
+DESCRIPTION App Store (max 4000 car.) :
+Evolya'Fit est l'espace membre officiel de ta plateforme de coaching.
+
+Ton coach t'a invité ? Connecte-toi et retrouve :
+
+- Ton programme d'entraînement personnalisé, semaine par semaine
+- La messagerie directe avec ton coach
+- Ton check-in hebdomadaire (poids, énergie, sommeil, notes)
+- Tes objectifs et ta progression
+- Les notifications en temps réel dès que ton coach répond
+
+Les programmes intègrent les supersets et la périodisation par phases — exactement comme planifié par ton coach.
+
+Evolya'Fit est réservé aux clients des coachs partenaires. Si tu n'as pas reçu d'invitation, contacte directement ton coach.
+
+NOTE DE REVUE App Store (à remplir lors de la soumission) :
+Cette application est un espace privé réservé aux clients des coachs utilisant la plateforme Evolya.
+Compte de test : demo@evolyafit.fr / Demo1234!
+(Si le compte de démo n'est plus actif, contactez-nous à support@evolyafit.fr)

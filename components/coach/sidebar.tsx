@@ -206,7 +206,7 @@ export function Sidebar({ profile }: Props) {
       label: 'RÉGLAGES',
       items: [
         { id: 'personnalisation', label: 'Personnalisation', href: '/personnalisation', emoji: '🎨', emojiColor: '#7C3AED', emojiBg: '#F5F3FF' },
-        { id: 'nouveautes',       label: 'Nouveautés',       href: '/nouveautes',       emoji: '✨', emojiColor: '#D97706', emojiBg: '#FFFBEB', badge: newUpdates },
+        { id: 'nouveautes',       label: 'Suggestions',      href: '/nouveautes-vote',  emoji: '✨', emojiColor: '#D97706', emojiBg: '#FFFBEB', badge: newUpdates },
         { id: 'parametres',       label: 'Paramètres',       href: '/parametres',       emoji: '⚙️', emojiColor: '#64748B', emojiBg: '#F1F5F9' },
       ],
     },

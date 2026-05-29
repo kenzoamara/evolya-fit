@@ -1,30 +1,59 @@
 workflows:
   android-workflow:
-    name: Android Build
+    name: Android Build (AAB - Play Store)
     max_build_duration: 60
     environment:
       node: 22.11.0
       java: 21
+      vars:
+        # Ces variables doivent etre configurees dans Codemagic > App Settings > Environment variables
+        # ANDROID_KEYSTORE_PASSWORD: <votre mot de passe keystore>
+        # ANDROID_KEY_ALIAS: evolya-key
+        # ANDROID_KEY_PASSWORD: <votre mot de passe cle>
+        # ANDROID_KEYSTORE_PATH: est defini automatiquement via keystore upload
     scripts:
       - name: Install dependencies
         script: npm install
       - name: Sync Capacitor
         script: npx cap sync android
-      - name: Build Android APK
+      - name: Setup keystore
+        script: |
+          # Si keystore uploade dans Codemagic, CM_KEYSTORE_PATH est defini automatiquement
+          # Sinon on utilise le fichier dans le repo
+          if [ -n "$CM_KEYSTORE_PATH" ]; then
+            export ANDROID_KEYSTORE_PATH="$CM_KEYSTORE_PATH"
+          else
+            export ANDROID_KEYSTORE_PATH="$(pwd)/evolya-release.jks"
+          fi
+          echo "Using keystore: $ANDROID_KEYSTORE_PATH"
+      - name: Build Android AAB (Play Store)
         script: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew bundleRelease \
+            -PANDROID_KEYSTORE_PATH="${ANDROID_KEYSTORE_PATH:-$(pwd)/../evolya-release.jks}" \
+            -PANDROID_KEYSTORE_PASSWORD="$ANDROID_KEYSTORE_PASSWORD" \
+            -PANDROID_KEY_ALIAS="${ANDROID_KEY_ALIAS:-evolya-key}" \
+            -PANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD"
     artifacts:
-      - android/app/build/outputs/**/*.apk
+      - android/app/build/outputs/bundle/release/*.aab
+      - android/app/build/outputs/mapping/release/mapping.txt
 
   ios-workflow:
-    name: iOS Build
+    name: iOS Build (IPA - App Store)
     max_build_duration: 120
     environment:
       node: 22.11.0
       xcode: latest
       cocoapods: default
+      vars:
+        # Ces variables doivent etre configurees dans Codemagic > App Settings > Environment variables
+        # APP_STORE_CONNECT_KEY_IDENTIFIER: <votre key ID>
+        # APP_STORE_CONNECT_ISSUER_ID: <votre issuer ID>
+        # APP_STORE_CONNECT_PRIVATE_KEY: <votre cle privee .p8>
+        # CERTIFICATE_PRIVATE_KEY: <votre cle privee de distribution>
+    integrations:
+      app_store_connect: codemagic_api_key
     scripts:
       - name: Install dependencies
         script: npm install
@@ -34,6 +63,14 @@ workflows:
           pod install
       - name: Sync Capacitor
         script: npx cap sync ios
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          app-store-connect fetch-signing-files fr.evolyafit.app \
+            --type IOS_APP_STORE \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
       - name: Build iOS IPA
         script: |
           xcodebuild \
@@ -41,6 +78,14 @@ workflows:
             -scheme App \
             -configuration Release \
             -archivePath ios/App/App.xcarchive \
-            archive
+            archive \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID"
+          xcodebuild \
+            -exportArchive \
+            -archivePath ios/App/App.xcarchive \
+            -exportOptionsPlist ios/App/ExportOptions.plist \
+            -exportPath ios/App/build
     artifacts:
+      - ios/App/build/**/*.ipa
       - ios/App/App.xcarchive/**

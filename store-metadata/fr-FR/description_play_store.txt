@@ -1,0 +1,28 @@
+TITRE (max 30 car.) :
+Evolya'Fit - Suivi Coach
+
+DESCRIPTION COURTE Play Store (max 80 car.) :
+Ton espace membre pour suivre ta progression avec ton coach sportif.
+
+DESCRIPTION LONGUE Play Store (max 4000 car.) :
+Evolya'Fit est l'application mobile qui relie chaque athlète à son coach.
+
+Ton coach t'a invité sur Evolya'Fit ? Retrouve tout ici :
+
+SUIVI HEBDOMADAIRE
+Complète ton check-in chaque semaine : poids, énergie, sommeil, notes. Ton coach voit ta progression en temps réel et adapte le programme.
+
+MESSAGERIE DIRECTE
+Pose tes questions à ton coach directement depuis l'application. Reçois ses conseils, encouragements et retours sans délai.
+
+PROGRAMME D'ENTRAÎNEMENT
+Consulte ton programme personnalisé semaine après semaine. Chaque séance détaille les exercices, séries, répétitions et temps de repos. Les supersets sont regroupés pour t'aider à enchaîner sans pause.
+
+SUIVI DES OBJECTIFS
+Tes objectifs du mois sont affichés sur ton tableau de bord. Suis ta progression et reste motivé.
+
+NOTIFICATIONS EN TEMPS RÉEL
+Reçois une notification dès que ton coach te répond ou publie une mise à jour de ton programme.
+
+---
+Evolya'Fit est réservé aux clients des coachs utilisant la plateforme Evolya. Si tu n'as pas reçu d'invitation, contacte ton coach.

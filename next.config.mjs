@@ -3,7 +3,7 @@ const nextConfig = {
   async redirects() {
     return [
       { source: '/messages',       destination: '/messagerie',  permanent: true },
-      { source: '/nouveautes-vote',destination: '/nouveautes',  permanent: true },
+      { source: '/nouveautes',     destination: '/nouveautes-vote', permanent: true },
       { source: '/settings',       destination: '/parametres',  permanent: true },
     ]
   },

@@ -58,7 +58,7 @@ export default async function ClientLayout({
   const [{ data: coachProfile }, { count: pendingPayments }] = await Promise.all([
     admin
       .from('profiles')
-      .select('full_name, brand_color_primary, brand_font')
+      .select('full_name, brand_color_primary, brand_font, brand_icon')
       .eq('id', client.coach_id)
       .single(),
     admin
@@ -69,9 +69,11 @@ export default async function ClientLayout({
       .is('claimed_at', null),
   ])
 
-  const brand = (coachProfile as { brand_color_primary: string | null } | null)?.brand_color_primary ?? '#4E9B6F'
-  const font  = (coachProfile as { brand_font: string | null } | null)?.brand_font ?? 'Inter'
-  const coachName = (coachProfile as { full_name: string | null } | null)?.full_name ?? 'Votre coach'
+  const p = coachProfile as { full_name: string | null; brand_color_primary: string | null; brand_font: string | null; brand_icon: string | null } | null
+  const brand = p?.brand_color_primary ?? '#4E9B6F'
+  const font  = p?.brand_font ?? 'Inter'
+  const coachName = p?.full_name ?? 'Votre coach'
+  const coachPhoto = p?.brand_icon?.startsWith('http') ? p.brand_icon : null
 
   return (
     <ClientThemeProvider brand={brand} font={font}>
@@ -79,6 +81,7 @@ export default async function ClientLayout({
         <ClientNav
           clientName={client.full_name}
           coachName={coachName}
+          coachPhoto={coachPhoto}
           token={token}
           paymentBadge={pendingPayments ?? 0}
         />

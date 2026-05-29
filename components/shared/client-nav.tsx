@@ -7,6 +7,7 @@ import { Logo } from '@/components/shared/logo'
 type Props = {
   clientName: string
   coachName: string
+  coachPhoto?: string | null
   token: string
   paymentBadge?: number
   isCoachView?: boolean
@@ -78,7 +79,7 @@ const MOBILE_ITEMS = (base: string, coachView: boolean, paymentBadge: number) =>
   ]
 }
 
-export function ClientNav({ clientName, coachName, token, paymentBadge = 0 }: Props) {
+export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBadge = 0 }: Props) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   // Mode spectateur uniquement si le param ?coach=1 est explicitement dans l'URL
@@ -154,7 +155,13 @@ export function ClientNav({ clientName, coachName, token, paymentBadge = 0 }: Pr
         {/* Coach + client info */}
         <div className="px-3 py-4 border-t border-[#E2E8F0] shrink-0">
           <p className="text-[9px] text-[#CBD5E1] uppercase tracking-wider mb-1.5">Suivi par</p>
-          <p className="text-[11px] text-[#64748B] truncate mb-3">{coachName}</p>
+          <div className="flex items-center gap-2 mb-3">
+            {coachPhoto
+              ? <img src={coachPhoto} alt={coachName} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+              : <div className="w-5 h-5 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B] flex-shrink-0">{coachName[0]}</div>
+            }
+            <p className="text-[11px] text-[#64748B] truncate">{coachName}</p>
+          </div>
           <div className="flex items-center gap-2.5">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-semibold shrink-0 bg-[#F0FDF4] text-[#22C55E]">
               {clientName.charAt(0).toUpperCase()}

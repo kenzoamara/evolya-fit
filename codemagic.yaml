@@ -5,12 +5,8 @@ workflows:
     environment:
       node: 22.11.0
       java: 21
-      vars:
-        # Ces variables doivent etre configurees dans Codemagic > App Settings > Environment variables
-        # ANDROID_KEYSTORE_PASSWORD: <votre mot de passe keystore>
-        # ANDROID_KEY_ALIAS: evolya-key
-        # ANDROID_KEY_PASSWORD: <votre mot de passe cle>
-        # ANDROID_KEYSTORE_PATH: est defini automatiquement via keystore upload
+      groups:
+        - android_signing
     scripts:
       - name: Install dependencies
         script: npm install

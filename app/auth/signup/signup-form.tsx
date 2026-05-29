@@ -102,10 +102,19 @@ export function SignupForm() {
     return firstName.trim().length > 0 && lastName.trim().length > 0 && coachingType.length > 0 && acceptCgu && acceptPrivacy
   }
 
-  // Étape 2 → crée le compte
-  async function handleCreateAccount(e: React.FormEvent) {
+  // Étape 2 → valide le profil (le compte n'est créé qu'à l'étape 3)
+  function handleStep2Next(e: React.FormEvent) {
     e.preventDefault()
     if (!canStep2()) return
+    setError(null)
+    setStep(3)
+  }
+
+  // Étape 3 → crée le compte AVEC le branding, puis connecte.
+  // (Création repoussée ici : tant que l'onboarding n'est pas validé,
+  //  aucun compte n'existe — un signup abandonné ne laisse rien derrière.)
+  async function handleSaveBranding(e: React.FormEvent) {
+    e.preventDefault()
     setLoading(true)
     setError(null)
 
@@ -121,60 +130,33 @@ export function SignupForm() {
         marketingConsent: acceptMarketing,
         cguAccepted: acceptCgu,
         privacyAccepted: acceptPrivacy,
+        brandColorPrimary,
+        brandColorAccent,
+        brandFont,
+        brandIcon: brandIcon.trim() || null,
       }),
     })
-
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error ?? 'Une erreur est survenue. Reessayez.')
+      setLoading(false)
+      const msg = data.error ?? 'Une erreur est survenue. Réessayez.'
+      // Email déjà utilisé → on renvoie à l'étape 1 corriger l'email
+      if (/déjà|existe|already/i.test(msg)) { setError(msg); setStep(1); return }
+      setError(msg)
+      return
+    }
+
+    const supabase = createClient()
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+    if (signInError) {
+      setError('Compte créé. Connectez-vous manuellement.')
       setLoading(false)
       return
     }
 
     if (referralCode.trim()) {
       toast.success('Code de parrainage appliqué ! +7 jours offerts (21j d\'essai total)')
-    }
-
-    const supabase = createClient()
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-
-    if (signInError) {
-      setError('Compte cree. Connectez-vous manuellement.')
-      setLoading(false)
-      return
-    }
-
-    setLoading(false)
-    setStep(3)
-  }
-
-  // Étape 3 → sauvegarde le branding
-  async function handleSaveBranding(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { setError('Session expirée. Reconnectez-vous.'); setLoading(false); return }
-
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          brand_color_primary: brandColorPrimary,
-          brand_color_accent: brandColorAccent,
-          brand_font: brandFont,
-          brand_icon: brandIcon.trim() || null,
-        })
-        .eq('id', user.id)
-
-      if (updateError) { setError('Erreur lors de la sauvegarde.'); setLoading(false); return }
-    } catch {
-      setError('Erreur reseau.')
-      setLoading(false)
-      return
     }
 
     setLoading(false)
@@ -291,7 +273,7 @@ export function SignupForm() {
 
       {/* ─── Étape 2 : Profil ─── */}
       {step === 2 && (
-        <form onSubmit={handleCreateAccount} className="space-y-4">
+        <form onSubmit={handleStep2Next} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-[13px] font-medium text-[#0D1F3C] mb-2">Prénom</label>
@@ -530,7 +512,7 @@ export function SignupForm() {
             className="w-full py-3 text-white text-[14px] font-semibold rounded-xl transition-all disabled:opacity-40 disabled:cursor-not-allowed signup-brand-btn"
             style={{ backgroundColor: brandColorPrimary }}
           >
-            {loading ? <Spinner text="Sauvegarde..." /> : 'Continuer'}
+            {loading ? <Spinner text="Création du compte..." /> : 'Continuer'}
           </button>
         </form>
       )}

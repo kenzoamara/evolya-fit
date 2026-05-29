@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function POST(req: Request) {
   try {
-    const { fullName, email, password, coachingType, referralCode, marketingConsent, cguAccepted, privacyAccepted } = await req.json()
+    const { fullName, email, password, coachingType, referralCode, marketingConsent, cguAccepted, privacyAccepted, brandColorPrimary, brandColorAccent, brandFont, brandIcon } = await req.json()
 
     if (!fullName || !email || !password || !coachingType) {
       return NextResponse.json({ error: 'Tous les champs sont requis.' }, { status: 400 })
@@ -54,6 +54,10 @@ export async function POST(req: Request) {
         marketing_consent_at: marketingConsent === true ? consentAt : null,
         cgu_accepted_at: cguAccepted === true ? consentAt : null,
         privacy_accepted_at: privacyAccepted === true ? consentAt : null,
+        ...(brandColorPrimary ? { brand_color_primary: brandColorPrimary } : {}),
+        ...(brandColorAccent ? { brand_color_accent: brandColorAccent } : {}),
+        ...(brandFont ? { brand_font: brandFont } : {}),
+        ...(brandIcon ? { brand_icon: brandIcon } : {}),
       } as never)
       .eq('id', user.id)
 

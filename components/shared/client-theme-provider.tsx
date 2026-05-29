@@ -16,7 +16,13 @@ export function ClientThemeProvider({ children, brand, font }: Props) {
   return (
     <div style={{ fontFamily, minHeight: '100vh' }}>
       <style dangerouslySetInnerHTML={{
-        __html: `:root { --brand: ${brand}; --brand-bg: color-mix(in srgb, ${brand} 12%, white); --brand-dark: color-mix(in srgb, ${brand} 80%, black); }`,
+        __html: `:root {
+          --brand: ${brand};
+          --brand-bg: color-mix(in srgb, ${brand} 12%, white);
+          --brand-dark: color-mix(in srgb, ${brand} 80%, black);
+          --brand-subtle: color-mix(in srgb, ${brand} 8%, white);
+          --brand-border: color-mix(in srgb, ${brand} 22%, white);
+        }`,
       }} />
       {children}
     </div>

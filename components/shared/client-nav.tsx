@@ -114,10 +114,10 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                       className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-colors ${
                         active ? 'font-semibold' : 'text-[#64748B] hover:text-[#0D1F3C] hover:bg-[#F8FAFB]'
                       }`}
-                      style={active ? { color: item.color, backgroundColor: item.bg } : {}}
+                      style={active ? { color: 'var(--brand)', backgroundColor: 'var(--brand-bg)' } : {}}
                     >
                       {active && (
-                        <div className="absolute left-0 w-0.5 h-4 rounded-r-full" style={{ backgroundColor: item.color, marginLeft: '-8px' }} />
+                        <div className="absolute left-0 w-0.5 h-4 rounded-r-full" style={{ backgroundColor: 'var(--brand)', marginLeft: '-8px' }} />
                       )}
                       <span className="relative text-[15px] leading-none shrink-0">
                         {item.emoji}
@@ -184,11 +184,11 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                 key={item.href}
                 href={item.href}
                 className="flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors min-h-[44px]"
-                style={{ color: active ? item.color : '#94A3B8' }}
+                style={{ color: active ? 'var(--brand)' : '#94A3B8' }}
               >
                 <span
                   className="text-[20px] leading-none flex items-center justify-center w-9 h-9 rounded-xl transition-all"
-                  style={active ? { backgroundColor: item.bg, transform: 'scale(1.08)' } : {}}
+                  style={active ? { backgroundColor: 'var(--brand-bg)', transform: 'scale(1.08)' } : {}}
                 >
                   {item.emoji}
                 </span>
@@ -263,14 +263,14 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                           onClick={() => setSheetOpen(false)}
                           className="flex flex-col items-center gap-1.5 py-3 px-2 rounded-2xl transition-all active:scale-95"
                           style={{
-                            backgroundColor: active ? item.bg : '#F8FAFB',
-                            border: active ? `1.5px solid ${item.color}22` : '1.5px solid transparent',
+                            backgroundColor: active ? 'var(--brand-bg)' : '#F8FAFB',
+                            border: active ? '1.5px solid var(--brand-border)' : '1.5px solid transparent',
                           }}
                         >
                           <span className="text-[24px] leading-none">{item.emoji}</span>
                           <span
                             className="text-[11px] font-medium text-center leading-tight"
-                            style={{ color: active ? item.color : '#64748B' }}
+                            style={{ color: active ? 'var(--brand)' : '#64748B' }}
                           >
                             {item.label}
                           </span>

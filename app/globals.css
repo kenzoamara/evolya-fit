@@ -24,12 +24,36 @@ nav {
 
 @layer base {
   :root {
-    /* ── Coach brand (overridden per-coach via layout <style> tag) ── */
-    --brand:      #4E9B6F;
-    --brand-bg:   color-mix(in srgb, var(--brand) 12%, white);
-    --brand-dark: color-mix(in srgb, var(--brand) 80%, black);
+    /* ════════════════════════════════════════════════════════════
+       COUCHE 1 — MARQUE DU COACH (personnalisable)
+       Surchargée par coach via le <style> du ClientThemeProvider.
+       Usage : tout ce qui est interactif et "à moi" (CTA, liens,
+       état actif, badges actifs, accent).
+       ════════════════════════════════════════════════════════════ */
+    --brand:        #4E9B6F;
+    --brand-bg:     color-mix(in srgb, var(--brand) 12%, white);
+    --brand-dark:   color-mix(in srgb, var(--brand) 80%, black);
+    --brand-subtle: color-mix(in srgb, var(--brand) 8%, white);
+    --brand-border: color-mix(in srgb, var(--brand) 22%, white);
 
-    /* ── Evolya Brand Tokens ── */
+    /* ════════════════════════════════════════════════════════════
+       COUCHE 2 — SÉMANTIQUE (fixe, jamais personnalisable)
+       Ces couleurs portent un SENS. Elles doivent rester constantes
+       pour tous les coachs et tous les clients.
+       ════════════════════════════════════════════════════════════ */
+    --success:      #16A34A;
+    --success-bg:   #F0FDF4;
+    --warning:      #D4A853;
+    --warning-bg:   #FFFBEB;
+    --danger:       #DC2626;
+    --danger-bg:    #FEF2F2;
+    --info:         #3B82F6;
+    --info-bg:      #EFF6FF;
+
+    /* ════════════════════════════════════════════════════════════
+       COUCHE 3 — NEUTRES & STRUCTURE (fixe)
+       Fonds, cartes, bordures, textes. La charpente de l'interface.
+       ════════════════════════════════════════════════════════════ */
     --evolya-navy:        #0D1F3C;
     --evolya-navy-mid:    #162847;
     --evolya-green:       #4E9B6F;

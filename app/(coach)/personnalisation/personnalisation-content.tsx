@@ -1,12 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Palette, Check, Sun, Moon, Monitor, RotateCcw } from 'lucide-react'
+import { Palette, Check, Sun, Moon, Monitor, RotateCcw, Upload, X } from 'lucide-react'
 import { PageHeader } from '@/components/coach/page-header'
+import { PlanGate } from '@/components/ui/plan-gate'
 import type { Profile } from '@/types/database'
+import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
 
 type ThemeMode = 'light' | 'dark' | 'auto'
 
@@ -16,7 +18,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; sub: string; Icon: React
   { value: 'auto',   label: 'Automatique', sub: 'Suit les préférences du système', Icon: Monitor },
 ]
 
-type Props = { profile: Profile }
+type Props = { profile: Profile; userPlan: string }
 
 const COLOR_SWATCHES = [
   '#4E9B6F', '#3B82F6', '#8B5CF6', '#EC4899', '#EF4444',
@@ -30,18 +32,50 @@ const FONT_OPTIONS = [
   { value: 'Raleway',    label: 'Raleway',    sample: 'Aa' },
 ]
 
-export function PersonnalisationContent({ profile }: Props) {
+export function PersonnalisationContent({ profile, userPlan }: Props) {
   const router = useRouter()
+  const themeLimit = getPlanLimits(userPlan).themes
+  const visibleSwatches = isUnlimited(themeLimit) ? COLOR_SWATCHES : COLOR_SWATCHES.slice(0, themeLimit)
   const [primaryColor, setPrimaryColor] = useState(profile.brand_color_primary ?? '#4E9B6F')
   const [accentColor, setAccentColor] = useState(profile.brand_color_accent ?? '#0D1F3C')
   const [font, setFont] = useState(profile.brand_font ?? 'Inter')
   const [icon, setIcon] = useState(profile.brand_icon ?? '')
   const [themeMode, setThemeMode] = useState<ThemeMode>((profile.theme_mode as ThemeMode) ?? 'light')
   const [saving, setSaving] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const initials = (profile.full_name ?? 'C')
     .split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
+  const isPhotoUrl = icon.startsWith('http')
   const previewIcon = icon || initials
+
+  async function handlePhotoUpload(file: File) {
+    if (!file.type.startsWith('image/')) { toast.error('Fichier non supporté. Utilisez une image (JPG, PNG, WebP).'); return }
+    if (file.size > 3 * 1024 * 1024) { toast.error('Taille max : 3 Mo.'); return }
+    setUploadingPhoto(true)
+    const supabase = createClient()
+    const ext = file.name.split('.').pop() ?? 'jpg'
+    const path = `${profile.id}/avatar.${ext}`
+    const { error: uploadError } = await supabase.storage
+      .from('coach-avatars')
+      .upload(path, file, { upsert: true, contentType: file.type })
+    if (uploadError) {
+      toast.error("Erreur lors de l'upload. Vérifiez que le bucket 'coach-avatars' existe dans Supabase Storage.")
+      setUploadingPhoto(false)
+      return
+    }
+    const { data } = supabase.storage.from('coach-avatars').getPublicUrl(path)
+    // Ajoute un cache-bust pour forcer le rechargement de l'image
+    const publicUrl = `${data.publicUrl}?t=${Date.now()}`
+    setIcon(publicUrl)
+    setUploadingPhoto(false)
+    toast.success('Photo chargée — cliquez sur Sauvegarder pour confirmer.')
+  }
+
+  async function handleRemovePhoto() {
+    setIcon('')
+  }
 
   async function handleSave() {
     setSaving(true)
@@ -121,21 +155,33 @@ export function PersonnalisationContent({ profile }: Props) {
           <div className="bg-white rounded-xl border border-[#F1F5F9] p-4">
             <p className="text-[12px] text-[#94A3B8] uppercase tracking-wide font-medium mb-3">Aperçu</p>
             <div className="flex items-center gap-3 p-3 bg-[#F8FAFB] rounded-lg">
-              <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold text-white shrink-0"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {previewIcon}
-              </div>
+              {isPhotoUrl ? (
+                <img
+                  src={icon}
+                  alt="Photo de profil"
+                  className="w-9 h-9 rounded-xl object-cover shrink-0"
+                />
+              ) : (
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold text-white shrink-0"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {previewIcon}
+                </div>
+              )}
               <div>
                 <p className="text-[13px] font-semibold text-[#0D1F3C]" style={{ fontFamily: font }}>
                   {profile.full_name ?? 'Mon nom'}
                 </p>
                 <p className="text-[11px] text-[#94A3B8]">{profile.coaching_type ?? 'Coach'}</p>
               </div>
-              <div className="ml-auto flex gap-1.5">
-                <div className="w-5 h-5 rounded-md" style={{ backgroundColor: primaryColor }} />
-                <div className="w-5 h-5 rounded-md" style={{ backgroundColor: accentColor }} />
+              <div className="ml-auto flex items-center gap-2">
+                <button
+                  className="px-3 py-1.5 rounded-lg text-[11px] font-semibold text-white"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Bouton
+                </button>
               </div>
             </div>
           </div>
@@ -180,11 +226,19 @@ export function PersonnalisationContent({ profile }: Props) {
             </div>
           </div>
 
-          {/* Couleur principale */}
+          {/* Couleur de marque */}
           <div className="bg-white rounded-xl border border-[#F1F5F9] p-4 space-y-3">
-            <p className="text-[13px] font-semibold text-[#0D1F3C]">Couleur principale</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[13px] font-semibold text-[#0D1F3C]">Couleur de marque</p>
+                <p className="text-[12px] text-[#94A3B8] mt-0.5">Applique votre couleur aux boutons, liens et éléments actifs de l&apos;espace client.</p>
+              </div>
+              {!isUnlimited(themeLimit) && (
+                <span className="text-[11px] text-[#94A3B8] shrink-0">{themeLimit} couleurs</span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
-              {COLOR_SWATCHES.map(c => (
+              {visibleSwatches.map(c => (
                 <button
                   key={c}
                   onClick={() => setPrimaryColor(c)}
@@ -197,41 +251,15 @@ export function PersonnalisationContent({ profile }: Props) {
                   {primaryColor === c && <Check size={12} className="text-white" strokeWidth={3} />}
                 </button>
               ))}
+              {!isUnlimited(themeLimit) && COLOR_SWATCHES.slice(themeLimit).map(c => (
+                <div key={c} className="w-8 h-8 rounded-lg border border-dashed border-[#CBD5E1] flex items-center justify-center opacity-40 cursor-not-allowed" style={{ backgroundColor: c }} title="Disponible sur un plan superieur" />
+              ))}
               <label className="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center cursor-pointer hover:border-brand transition-colors" title="Couleur personnalisée">
                 <Palette size={14} className="text-[#94A3B8]" />
                 <input
                   type="color"
                   value={primaryColor}
                   onChange={(e) => setPrimaryColor(e.target.value)}
-                  className="sr-only"
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* Couleur secondaire */}
-          <div className="bg-white rounded-xl border border-[#F1F5F9] p-4 space-y-3">
-            <p className="text-[13px] font-semibold text-[#0D1F3C]">Couleur secondaire</p>
-            <div className="flex flex-wrap gap-2">
-              {COLOR_SWATCHES.map(c => (
-                <button
-                  key={c}
-                  onClick={() => setAccentColor(c)}
-                  className="w-8 h-8 rounded-lg border-2 flex items-center justify-center transition-transform hover:scale-110"
-                  style={{
-                    backgroundColor: c,
-                    borderColor: accentColor === c ? '#0D1F3C' : 'transparent',
-                  }}
-                >
-                  {accentColor === c && <Check size={12} className="text-white" strokeWidth={3} />}
-                </button>
-              ))}
-              <label className="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center cursor-pointer hover:border-brand transition-colors" title="Couleur personnalisée">
-                <Palette size={14} className="text-[#94A3B8]" />
-                <input
-                  type="color"
-                  value={accentColor}
-                  onChange={(e) => setAccentColor(e.target.value)}
                   className="sr-only"
                 />
               </label>
@@ -259,37 +287,68 @@ export function PersonnalisationContent({ profile }: Props) {
             </div>
           </div>
 
-          {/* Icône */}
+          {/* Photo de profil */}
+          <PlanGate featureKey="photo_profil" userPlan={userPlan}>
           <div className="bg-white rounded-xl border border-[#F1F5F9] p-4 space-y-3">
             <div>
-              <p className="text-[13px] font-semibold text-[#0D1F3C]">Icône (optionnel)</p>
-              <p className="text-[12px] text-[#94A3B8] mt-0.5">Un emoji ou 1-2 caractères. Laisser vide = initiales automatiques.</p>
+              <p className="text-[13px] font-semibold text-[#0D1F3C]">Photo de profil</p>
+              <p className="text-[12px] text-[#94A3B8] mt-0.5">Apparaît dans votre espace coach. JPG, PNG ou WebP · max 3 Mo.</p>
             </div>
-            <div className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center text-[16px] font-bold text-white shrink-0"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {previewIcon}
+            <div className="flex items-center gap-4">
+              {/* Vignette actuelle */}
+              <div className="relative shrink-0">
+                {isPhotoUrl ? (
+                  <img
+                    src={icon}
+                    alt="Photo de profil"
+                    className="w-16 h-16 rounded-xl object-cover border border-[#E2E8F0]"
+                  />
+                ) : (
+                  <div
+                    className="w-16 h-16 rounded-xl flex items-center justify-center text-[20px] font-bold text-white"
+                    style={{ backgroundColor: primaryColor }}
+                  >
+                    {initials}
+                  </div>
+                )}
+                {isPhotoUrl && (
+                  <button
+                    onClick={handleRemovePhoto}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-[#E2E8F0] rounded-full flex items-center justify-center shadow-sm hover:border-red-300 hover:text-red-500 transition-colors"
+                    title="Supprimer la photo"
+                  >
+                    <X size={10} />
+                  </button>
+                )}
               </div>
+
+              {/* Zone de clic */}
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                disabled={uploadingPhoto}
+                className="flex-1 flex flex-col items-center justify-center gap-1.5 py-4 border-2 border-dashed border-[#E2E8F0] rounded-xl hover:border-brand hover:bg-[#F8FAFB] transition-colors disabled:opacity-60 cursor-pointer"
+              >
+                <Upload size={18} className="text-[#94A3B8]" />
+                <span className="text-[12px] font-medium text-[#64748B]">
+                  {uploadingPhoto ? 'Chargement…' : isPhotoUrl ? 'Changer la photo' : 'Choisir une photo'}
+                </span>
+              </button>
+
               <input
-                type="text"
-                value={icon}
-                onChange={(e) => setIcon(e.target.value.slice(0, 2))}
-                placeholder={initials}
-                maxLength={2}
-                className="w-24 px-3 py-2 bg-white border border-[#E2E8F0] rounded-lg text-[13px] text-center text-[#0D1F3C] focus:outline-none focus:border-brand transition-colors"
+                ref={photoInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handlePhotoUpload(file)
+                  e.target.value = ''
+                }}
               />
-              {icon && (
-                <button
-                  onClick={() => setIcon('')}
-                  className="text-[12px] text-[#94A3B8] hover:text-[#64748B]"
-                >
-                  Réinitialiser
-                </button>
-              )}
             </div>
           </div>
+          </PlanGate>
 
         </div>
       </div>

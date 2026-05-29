@@ -14,15 +14,16 @@ workflows:
         script: npx cap sync android
       - name: Setup keystore
         script: |
-          # CM_KEYSTORE est le nom de la variable File uploadee dans Codemagic
-          # Codemagic la met automatiquement au chemin du fichier temporaire
+          # CM_KEYSTORE contient le keystore encode en base64
+          # On le decode dans un fichier temporaire
           if [ -n "$CM_KEYSTORE" ]; then
-            export ANDROID_KEYSTORE_PATH="$CM_KEYSTORE"
+            echo "$CM_KEYSTORE" | base64 --decode > /tmp/evolya-release.jks
+            export ANDROID_KEYSTORE_PATH="/tmp/evolya-release.jks"
           else
             echo "ERREUR: variable CM_KEYSTORE manquante dans Codemagic Environment variables"
             exit 1
           fi
-          echo "Keystore path: $ANDROID_KEYSTORE_PATH"
+          echo "Keystore decode: $ANDROID_KEYSTORE_PATH"
           echo "Key alias: $ANDROID_KEY_ALIAS"
       - name: Build Android AAB (Play Store)
         script: |

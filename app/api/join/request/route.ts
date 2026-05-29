@@ -10,8 +10,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Prénom et nom requis.' }, { status: 400 })
     }
 
+    const resolvedEmail = email?.trim().toLowerCase() ?? ''
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resolvedEmail)) {
+      return NextResponse.json({ error: 'Un email valide est requis pour recevoir ton accès.' }, { status: 400 })
+    }
+
     const fullName = `${firstName.trim()} ${lastName.trim()}`
-    const resolvedEmail = email?.trim() || `client_${crypto.randomUUID().slice(0, 8)}@evolya.internal`
 
     const admin = createAdminClient()
 
@@ -28,20 +32,18 @@ export async function POST(req: Request) {
     }
 
     // Dédupe : éviter une 2e demande avec le même email pour ce coach
-    if (email?.trim()) {
-      const { data: existing } = await admin
-        .from('clients')
-        .select('id, status')
-        .eq('coach_id', coachId)
-        .eq('email', resolvedEmail)
-        .maybeSingle()
+    const { data: existing } = await admin
+      .from('clients')
+      .select('id, status')
+      .eq('coach_id', coachId)
+      .eq('email', resolvedEmail)
+      .maybeSingle()
 
-      if (existing) {
-        if (existing.status === 'pending') {
-          return NextResponse.json({ success: true, alreadyPending: true })
-        }
-        return NextResponse.json({ error: 'Tu fais déjà partie des membres de ce coach.' }, { status: 409 })
+    if (existing) {
+      if (existing.status === 'pending') {
+        return NextResponse.json({ success: true, alreadyPending: true })
       }
+      return NextResponse.json({ error: 'Tu fais déjà partie des membres de ce coach.' }, { status: 409 })
     }
 
     // Créer la demande (status pending) avec son magic token permanent

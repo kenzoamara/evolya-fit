@@ -14,9 +14,11 @@ export function JoinForm({ coachId, coachName, brand }: Props) {
   const [done, setDone] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!firstName.trim() || !lastName.trim()) return
+    if (!firstName.trim() || !lastName.trim() || !emailValid) return
     setLoading(true)
     setError(null)
     try {
@@ -64,10 +66,9 @@ export function JoinForm({ coachId, coachName, brand }: Props) {
         </div>
       </div>
       <div>
-        <label className="block text-[12px] font-medium text-[#0D1F3C] mb-1.5">
-          Email <span className="text-[11px] font-normal text-[#94A3B8]">(recommandé)</span>
-        </label>
-        <input type="email" value={email} onChange={e => setEmail(e.target.value)} maxLength={254} placeholder="marie@exemple.com" className={inputCls} />
+        <label className="block text-[12px] font-medium text-[#0D1F3C] mb-1.5">Email</label>
+        <input type="email" value={email} onChange={e => setEmail(e.target.value)} required maxLength={254} placeholder="marie@exemple.com" className={inputCls} />
+        <p className="text-[11px] text-[#94A3B8] mt-1.5">Tu recevras ton accès par email dès que ta demande sera validée.</p>
       </div>
 
       {error && (
@@ -78,7 +79,7 @@ export function JoinForm({ coachId, coachName, brand }: Props) {
 
       <button
         type="submit"
-        disabled={loading || !firstName.trim() || !lastName.trim()}
+        disabled={loading || !firstName.trim() || !lastName.trim() || !emailValid}
         className="w-full py-3 text-white text-[14px] font-semibold rounded-xl transition-all disabled:opacity-40"
         style={{ background: brand }}
       >

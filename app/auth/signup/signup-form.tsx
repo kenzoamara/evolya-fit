@@ -6,11 +6,10 @@ import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 
 const COACHING_TYPES = [
-  'Coach fitness', 'Coach musculation', 'Coach perte de poids', 'Coach bien-etre',
-  'Preparateur physique', 'Coach running', 'Coach sport specifique', 'Coach yoga',
-  'Coach pilates', 'Coach mobilite', 'Coach reeducation', 'Coach senior',
-  'Coach handicap', 'Coach nutrition sportive', 'Coach transformation physique',
-  'Coach mental sportif', 'Coach en ligne', 'Coach a domicile', 'Coach en salle', 'Autres',
+  { value: 'Coach musculation',     emoji: '🦾' },
+  { value: 'Coach perte de poids',  emoji: '🔥' },
+  { value: 'Coach remise en forme', emoji: '💪' },
+  { value: 'Préparateur physique',  emoji: '⚡' },
 ]
 
 const COLOR_PRESETS = [
@@ -46,6 +45,8 @@ export function SignupForm() {
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [coachingType, setCoachingType] = useState('')
+  const [customType, setCustomType] = useState('')
+  const [isCustomType, setIsCustomType] = useState(false)
   const [referralCode, setReferralCode] = useState(searchParams.get('ref') ?? '')
   const [acceptCgu, setAcceptCgu] = useState(false)
   const [acceptPrivacy, setAcceptPrivacy] = useState(false)
@@ -293,13 +294,51 @@ export function SignupForm() {
 
           <div>
             <label className="block text-[13px] font-medium text-[#0D1F3C] mb-2">Type de coaching</label>
-            <select
-              value={coachingType} onChange={e => setCoachingType(e.target.value)} required
-              className={`${inputCls} appearance-none`}
-            >
-              <option value="" disabled>Selectionner...</option>
-              {COACHING_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
-            </select>
+            <div className="grid grid-cols-2 gap-2">
+              {COACHING_TYPES.map(t => {
+                const selected = !isCustomType && coachingType === t.value
+                return (
+                  <button
+                    key={t.value}
+                    type="button"
+                    onClick={() => { setIsCustomType(false); setCoachingType(t.value) }}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-[13px] font-medium text-left transition-all"
+                    style={{
+                      borderColor: selected ? '#4E9B6F' : '#E2E8F0',
+                      backgroundColor: selected ? '#EEF9F3' : '#FFFFFF',
+                      color: selected ? '#3d8058' : '#0D1F3C',
+                    }}
+                  >
+                    <span className="text-[16px] leading-none">{t.emoji}</span>
+                    <span className="leading-tight">{t.value.replace('Coach ', '')}</span>
+                  </button>
+                )
+              })}
+              <button
+                type="button"
+                onClick={() => { setIsCustomType(true); setCoachingType(customType) }}
+                className="col-span-2 flex items-center gap-2 px-3 py-2.5 rounded-xl border-2 text-[13px] font-medium text-left transition-all"
+                style={{
+                  borderColor: isCustomType ? '#4E9B6F' : '#E2E8F0',
+                  backgroundColor: isCustomType ? '#EEF9F3' : '#FFFFFF',
+                  color: isCustomType ? '#3d8058' : '#0D1F3C',
+                }}
+              >
+                <span className="text-[16px] leading-none">✏️</span>
+                <span>Autre — préciser</span>
+              </button>
+            </div>
+            {isCustomType && (
+              <input
+                type="text"
+                value={customType}
+                onChange={e => { setCustomType(e.target.value); setCoachingType(e.target.value) }}
+                maxLength={40}
+                placeholder="Ex : Coach yoga, running, sport santé…"
+                className={`${inputCls} mt-2`}
+                autoFocus
+              />
+            )}
           </div>
 
           <div>

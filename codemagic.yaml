@@ -18,23 +18,21 @@ workflows:
         script: npx cap sync android
       - name: Setup keystore
         script: |
-          # Si keystore uploade dans Codemagic, CM_KEYSTORE_PATH est defini automatiquement
-          # Sinon on utilise le fichier dans le repo
-          if [ -n "$CM_KEYSTORE_PATH" ]; then
-            export ANDROID_KEYSTORE_PATH="$CM_KEYSTORE_PATH"
+          # CM_KEYSTORE est le nom de la variable File uploadee dans Codemagic
+          # Codemagic la met automatiquement au chemin du fichier temporaire
+          if [ -n "$CM_KEYSTORE" ]; then
+            export ANDROID_KEYSTORE_PATH="$CM_KEYSTORE"
           else
-            export ANDROID_KEYSTORE_PATH="$(pwd)/evolya-release.jks"
+            echo "ERREUR: variable CM_KEYSTORE manquante dans Codemagic Environment variables"
+            exit 1
           fi
-          echo "Using keystore: $ANDROID_KEYSTORE_PATH"
+          echo "Keystore path: $ANDROID_KEYSTORE_PATH"
+          echo "Key alias: $ANDROID_KEY_ALIAS"
       - name: Build Android AAB (Play Store)
         script: |
           cd android
           chmod +x gradlew
-          ./gradlew bundleRelease \
-            -PANDROID_KEYSTORE_PATH="${ANDROID_KEYSTORE_PATH:-$(pwd)/../evolya-release.jks}" \
-            -PANDROID_KEYSTORE_PASSWORD="$ANDROID_KEYSTORE_PASSWORD" \
-            -PANDROID_KEY_ALIAS="${ANDROID_KEY_ALIAS:-evolya-key}" \
-            -PANDROID_KEY_PASSWORD="$ANDROID_KEY_PASSWORD"
+          ./gradlew bundleRelease
     artifacts:
       - android/app/build/outputs/bundle/release/*.aab
       - android/app/build/outputs/mapping/release/mapping.txt

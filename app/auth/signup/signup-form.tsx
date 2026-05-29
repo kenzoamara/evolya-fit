@@ -212,7 +212,8 @@ export function SignupForm() {
 
   async function handleFinish() {
     if (!planParam || planParam === 'free') {
-      router.push('/dashboard')
+      // Rechargement complet pour que le middleware lise le cookie de session
+      window.location.href = '/dashboard'
       return
     }
     setLoading(true)
@@ -224,7 +225,6 @@ export function SignupForm() {
       })
       const data = await res.json()
       if (data.url) { window.location.href = data.url; return }
-      // Erreur Stripe : afficher le message et rester sur la page
       toast.error(data.error ?? 'Impossible de créer la session de paiement. Réessayez.')
       setLoading(false)
     } catch {

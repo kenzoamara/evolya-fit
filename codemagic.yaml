@@ -41,12 +41,6 @@ workflows:
       node: 22.11.0
       xcode: latest
       cocoapods: default
-      vars:
-        # Ces variables doivent etre configurees dans Codemagic > App Settings > Environment variables
-        # APP_STORE_CONNECT_KEY_IDENTIFIER: <votre key ID>
-        # APP_STORE_CONNECT_ISSUER_ID: <votre issuer ID>
-        # APP_STORE_CONNECT_PRIVATE_KEY: <votre cle privee .p8>
-        # CERTIFICATE_PRIVATE_KEY: <votre cle privee de distribution>
     integrations:
       app_store_connect: codemagic_api_key
     scripts:

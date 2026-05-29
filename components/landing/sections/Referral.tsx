@@ -18,10 +18,10 @@ export function Referral() {
           </div>
         </div>
         <Link
-          href="/auth/signup"
+          href="#pricing"
           className="flex-shrink-0 inline-flex items-center gap-2 px-5 py-2.5 bg-[#4E9B6F] hover:bg-[#3d7d58] text-white text-sm font-semibold rounded-xl transition-colors whitespace-nowrap"
         >
-          Créer mon compte
+          Voir les offres
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
         </Link>
       </div>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
-import { ProgrammePreview } from './ProgrammePreview'
+import { InteractiveProgram } from './InteractiveProgram'
 
 export function DashboardPreview() {
   const [glowing, setGlowing] = useState(false)
@@ -61,9 +61,9 @@ export function DashboardPreview() {
             </div>
           </div>
 
-          {/* ── App body — Programme Preview ── */}
+          {/* ── App body — Interactive Program ── */}
           <div className="relative bg-white p-0" style={{ minHeight: 620 }}>
-            <ProgrammePreview />
+            <InteractiveProgram />
           </div>{/* fin app body */}
         </div>{/* fin mockup rounded-2xl */}
 

@@ -1,61 +1,8 @@
 ﻿'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
 import { InteractiveProgrammeDemo } from './InteractiveProgrammeDemo'
-
-type Task = { id: number; text: string; done: boolean }
-
-const INITIAL_TASKS: Task[] = [
-  { id: 1, text: 'Assigner un programme sportif à Membre C', done: true },
-  { id: 2, text: 'Assigner un programme nutritionnel à Membre D', done: false },
-  { id: 3, text: "Envoyer une suggestion au staff d'Evolya", done: false },
-]
-
-const NAV_MAIN = [
-  { label: 'Accueil',     key: 'accueil',    emoji: '🏠' },
-  { label: 'Mes membres', key: 'clients',    emoji: '👥' },
-  { label: 'Programmes',  key: 'programmes', emoji: '📋' },
-  { label: 'Exercices',   key: 'exercices',  emoji: '🏋️' },
-  { label: 'Séance',      key: 'seance',     emoji: '⚡' },
-  { label: 'Messagerie',  key: 'messagerie', emoji: '✉️' },
-]
-
-const NAV_PILOTAGE = [
-  { label: 'Business',     key: 'business',     emoji: '📈' },
-  { label: 'Statistiques', key: 'statistiques', emoji: '📊' },
-  { label: 'Calcul',       key: 'calcul',       emoji: '🧮' },
-]
-
-const NAV_REGLAGES = [
-  { label: 'Personnalisation', key: 'perso',   emoji: '🎨' },
-  { label: 'Nouveautés',       key: 'nouveau', emoji: '✨' },
-  { label: 'Paramètres',       key: 'params',  emoji: '⚙️' },
-]
-
-const ACTIONS = [
-  { bg: 'rgba(59,127,212,0.15)',  icon: '📋', label: 'Programme créé : Programme Musculation', time: '18 mai' },
-  { bg: 'rgba(245,158,11,0.15)',  icon: '⚡', label: '8 séances planifiées avec Membre A',    time: 'du 18 mai au 11 août' },
-  { bg: 'rgba(255,255,255,0.05)', icon: '👤', label: 'Profil consulté : Membre A',            time: 'Il y a 13h' },
-  { bg: 'rgba(255,255,255,0.05)', icon: '👤', label: 'Profil consulté : Membre B',            time: 'Il y a 17h' },
-]
-
-function NavItem({ label, emoji, active }: { label: string; emoji: string; active: boolean }) {
-  return (
-    <div
-      className="flex items-center gap-2.5 px-3 py-[7px] rounded-lg select-none"
-      style={{ backgroundColor: active ? 'rgba(78,155,111,0.12)' : 'transparent' }}
-    >
-      <span className="text-[13px] flex-shrink-0 leading-none">{emoji}</span>
-      <span
-        className="text-[12px] font-medium leading-none"
-        style={{ color: active ? '#6AB384' : 'rgba(255,255,255,0.55)' }}
-      >
-        {label}
-      </span>
-    </div>
-  )
-}
 
 export function DashboardPreview() {
   const [glowing, setGlowing] = useState(false)

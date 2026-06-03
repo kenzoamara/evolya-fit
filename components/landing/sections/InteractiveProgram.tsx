@@ -6,8 +6,8 @@ type ProgramItem = {
   id: string
   title: string
   category: string
-  reps?: string
-  weight?: string
+  reps?: string | null
+  weight?: string | null
 }
 
 const PROGRAM_TYPES = [
@@ -18,30 +18,30 @@ const PROGRAM_TYPES = [
 
 const INITIAL_PROGRAMS = {
   sport: [
-    { id: '1', title: 'Push - Poitrine/Epaules/Triceps', category: 'Composé', reps: '6 ex' },
+    { id: '1', title: 'Push - Poitrine/Epaules/Triceps', category: 'Composé', reps: '6 ex', weight: undefined },
     { id: '2', title: 'Développé couché à la barre', category: 'Poitrine', reps: '4 × 6', weight: '80 kg' },
     { id: '3', title: 'Développé incliné haltères', category: 'Poitrine', reps: '3 × 8', weight: '30 kg' },
     { id: '4', title: 'Dips', category: 'Triceps', reps: '3 × 8', weight: '—' },
   ],
   nutrition: [
-    { id: 'n1', title: 'Petit-déjeuner protéiné', category: 'Matin', reps: '40g protéines' },
-    { id: 'n2', title: 'Collation midis', category: 'Snack', reps: '250 kcal' },
-    { id: 'n3', title: 'Dîner équilibré', category: 'Soir', reps: '50g protéines' },
+    { id: 'n1', title: 'Petit-déjeuner protéiné', category: 'Matin', reps: '40g protéines', weight: undefined },
+    { id: 'n2', title: 'Collation midis', category: 'Snack', reps: '250 kcal', weight: undefined },
+    { id: 'n3', title: 'Dîner équilibré', category: 'Soir', reps: '50g protéines', weight: undefined },
   ],
   habits: [
-    { id: 'h1', title: 'Boire 2L d\'eau par jour', category: 'Hydratation' },
-    { id: 'h2', title: 'Dormir 8h minimum', category: 'Sommeil' },
-    { id: 'h3', title: 'Méditation 10min', category: 'Bien-être' },
+    { id: 'h1', title: 'Boire 2L d\'eau par jour', category: 'Hydratation', reps: undefined, weight: undefined },
+    { id: 'h2', title: 'Dormir 8h minimum', category: 'Sommeil', reps: undefined, weight: undefined },
+    { id: 'h3', title: 'Méditation 10min', category: 'Bien-être', reps: undefined, weight: undefined },
   ],
 }
 
 export function InteractiveProgram() {
-  const [selectedType, setSelectedType] = useState<'sport' | 'nutrition' | 'habits'>('sport')
+  const [selectedType, setSelectedType] = useState<string>('sport')
   const [programs, setPrograms] = useState(INITIAL_PROGRAMS)
   const [draggedId, setDraggedId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState('')
 
-  const currentPrograms = programs[selectedType]
+  const currentPrograms = programs[selectedType as keyof typeof programs]
   const typeLabel = PROGRAM_TYPES.find(t => t.id === selectedType)?.label
 
   const addItem = () => {
@@ -49,7 +49,7 @@ export function InteractiveProgram() {
     const newId = `${selectedType}-${Date.now()}`
     setPrograms(prev => ({
       ...prev,
-      [selectedType]: [...prev[selectedType], { id: newId, title: newItem, category: 'Nouveau' }]
+      [selectedType]: [...prev[selectedType as keyof typeof prev], { id: newId, title: newItem, category: 'Nouveau' }]
     }))
     setNewItem('')
   }
@@ -57,7 +57,7 @@ export function InteractiveProgram() {
   const deleteItem = (id: string) => {
     setPrograms(prev => ({
       ...prev,
-      [selectedType]: prev[selectedType].filter(item => item.id !== id)
+      [selectedType]: prev[selectedType as keyof typeof prev].filter(item => item.id !== id)
     }))
   }
 
@@ -80,7 +80,7 @@ export function InteractiveProgram() {
 
     setPrograms(prev => ({
       ...prev,
-      [selectedType]: items
+      [selectedType]: items as any
     }))
     setDraggedId(null)
   }
@@ -149,7 +149,7 @@ export function InteractiveProgram() {
               {PROGRAM_TYPES.map(type => (
                 <button
                   key={type.id}
-                  onClick={() => setSelectedType(type.id as any)}
+                  onClick={() => setSelectedType(type.id)}
                   className={`pb-3 px-2 text-sm font-medium border-b-2 transition-colors ${
                     selectedType === type.id
                       ? 'border-green-600 text-green-600'
@@ -176,7 +176,7 @@ export function InteractiveProgram() {
                 >
                   <div className="flex-1">
                     <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                    {item.reps && (
+                    {item.reps != null && (
                       <p className="text-xs text-gray-500 mt-1">
                         {item.reps}
                         {item.weight && ` · ${item.weight}`}

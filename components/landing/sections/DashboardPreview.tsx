@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
-import { InteractiveProgrammeDemo } from './InteractiveProgrammeDemo'
+import { ProgrammePreview } from './ProgrammePreview'
 
 export function DashboardPreview() {
   const [glowing, setGlowing] = useState(false)
@@ -61,16 +61,9 @@ export function DashboardPreview() {
             </div>
           </div>
 
-          {/* ── App body — Demo interactive ── */}
-          <div className="relative bg-[#F8FAFB] p-6" style={{ minHeight: 620 }}>
-            <InteractiveProgrammeDemo />
-
-            {/* Info message */}
-            <div className="mt-6 text-center">
-              <p className="text-[13px] text-gray-600">
-                Vous pouvez ajouter, supprimer et réorganiser les exercices dans cette démo interactive.
-              </p>
-            </div>
+          {/* ── App body — Programme Preview ── */}
+          <div className="relative bg-white p-0" style={{ minHeight: 620 }}>
+            <ProgrammePreview />
           </div>{/* fin app body */}
         </div>{/* fin mockup rounded-2xl */}
 

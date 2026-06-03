@@ -109,7 +109,7 @@ export function InteractiveProgrammeDemo() {
     if (!draggedId) return
 
     const updatedPhases = phases.map(p => {
-      const exos = [...p.exercises]
+      let exos = [...p.exercises]
       const draggedExo = exos.find(e => e.id === draggedId)
 
       if (!draggedExo) return p

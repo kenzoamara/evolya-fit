@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { Trash2, ChevronDown, ChevronRight, GripVertical, Plus, Search } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { Trash2, ChevronDown, ChevronRight, GripVertical, Plus, Search, Copy } from 'lucide-react'
 
 type Exercise = {
   id: string
@@ -76,11 +76,172 @@ const HABITS_ITEMS: LibraryExercise[] = [
   { id: 'h10', name: 'Hydratation matin', category: 'Hydratation' },
 ]
 
+function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercise, onUpdateExercise, onDrop, dragCounter }: {
+  day: Day
+  programmeType: 'sportif' | 'nutritionnel' | 'habitudes'
+  exercises: Exercise[]
+  onAddExercise: () => void
+  onDeleteExercise: (exId: string) => void
+  onUpdateExercise: (exId: string, field: keyof Exercise, val: any) => void
+  onDrop: (e: React.DragEvent) => void
+  dragCounter: React.MutableRefObject<number>
+}) {
+  const [open, setOpen] = useState(true)
+  const [isDragOver, setIsDragOver] = useState(false)
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current++
+    setIsDragOver(true)
+  }
+
+  const handleDragLeave = () => {
+    dragCounter.current--
+    if (dragCounter.current === 0) setIsDragOver(false)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'copy'
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    dragCounter.current = 0
+    setIsDragOver(false)
+    setOpen(true)
+    onDrop(e)
+  }
+
+  const sortedExercises = [...exercises].sort((a, b) => a.position - b.position)
+
+  return (
+    <div
+      className={`bg-white border rounded-xl overflow-hidden transition-all ${
+        isDragOver ? 'border-[#4E9B6F] ring-2 ring-[#4E9B6F]/20 shadow-sm' : 'border-[#E2E8F0]'
+      }`}
+      onDragEnter={handleDragEnter}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+    >
+      <div
+        className="flex items-center gap-3 px-4 py-3 cursor-pointer select-none hover:bg-[#FAFBFD]"
+        onClick={() => setOpen(!open)}
+      >
+        <span className="w-6 h-6 rounded-lg bg-[#EEF9F3] text-[#4E9B6F] text-[11px] font-bold flex items-center justify-center shrink-0">
+          {day.day_number}
+        </span>
+        <input
+          value={day.title}
+          onChange={e => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
+          className="flex-1 text-[13px] font-semibold text-[#0D1F3C] bg-transparent focus:outline-none"
+        />
+        <span className="text-[11px] text-[#94A3B8] shrink-0">
+          {exercises.length} {programmeType === 'sportif' ? 'ex.' : programmeType === 'nutritionnel' ? 'repas' : 'habit.'}
+        </span>
+        {isDragOver && <span className="text-[10px] text-[#4E9B6F] font-medium shrink-0">Déposer ici</span>}
+        {open ? <ChevronDown size={14} className="text-[#94A3B8]" /> : <ChevronRight size={14} className="text-[#94A3B8]" />}
+      </div>
+
+      {open && (
+        <div className="px-4 pb-4 border-t border-[#F1F5F9]">
+          <div className="pt-2">
+            {exercises.length === 0 ? (
+              <p className="text-[12px] text-[#CBD5E1] py-2 text-center">
+                Aucun {programmeType === 'sportif' ? 'exercice' : programmeType === 'nutritionnel' ? 'repas' : 'habitude'}
+              </p>
+            ) : (
+              <div className="space-y-0">
+                {sortedExercises.map((ex) => (
+                  <div key={ex.id} className="py-2 border-b border-[#F1F5F9] last:border-0">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            value={ex.exercise_name}
+                            onChange={e => onUpdateExercise(ex.id, 'exercise_name', e.target.value)}
+                            className="flex-1 text-[13px] font-medium text-[#0D1F3C] bg-transparent focus:outline-none placeholder:text-[#CBD5E1]"
+                          />
+                        </div>
+                      </div>
+
+                      {programmeType === 'sportif' && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <input
+                            type="number"
+                            min={1}
+                            value={ex.sets ?? ''}
+                            onChange={e => onUpdateExercise(ex.id, 'sets', e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="—"
+                            className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                          />
+                          <span className="text-[10px] text-[#CBD5E1]">×</span>
+                          <input
+                            type="number"
+                            min={1}
+                            value={ex.reps ?? ''}
+                            onChange={e => onUpdateExercise(ex.id, 'reps', e.target.value ? parseInt(e.target.value) : null)}
+                            placeholder="—"
+                            className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                          />
+                          <span className="text-[10px] text-[#CBD5E1]">reps</span>
+                          <input
+                            type="number"
+                            min={0}
+                            step={0.5}
+                            value={ex.weight_kg ?? ''}
+                            onChange={e => onUpdateExercise(ex.id, 'weight_kg', e.target.value ? parseFloat(e.target.value) : null)}
+                            placeholder="—"
+                            className="w-11 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                          />
+                          <span className="text-[10px] text-[#CBD5E1]">kg</span>
+                        </div>
+                      )}
+                      <button
+                        onClick={() => onDeleteExercise(ex.id)}
+                        className="p-1 text-[#CBD5E1] hover:text-red-400 transition-colors shrink-0"
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 mt-3 pt-2 border-t border-[#F1F5F9]">
+            <button
+              onClick={onAddExercise}
+              className="flex items-center gap-1.5 text-[12px] text-[#4E9B6F] font-medium hover:text-[#3d8058] transition-colors"
+            >
+              <Plus size={12} />
+              {programmeType === 'sportif' ? 'Ajouter' : programmeType === 'nutritionnel' ? 'Ajouter un repas' : 'Ajouter une habitude'}
+            </button>
+            <div className="flex-1" />
+            <button className="text-[11px] text-[#64748B] hover:text-[#4E9B6F] transition-colors flex items-center gap-1">
+              <Copy size={11} /> Copier
+            </button>
+            <button className="text-[11px] text-[#CBD5E1] hover:text-red-400 transition-colors flex items-center gap-1">
+              <Trash2 size={11} /> Supprimer
+            </button>
+            <button className="px-3 py-1.5 bg-[#4E9B6F] text-white rounded-lg text-[12px] font-medium hover:bg-[#3d8058] transition-colors">
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export function InteractiveProgram() {
   const [programmeType, setProgrammeType] = useState<'sportif' | 'nutritionnel' | 'habitudes'>('sportif')
   const [search, setSearch] = useState('')
+  const dragCounterRef = useRef(0)
 
-  // Initialize 7 days with sample data
   const initializeDays = (): Day[] => {
     return Array.from({ length: 7 }, (_, i) => ({
       id: `day-${i + 1}`,
@@ -95,43 +256,14 @@ export function InteractiveProgram() {
         'Étirement'
       ][i] || `Jour ${i + 1}`,
       exercises: i === 0 ? [
-        {
-          id: 'ex-1',
-          exercise_name: 'Développé couché barre',
-          sets: programmeType === 'sportif' ? 4 : null,
-          reps: programmeType === 'sportif' ? 6 : null,
-          weight_kg: programmeType === 'sportif' ? 80 : null,
-          position: 1,
-          rest_seconds: 90,
-          notes: null
-        },
-        {
-          id: 'ex-2',
-          exercise_name: 'Développé incliné haltères',
-          sets: programmeType === 'sportif' ? 3 : null,
-          reps: programmeType === 'sportif' ? 8 : null,
-          weight_kg: programmeType === 'sportif' ? 30 : null,
-          position: 2,
-          rest_seconds: 60,
-          notes: null
-        },
-        {
-          id: 'ex-3',
-          exercise_name: 'Dips',
-          sets: programmeType === 'sportif' ? 3 : null,
-          reps: programmeType === 'sportif' ? 8 : null,
-          weight_kg: null,
-          position: 3,
-          rest_seconds: 60,
-          notes: null
-        },
+        { id: 'ex-1', exercise_name: 'Développé couché barre', sets: 4, reps: 6, weight_kg: 80, position: 1, rest_seconds: 90, notes: null },
+        { id: 'ex-2', exercise_name: 'Développé incliné haltères', sets: 3, reps: 8, weight_kg: 30, position: 2, rest_seconds: 60, notes: null },
+        { id: 'ex-3', exercise_name: 'Dips', sets: 3, reps: 8, weight_kg: null, position: 3, rest_seconds: 60, notes: null },
       ] : []
     }))
   }
 
   const [days, setDays] = useState<Day[]>(initializeDays())
-  const [selectedDayIdx, setSelectedDayIdx] = useState(0)
-  const [draggedExId, setDraggedExId] = useState<string | null>(null)
 
   const getLibraryItems = (): LibraryExercise[] => {
     switch (programmeType) {
@@ -145,28 +277,20 @@ export function InteractiveProgram() {
     item.name.toLowerCase().includes(search.toLowerCase())
   )
 
-  const currentDay = days[selectedDayIdx]
-  const sortedExercises = [...currentDay.exercises].sort((a, b) => a.position - b.position)
-
   const handleDragStartLibrary = (e: React.DragEvent, libItem: LibraryExercise) => {
     const data = JSON.stringify(libItem)
     e.dataTransfer.setData('application/json', data)
     e.dataTransfer.effectAllowed = 'copy'
   }
 
-  const handleDragStartExercise = (e: React.DragEvent, exId: string) => {
-    setDraggedExId(exId)
-    e.dataTransfer.effectAllowed = 'move'
-  }
-
-  const handleDropDay = (e: React.DragEvent) => {
-    e.preventDefault()
-
-    // Try to drop from library
+  const handleDropToDay = (dayId: string) => (e: React.DragEvent) => {
     try {
       const data = e.dataTransfer.getData('application/json')
       if (data) {
         const libItem = JSON.parse(data) as LibraryExercise
+        const day = days.find(d => d.id === dayId)
+        if (!day) return
+
         const newEx: Exercise = {
           id: `ex-${Date.now()}`,
           exercise_name: libItem.name,
@@ -175,53 +299,45 @@ export function InteractiveProgram() {
           weight_kg: null,
           rest_seconds: 60,
           notes: null,
-          position: currentDay.exercises.length + 1,
+          position: day.exercises.length + 1,
         }
-        setDays(prev => prev.map((d, idx) =>
-          idx === selectedDayIdx
-            ? { ...d, exercises: [...d.exercises, newEx] }
-            : d
+
+        setDays(prev => prev.map(d =>
+          d.id === dayId ? { ...d, exercises: [...d.exercises, newEx] } : d
         ))
-        return
       }
     } catch {}
-
-    // Reorder within day
-    if (!draggedExId) return
-    const exIdx = currentDay.exercises.findIndex(ex => ex.id === draggedExId)
-    if (exIdx === -1) return
-
-    const newExercises = [...currentDay.exercises]
-    const [draggedEx] = newExercises.splice(exIdx, 1)
-    newExercises.splice(exIdx, 0, draggedEx)
-
-    setDays(prev => prev.map((d, idx) =>
-      idx === selectedDayIdx ? { ...d, exercises: newExercises } : d
-    ))
-    setDraggedExId(null)
   }
 
-  const deleteExercise = (exId: string) => {
-    setDays(prev => prev.map((d, idx) =>
-      idx === selectedDayIdx
+  const deleteExercise = (dayId: string, exId: string) => {
+    setDays(prev => prev.map(d =>
+      d.id === dayId
         ? { ...d, exercises: d.exercises.filter(ex => ex.id !== exId) }
         : d
     ))
   }
 
-  const updateExercise = (exId: string, field: keyof Exercise, val: any) => {
-    setDays(prev => prev.map((d, idx) =>
-      idx === selectedDayIdx
+  const updateExercise = (dayId: string, exId: string, field: keyof Exercise, val: any) => {
+    setDays(prev => prev.map(d =>
+      d.id === dayId
         ? { ...d, exercises: d.exercises.map(ex => ex.id === exId ? { ...ex, [field]: val } : ex) }
         : d
     ))
   }
 
+  const addExercise = (dayId: string) => {
+    setDays(prev => prev.map(d =>
+      d.id === dayId
+        ? { ...d, exercises: [...d.exercises, { id: `ex-${Date.now()}`, exercise_name: '', sets: 3, reps: 10, weight_kg: null, rest_seconds: 60, notes: null, position: d.exercises.length + 1 }] }
+        : d
+    ))
+  }
+
   return (
-    <div className="bg-white rounded-xl overflow-hidden border border-[#E2E8F0] flex flex-col h-screen">
-      {/* ── HEADER ── */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-[#E2E8F0] bg-[#FAFBFD]">
-        <div className="text-[14px] font-bold text-[#0D1F3C]">Evolya'Fit</div>
+    <div className="bg-white rounded-2xl overflow-hidden border border-[#E2E8F0] flex flex-col" style={{ height: '800px' }}>
+      {/* HEADER */}
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-[#E2E8F0] bg-[#FAFBFD] shrink-0">
+        <div className="text-[16px] font-bold text-[#0D1F3C]">Evolya'Fit</div>
         <div className="flex gap-2 ml-auto">
           <button
             onClick={() => { setProgrammeType('sportif'); setDays(initializeDays()) }}
@@ -257,8 +373,8 @@ export function InteractiveProgram() {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* ── LIBRARY ── */}
-        <div className="w-64 bg-[#F8FAFB] border-r border-[#E2E8F0] flex flex-col">
+        {/* LIBRARY */}
+        <div className="w-64 bg-[#F8FAFB] border-r border-[#E2E8F0] flex flex-col shrink-0">
           <div className="p-3 border-b border-[#E2E8F0] shrink-0">
             <div className="relative">
               <Search size={14} className="absolute left-2 top-2.5 text-[#94A3B8]" />
@@ -278,7 +394,7 @@ export function InteractiveProgram() {
                   key={item.id}
                   draggable
                   onDragStart={e => handleDragStartLibrary(e, item)}
-                  className="flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-[#EEF9F3] cursor-grab active:cursor-grabbing rounded transition-colors group"
+                  className="flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-[#EEF9F3] cursor-grab active:cursor-grabbing rounded transition-colors"
                 >
                   <GripVertical size={11} className="text-[#CBD5E1] shrink-0" />
                   <div className="flex-1 min-w-0">
@@ -291,85 +407,21 @@ export function InteractiveProgram() {
           </div>
         </div>
 
-        {/* ── MAIN CONTENT ── */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Days tabs */}
-          <div className="flex overflow-x-auto border-b border-[#E2E8F0] bg-[#FAFBFD] shrink-0">
-            {days.map((day, idx) => (
-              <button
-                key={day.id}
-                onClick={() => setSelectedDayIdx(idx)}
-                className={`px-4 py-3 text-[12px] font-semibold border-b-2 transition-colors shrink-0 ${
-                  idx === selectedDayIdx
-                    ? 'text-[#4E9B6F] border-[#4E9B6F]'
-                    : 'text-[#94A3B8] border-transparent hover:text-[#0D1F3C]'
-                }`}
-              >
-                Jour {day.day_number}
-              </button>
-            ))}
-          </div>
-
-          {/* Day content */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <div
-              className="bg-white border border-[#E2E8F0] rounded-lg overflow-hidden"
-              onDragOver={e => e.preventDefault()}
-              onDrop={handleDropDay}
-            >
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-[#F1F5F9] bg-[#FAFBFD]">
-                <span className="w-6 h-6 rounded-lg bg-[#EEF9F3] text-[#4E9B6F] text-[11px] font-bold flex items-center justify-center shrink-0">
-                  {currentDay.day_number}
-                </span>
-                <span className="flex-1 text-[13px] font-semibold text-[#0D1F3C]">{currentDay.title}</span>
-                <span className="text-[11px] text-[#94A3B8]">{sortedExercises.length} {programmeType === 'sportif' ? 'ex.' : 'élément'}</span>
-              </div>
-
-              <div className="p-4">
-                {sortedExercises.length === 0 ? (
-                  <p className="text-[12px] text-[#CBD5E1] text-center py-4">Glissez des éléments ici</p>
-                ) : (
-                  <div className="space-y-2">
-                    {sortedExercises.map((ex, idx) => (
-                      <div
-                        key={ex.id}
-                        draggable
-                        onDragStart={e => handleDragStartExercise(e, ex.id)}
-                        onDragOver={e => e.preventDefault()}
-                        className="p-3 bg-[#FAFBFD] border border-[#E2E8F0] rounded-lg cursor-move hover:border-[#4E9B6F] hover:bg-[#F0FFF8] transition-colors group"
-                      >
-                        <div className="flex items-center gap-2 mb-2">
-                          <GripVertical size={12} className="text-[#CBD5E1] opacity-0 group-hover:opacity-100" />
-                          <input
-                            value={ex.exercise_name}
-                            onChange={e => updateExercise(ex.id, 'exercise_name', e.target.value)}
-                            className="flex-1 text-[13px] font-medium text-[#0D1F3C] bg-transparent focus:outline-none"
-                          />
-                          <button
-                            onClick={() => deleteExercise(ex.id)}
-                            className="p-1 text-[#CBD5E1] hover:text-red-400"
-                          >
-                            <Trash2 size={12} />
-                          </button>
-                        </div>
-
-                        {programmeType === 'sportif' && (
-                          <div className="flex items-center gap-1 flex-wrap text-[11px]">
-                            <input type="number" min={1} value={ex.sets ?? ''} onChange={e => updateExercise(ex.id, 'sets', e.target.value ? parseInt(e.target.value) : null)} className="w-8 text-center border border-[#E2E8F0] rounded px-1 bg-white" />
-                            <span className="text-[#CBD5E1]">×</span>
-                            <input type="number" min={1} value={ex.reps ?? ''} onChange={e => updateExercise(ex.id, 'reps', e.target.value ? parseInt(e.target.value) : null)} className="w-8 text-center border border-[#E2E8F0] rounded px-1 bg-white" />
-                            <span className="text-[#CBD5E1]">reps ·</span>
-                            <input type="number" min={0} step={0.5} value={ex.weight_kg ?? ''} onChange={e => updateExercise(ex.id, 'weight_kg', e.target.value ? parseFloat(e.target.value) : null)} className="w-10 text-center border border-[#E2E8F0] rounded px-1 bg-white" />
-                            <span className="text-[#CBD5E1]">kg</span>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+        {/* DAYS */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          {days.map(day => (
+            <DayCard
+              key={day.id}
+              day={day}
+              programmeType={programmeType}
+              exercises={day.exercises}
+              onAddExercise={() => addExercise(day.id)}
+              onDeleteExercise={(exId) => deleteExercise(day.id, exId)}
+              onUpdateExercise={(exId, field, val) => updateExercise(day.id, exId, field, val)}
+              onDrop={handleDropToDay(day.id)}
+              dragCounter={dragCounterRef}
+            />
+          ))}
         </div>
       </div>
     </div>

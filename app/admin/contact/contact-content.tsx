@@ -52,7 +52,7 @@ export function ContactContent({ messages: initial }: { messages: Message[] }) {
   const displayed = filter === 'unread' ? messages.filter(m => !m.read) : messages
 
   return (
-    <div className="flex h-screen bg-[#F8FAFB]">
+    <div className="flex h-dvh bg-[#F8FAFB]">
 
       {/* Sidebar liste */}
       <div className="w-80 flex-shrink-0 bg-white border-r border-[#E5E7EB] flex flex-col">

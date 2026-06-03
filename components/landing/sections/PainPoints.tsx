@@ -1,4 +1,5 @@
 ﻿import Link from 'next/link'
+import { SectionTag } from '@/components/landing/section-tag'
 
 const POINTS = [
   {
@@ -66,7 +67,7 @@ export function PainPoints() {
       <div className="max-w-4xl mx-auto">
 
         <div className="text-center mb-12">
-          <p className="text-[11px] font-semibold tracking-[0.16em] uppercase text-[#94A3B8] mb-3">Ce qui bloque ta croissance</p>
+          <SectionTag>Ce qui bloque ta croissance</SectionTag>
           <h2 className="text-[26px] sm:text-[32px] font-bold text-[#0D1F3C] tracking-[-0.02em] leading-tight">
             Quand le système ne suit plus,<br className="hidden sm:block" /> c&apos;est ton temps qui disparaît.
           </h2>

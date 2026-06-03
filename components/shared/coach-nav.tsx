@@ -72,7 +72,7 @@ function DesktopSidebar({ profile, pathname, unreadMessages, newRoadmap, onLogou
   const daysLeft = profile.trial_ends_at ? getDaysUntil(profile.trial_ends_at) : 0
 
   return (
-    <aside className="hidden md:flex w-[220px] min-h-screen bg-[#0B1829] flex-col flex-shrink-0">
+    <aside className="hidden md:flex w-[220px] min-h-dvh bg-[#0B1829] flex-col flex-shrink-0">
       {/* Logo */}
       <div className="px-5 pt-6 pb-5">
         <Logo height={28} variant="light" />

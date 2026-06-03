@@ -5,6 +5,21 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { StatistiquesView } from './statistiques-view'
 
+export type BodyMeasurement = {
+  date: string
+  neck_cm: number | null
+  shoulders_cm: number | null
+  chest_cm: number | null
+  waist_cm: number | null
+  hips_cm: number | null
+  l_bicep_cm: number | null
+  r_bicep_cm: number | null
+  l_forearm_cm: number | null
+  r_forearm_cm: number | null
+  l_thigh_cm: number | null
+  r_thigh_cm: number | null
+}
+
 export default async function StatistiquesPage({
   params,
   searchParams,
@@ -38,12 +53,18 @@ export default async function StatistiquesPage({
     { data: checkins },
     { data: habitLogs },
     { data: nutritionLogs },
+    { data: bodyMeasurements },
   ] = await Promise.all([
     admin.from('weight_entries').select('date, weight_kg').eq('client_id', client.id).order('date', { ascending: true }).limit(52),
     admin.from('workout_logs').select('log_date, completed').eq('client_id', client.id).order('log_date', { ascending: false }).limit(60),
     admin.from('checkins').select('week_number, year, submitted_at, energy_score').eq('client_id', client.id).order('submitted_at', { ascending: false }).limit(16),
     admin.from('habit_logs').select('habit_id, date, completed').eq('client_id', client.id).gte('date', new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0]),
     admin.from('nutrition_logs').select('date, calories').eq('client_id', client.id).order('date', { ascending: false }).limit(30),
+    admin.from('body_measurements')
+      .select('date, neck_cm, shoulders_cm, chest_cm, waist_cm, hips_cm, l_bicep_cm, r_bicep_cm, l_forearm_cm, r_forearm_cm, l_thigh_cm, r_thigh_cm')
+      .eq('client_id', client.id)
+      .order('date', { ascending: false })
+      .limit(2),
   ])
 
   return (
@@ -55,6 +76,7 @@ export default async function StatistiquesPage({
       checkins={(checkins ?? []) as { week_number: number; year: number; submitted_at: string; energy_score: number | null }[]}
       habitLogs={(habitLogs ?? []) as { habit_id: string; date: string; completed: boolean }[]}
       nutritionLogs={(nutritionLogs ?? []) as { date: string; calories: number | null }[]}
+      bodyMeasurements={(bodyMeasurements ?? []) as BodyMeasurement[]}
     />
   )
 }

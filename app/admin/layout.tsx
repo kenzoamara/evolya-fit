@@ -31,13 +31,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   ])
 
   return (
-    <div className="flex min-h-screen bg-[#F1F5F9]">
+    <div className="flex min-h-dvh bg-[#F1F5F9]">
       <AdminNav
         adminName={profile.full_name ?? 'Admin'}
         openTickets={openTickets ?? 0}
         unreadContact={unreadContact ?? 0}
       />
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 md:overflow-hidden pt-[calc(3.5rem+env(safe-area-inset-top))] md:pt-0">
         {children}
       </div>
     </div>

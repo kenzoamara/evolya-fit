@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import {
-  LineChart, Line, BarChart, Bar,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
-} from 'recharts'
+import { planMrr } from '@/lib/stripe/plans'
+import { PLAN_LABELS } from '@/lib/plan-features'
+import { PointsChart } from '@/components/ui/points-chart'
+import { StatsCard } from '@/components/ui/stats-card-1'
 
 type Props = {
   totalCoaches: number
@@ -13,12 +13,16 @@ type Props = {
   mrr: number
   newCoaches: number
   openTickets: number
+  totalMembers: number
+  activeMembers: number
+  sessionsMonth: number
+  checkinsMonth: number
+  messagesMonth: number
+  workoutsMonth: number
   recentCoaches: { created_at: string; plan: string }[]
   recentActivity: { id: string; full_name: string | null; plan: string; created_at: string }[]
   recentTickets: { id: string; subject: string; created_at: string; profiles: { full_name: string | null } | null }[]
 }
-
-const MRR_MAP: Record<string, number> = { trial: 0, starter: 19, standard: 49 }
 
 function buildDailyData(coaches: { created_at: string; plan: string }[]) {
   const days: Record<string, { date: string; inscriptions: number; mrr: number }> = {}
@@ -34,7 +38,7 @@ function buildDailyData(coaches: { created_at: string; plan: string }[]) {
     const key = c.created_at.split('T')[0]
     if (days[key]) {
       days[key].inscriptions++
-      days[key].mrr += MRR_MAP[c.plan] ?? 0
+      days[key].mrr += planMrr(c.plan)
     }
   })
   return Object.values(days)
@@ -50,11 +54,12 @@ function formatTimeAgo(dateStr: string) {
 }
 
 function planLabel(plan: string) {
-  return plan === 'standard' ? 'Pro' : plan === 'starter' ? 'Starter' : 'Trial'
+  return PLAN_LABELS[plan] ?? plan
 }
 
 export function DashboardAdminContent({
   totalCoaches, activeCoaches, mrr, newCoaches, openTickets,
+  totalMembers, activeMembers, sessionsMonth, checkinsMonth, messagesMonth, workoutsMonth,
   recentCoaches, recentActivity, recentTickets,
 }: Props) {
   const [liveCoaches, setLiveCoaches] = useState(activeCoaches)
@@ -97,7 +102,7 @@ export function DashboardAdminContent({
       .eq('role', 'coach')
     const active = (coaches ?? []).filter(c => !c.suspended && c.plan_status === 'active')
     setLiveCoaches(active.length)
-    setLiveMrr(active.reduce((acc, c) => acc + (MRR_MAP[c.plan] ?? 0), 0))
+    setLiveMrr(active.reduce((acc, c) => acc + planMrr(c.plan), 0))
     const { count } = await supabase
       .from('support_tickets')
       .select('id', { count: 'exact', head: true })
@@ -204,9 +209,29 @@ export function DashboardAdminContent({
         <p className="text-sm text-[#64748B] mt-0.5">Vue temps réel — Supabase Realtime</p>
       </div>
 
-      {/* KPIs */}
+      {/* KPIs business (coaches) */}
+      <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-2">Business — coachs & revenus</p>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {kpis.map((kpi, i) => (
+          <div key={i} className="bg-white border border-[#E2E8F0] rounded-xl p-4">
+            <p className="text-xs text-[#64748B] mb-1">{kpi.label}</p>
+            <p className="text-2xl font-semibold" style={{ color: kpi.color }}>{kpi.value}</p>
+            <p className="text-xs text-[#94A3B8] mt-1">{kpi.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* KPIs plateforme — usage réel des membres */}
+      <p className="text-[11px] font-semibold text-[#94A3B8] uppercase tracking-wider mb-2">Plateforme — usage réel des membres</p>
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+        {[
+          { label: 'Elève total', value: totalMembers, sub: `${activeMembers} actifs`, color: '#3B82F6' },
+          { label: 'Elève actifs', value: activeMembers, sub: 'statut actif', color: '#3B82F6' },
+          { label: 'Séances (ce mois)', value: sessionsMonth, sub: 'planifiées', color: '#8B5CF6' },
+          { label: 'Check-ins (ce mois)', value: checkinsMonth, sub: 'soumis', color: '#14B8A6' },
+          { label: 'Messages (ce mois)', value: messagesMonth, sub: 'échangés', color: '#0EA5E9' },
+          { label: 'Entraîn. (ce mois)', value: workoutsMonth, sub: 'complétés', color: '#EA580C' },
+        ].map((kpi, i) => (
           <div key={i} className="bg-white border border-[#E2E8F0] rounded-xl p-4">
             <p className="text-xs text-[#64748B] mb-1">{kpi.label}</p>
             <p className="text-2xl font-semibold" style={{ color: kpi.color }}>{kpi.value}</p>
@@ -218,39 +243,50 @@ export function DashboardAdminContent({
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Graphiques */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Inscriptions */}
-          <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-[#0D1F3C] mb-4">Inscriptions — 30 derniers jours</h2>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={chartData} barSize={10}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} interval={4} />
-                <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E2E8F0' }} />
-                <Bar dataKey="inscriptions" fill="#4E9B6F" radius={[3, 3, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          {/* Inscriptions — StatsCard (agrégé par semaine pour lisibilité) */}
+          {(() => {
+            const weeklyData: { name: string; value: number }[] = []
+            for (let w = 3; w >= 0; w--) {
+              const start = w * 7
+              const end = start + 7
+              const slice = chartData.slice(Math.max(0, chartData.length - end), chartData.length - start)
+              const total = slice.reduce((s, d) => s + d.inscriptions, 0)
+              const firstDate = slice[0]?.date ?? `S${4 - w}`
+              weeklyData.push({ name: firstDate, value: total })
+            }
+            const maxW = Math.max(...weeklyData.map(w => w.value), 1)
+            const totalInscriptions = chartData.reduce((s, d) => s + d.inscriptions, 0)
+            return (
+              <StatsCard
+                title="Inscriptions — 30 derniers jours"
+                currentValue={totalInscriptions}
+                description="nouveaux coachs inscrits"
+                chartData={weeklyData.map((w, i) => ({
+                  name: w.name,
+                  value: Math.round((w.value / maxW) * 100),
+                  color: i === weeklyData.length - 1 ? 'bg-[#4E9B6F]' : undefined,
+                }))}
+                highlightedBarColor="bg-[#4E9B6F]"
+              />
+            )
+          })()}
 
-          {/* MRR cumulé */}
-          <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
-            <h2 className="text-sm font-semibold text-[#0D1F3C] mb-4">MRR cumulé — 30 derniers jours</h2>
-            <ResponsiveContainer width="100%" height={180}>
-              <LineChart data={chartData.map((d, i) => ({
-                ...d,
-                mrrCumul: chartData.slice(0, i + 1).reduce((acc, x) => acc + x.mrr, 0),
-              }))}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} interval={4} />
-                <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} axisLine={false} />
-                <Tooltip
-                  formatter={(v) => [`${v ?? 0}€`, 'MRR cumulé']}
-                  contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E2E8F0' }}
-                />
-                <Line type="monotone" dataKey="mrrCumul" stroke="#4E9B6F" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          {/* MRR cumulé — PointsChart */}
+          {(() => {
+            let cumul = 0
+            const mrrCumulData = chartData.map((d, i) => {
+              cumul += d.mrr
+              return { date: d.date, total: cumul, change: d.mrr }
+            })
+            return (
+              <PointsChart
+                title="MRR cumulé — 30 derniers jours"
+                data={mrrCumulData}
+                formatValue={(v) => `${Math.round(v)}€`}
+                height={180}
+              />
+            )
+          })()}
         </div>
 
         {/* Feed activité */}

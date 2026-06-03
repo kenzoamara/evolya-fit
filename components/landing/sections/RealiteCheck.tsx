@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { SectionTag } from '@/components/landing/section-tag'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 type Step = 'hours' | 'billing' | 'price' | 'results'
@@ -9,7 +10,7 @@ type BillingType = 'session' | 'other'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 const QUICK_HOURS = [1, 2, 4, 6, 8]
-const QUICK_PRICES = [50, 70, 100, 120, 150]
+const QUICK_PRICES = [50, 100, 150, 200, 300]
 const WD_WEEK = 5
 const WD_MONTH = 22
 const WD_YEAR = 220
@@ -21,6 +22,15 @@ function fmt(n: number): string {
 
 function fmtEur(n: number): string {
   return fmt(Math.round(n / 100) * 100) + ' €'
+}
+
+function fmtDayH(h: number): string {
+  const totalMin = Math.round(h * 60)
+  const hrs = Math.floor(totalMin / 60)
+  const min = totalMin % 60
+  if (hrs === 0) return `${min}min`
+  if (min === 0) return `${hrs}h`
+  return `${hrs}h${String(min).padStart(2, '0')}`
 }
 
 function fullDaysText(hYear: number): string {
@@ -47,7 +57,7 @@ export function RealiteCheck() {
   const [countRM, setCountRM] = useState(0)
   const rafRef = useRef<number>()
 
-  // ── Calculations ─────────────────────────────────────────────────────────────
+  // ── Calculations — PERTES ────────────────────────────────────────────────────
   const hWeek  = hours * WD_WEEK
   const hMonth = hours * WD_MONTH
   const hYear  = hours * WD_YEAR
@@ -56,9 +66,19 @@ export function RealiteCheck() {
   const rMonth = Math.round(sMonth * price)
   const rYear  = Math.round(sYear * price)
 
-  const recoveryH = Math.min(hours, 3)
-  const recoveryS = Math.round(recoveryH * WD_YEAR / 2)
-  const recoveryR = Math.round(recoveryS * price)
+  // ── Calculations — RÉCUPÉRATION (nouvelle formule cohérente) ─────────────────
+  // 75% du temps admin récupéré · plafonné à 21h/sem (promesse marque)
+  const REC_TIME   = 0.75
+  const REC_SESS   = 0.80
+  const MAX_REC_WEEK = 21
+
+  const recWeekH    = parseFloat(Math.min(hours * WD_WEEK * REC_TIME, MAX_REC_WEEK).toFixed(1))
+  const recDayH     = recWeekH / 5
+  const recHDisplay = recWeekH % 1 === 0 ? String(Math.round(recWeekH)) : recWeekH.toFixed(1).replace('.', 'h')
+  const recDayLabel = `${fmtDayH(recDayH)} de coaching récupérées / jour`
+  // séances récupérées = 80% des séances perdues/sem × 4 sem
+  const recSMonth   = Math.round((hWeek / 2) * REC_SESS * 4)
+  const recRevMonth = Math.round(recSMonth * price)
 
   // Operational load label (Case B)
   const opLoad =
@@ -130,9 +150,7 @@ export function RealiteCheck() {
 
         {/* ── Header centré ── */}
         <div className="text-center mb-10">
-          <div className="inline-flex items-center gap-2 bg-[#FEF2F2] border border-[#FECACA] text-[#DC2626] text-[10px] font-bold px-3 py-1.5 rounded-full mb-5 tracking-[0.12em] uppercase">
-            Ce qui bloque ta croissance
-          </div>
+          <SectionTag>Réalité coach</SectionTag>
           <h2 className="text-[28px] sm:text-[36px] md:text-[42px] font-bold text-[#0D1F3C] tracking-[-0.025em] leading-[1.08] mb-4">
             Quand le système ne suit plus,<br className="hidden sm:block" /> c&apos;est ton temps qui disparaît.
           </h2>
@@ -184,7 +202,7 @@ export function RealiteCheck() {
 
                     {/* Big live number */}
                     <div className="flex items-baseline gap-2 mb-4">
-                      <span className="font-bold text-[#0D1F3C] leading-none tabular-nums" style={{ fontSize: 'clamp(44px, 10vw, 56px)' }}>
+                      <span className="font-bold text-[#0D1F3C] leading-none tabular-nums" style={{ fontSize: 'clamp(32px, 8vw, 56px)' }}>
                         {hours % 1 === 0 ? hours : hours.toFixed(1)}
                       </span>
                       <span className="text-[16px] font-medium pb-1" style={{ color: '#9CA3AF' }}>
@@ -288,20 +306,20 @@ export function RealiteCheck() {
 
                     {/* Price big display */}
                     <div className="flex items-baseline gap-2 mb-3">
-                      <span className="font-bold text-[#0D1F3C] leading-none tabular-nums" style={{ fontSize: 'clamp(44px, 10vw, 56px)' }}>
+                      <span className="font-bold text-[#0D1F3C] leading-none tabular-nums" style={{ fontSize: 'clamp(32px, 8vw, 56px)' }}>
                         {price}
                       </span>
-                      <span className="text-[22px] font-bold" style={{ color: '#9CA3AF' }}>€</span>
+                      <span className="text-[16px] sm:text-[22px] font-bold" style={{ color: '#9CA3AF' }}>€</span>
                     </div>
                     <input
-                      type="range" min={30} max={200} step={5}
+                      type="range" min={30} max={400} step={5}
                       value={price}
                       onChange={e => setPrice(parseInt(e.target.value))}
                       className="w-full cursor-pointer mb-1"
                       style={{ accentColor: '#4E9B6F', height: 4 }}
                     />
                     <div className="flex justify-between text-[11px] mt-1 mb-4" style={{ color: '#9CA3AF' }}>
-                      <span>30 €</span><span>200 €</span>
+                      <span>30 €</span><span>400 €</span>
                     </div>
 
                     {/* Quick prices */}
@@ -377,7 +395,7 @@ export function RealiteCheck() {
                             <div key={label} className="rounded-xl p-3 bg-[#F8FAFB] border border-[#E5E7EB]">
                               <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>{label}</p>
                               <div className="flex items-baseline gap-1 leading-none mb-1">
-                                <span className="text-[26px] font-bold tabular-nums" style={{ color }}>{value}</span>
+                                <span className="text-[20px] sm:text-[26px] font-bold tabular-nums" style={{ color }}>{value}</span>
                                 <span className="text-[12px] font-medium" style={{ color: '#6B7280' }}>{unit}</span>
                               </div>
                               <p className="text-[11px]" style={{ color: '#9CA3AF' }}>{sub}</p>
@@ -396,7 +414,7 @@ export function RealiteCheck() {
                           <p className="text-[12px] font-bold text-white mb-0.5">Ce n&apos;est pas un problème de temps.</p>
                           <p className="text-[12px] font-bold text-[#4E9B6F] mb-3">C&apos;est un problème de système.</p>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                            {["Passer à +30 membres sans t'épuiser", "2 à 3h de coaching récupérées / jour", "Zéro check-in oublié, zéro relance manquée", "Un système qui suit ton volume, pas l'inverse", "Moins de gestion, plus de coaching"].map(item => (
+                            {["Passer à +30 membres sans t'épuiser", recDayLabel, "Zéro check-in oublié, zéro relance manquée", "Un système qui suit ton volume, pas l'inverse", "Moins de gestion, plus de coaching"].map(item => (
                               <div key={item} className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#4E9B6F] shrink-0" />
                                 <p className="text-[12px] text-white/85">{item}</p>
@@ -409,7 +427,7 @@ export function RealiteCheck() {
                           href="/auth/signup"
                           className="w-full flex items-center justify-center gap-2 py-3 bg-[#4E9B6F] text-white rounded-xl text-[13px] font-semibold hover:bg-[#3D7A5F] transition-colors"
                         >
-                          Récupérer {fmt(3 * WD_YEAR)}h et jusqu&apos;à {fmtEur(recoveryR)} / an
+                          Récupérer {recHDisplay}h/semaine · jusqu&apos;à {fmtEur(recRevMonth)}/mois
                           <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
                             <path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>
@@ -439,7 +457,7 @@ export function RealiteCheck() {
                           <div className="rounded-xl p-3 bg-[#F8FAFB] border border-[#E5E7EB]">
                             <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>Temps perdu</p>
                             <div className="flex items-baseline gap-1 leading-none mb-1">
-                              <span className="text-[26px] font-bold text-[#0D1F3C] tabular-nums">{fmt(countH)}</span>
+                              <span className="text-[20px] sm:text-[26px] font-bold text-[#0D1F3C] tabular-nums">{fmt(countH)}</span>
                               <span className="text-[12px] font-medium" style={{ color: '#6B7280' }}>h/an</span>
                             </div>
                             <p className="text-[11px]" style={{ color: '#9CA3AF' }}>{hWeek}h par semaine</p>
@@ -448,7 +466,7 @@ export function RealiteCheck() {
                           <div className="rounded-xl p-3 bg-[#F8FAFB] border border-[#E5E7EB]">
                             <p className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#6B7280' }}>Séances perdues</p>
                             <div className="flex items-baseline gap-1 leading-none mb-1">
-                              <span className="text-[26px] font-bold text-[#0D1F3C] tabular-nums">{fmt(countS)}</span>
+                              <span className="text-[20px] sm:text-[26px] font-bold text-[#0D1F3C] tabular-nums">{fmt(countS)}</span>
                               <span className="text-[12px] font-medium" style={{ color: '#6B7280' }}>/an</span>
                             </div>
                             <p className="text-[11px]" style={{ color: '#9CA3AF' }}>non exploitées</p>
@@ -463,7 +481,7 @@ export function RealiteCheck() {
 
                         <p className="text-[13px] mb-3 leading-relaxed" style={{ color: '#6B7280' }}>
                           Tu pourrais récupérer l&apos;équivalent de{' '}
-                          <strong className="text-[#0D1F3C]">{recoveryS} séances</strong>{' '}
+                          <strong className="text-[#0D1F3C]">{recSMonth} séances</strong>{' '}
                           de coaching par an.
                         </p>
 
@@ -472,7 +490,7 @@ export function RealiteCheck() {
                           <p className="text-[12px] font-bold text-white mb-0.5">Ce n&apos;est pas un problème de temps.</p>
                           <p className="text-[12px] font-bold text-[#4E9B6F] mb-3">C&apos;est un problème de système.</p>
                           <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                            {["Passer à +30 membres sans t'épuiser", "2 à 3h de coaching récupérées / jour", "Zéro check-in oublié, zéro relance manquée", "Un système qui suit ton volume, pas l'inverse", "Moins de gestion, plus de coaching"].map(item => (
+                            {["Passer à +30 membres sans t'épuiser", recDayLabel, "Zéro check-in oublié, zéro relance manquée", "Un système qui suit ton volume, pas l'inverse", "Moins de gestion, plus de coaching"].map(item => (
                               <div key={item} className="flex items-center gap-2">
                                 <div className="w-1.5 h-1.5 rounded-full bg-[#4E9B6F] shrink-0" />
                                 <p className="text-[12px] text-white/85">{item}</p>
@@ -485,7 +503,7 @@ export function RealiteCheck() {
                           href="/auth/signup"
                           className="w-full flex items-center justify-center gap-2 py-3 bg-[#4E9B6F] text-white rounded-xl text-[13px] font-semibold hover:bg-[#3D7A5F] transition-colors"
                         >
-                          Récupérer {fmt(3 * WD_YEAR)}h de temps exploitable / an
+                          Récupérer {recHDisplay}h/semaine de temps de coaching
                           <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
                             <path d="M3 7.5h9M8.5 4l3.5 3.5L8.5 11" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                           </svg>

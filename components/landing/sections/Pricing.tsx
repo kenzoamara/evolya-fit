@@ -6,559 +6,734 @@ import dynamic from 'next/dynamic'
 
 const NumberFlow = dynamic(() => import('@number-flow/react'), { ssr: false })
 
-type Feature = { label: string; included: boolean }
-type Category = { name: string; items: Feature[] }
+/* ─── Données ─────────────────────────────────────────── */
 
-const PLAN_FEATURES: Record<string, Category[]> = {
-  free: [
-    {
-      name: 'Membres & Contenu',
-      items: [
-        { label: '1 membre maximum', included: true },
-        { label: '100 exercices de bibliothèque', included: true },
-        { label: '10 générations IA d\'exercices', included: true },
-        { label: '1 génération de programme', included: true },
-      ],
-    },
-    {
-      name: 'Coaching & Séances',
-      items: [
-        { label: 'Agenda intégré', included: true },
-        { label: 'Chrono & validation de séance', included: true },
-        { label: 'Check-in hebdomadaire', included: true },
-        { label: 'Notes de séance', included: false },
-        { label: 'Suivi des séances en direct', included: false },
-      ],
-    },
-    {
-      name: 'Suivi des progrès',
-      items: [
-        { label: 'Suivi du poids', included: true },
-        { label: 'Suivi sportif', included: true },
-        { label: 'Suivi nutritionnel', included: true },
-        { label: 'Suivi des mensurations', included: false },
-        { label: 'Statistiques de performance & PR', included: false },
-        { label: 'Suivi des habitudes', included: false },
-      ],
-    },
-    {
-      name: 'Communication & Engagement',
-      items: [
-        { label: 'Relance des membres inactifs', included: false },
-        { label: 'Messagerie intégrée', included: false },
-        { label: 'Rappels automatiques de check-in', included: false },
-      ],
-    },
-    {
-      name: 'Paiements & Analytics',
-      items: [
-        { label: 'Gestion des impayés', included: true },
-        { label: 'Rappels automatiques de paiement', included: false },
-        { label: 'Rapports hebdomadaires automatiques', included: false },
-        { label: 'Statistiques de croissance', included: false },
-      ],
-    },
-    {
-      name: 'Personnalisation',
-      items: [
-        { label: '2 thèmes disponibles', included: true },
-        { label: 'Mode clair / sombre', included: true },
-        { label: 'Photo de profil', included: false },
-        { label: 'Blog', included: false },
-        { label: 'Calculatrice intégrée', included: false },
-      ],
-    },
-  ],
-  starter: [
-    {
-      name: 'Membres & Contenu',
-      items: [
-        { label: '10 membres maximum', included: true },
-        { label: '500 exercices de bibliothèque', included: true },
-        { label: '150 générations IA d\'exercices', included: true },
-        { label: '100 générations de programmes', included: true },
-      ],
-    },
-    {
-      name: 'Coaching & Séances',
-      items: [
-        { label: 'Agenda intégré', included: true },
-        { label: 'Chrono, validation & notes de séance', included: true },
-        { label: 'Suivi des séances en direct', included: true },
-        { label: 'Check-in hebdomadaire', included: true },
-      ],
-    },
-    {
-      name: 'Suivi des progrès',
-      items: [
-        { label: 'Suivi du poids', included: true },
-        { label: 'Statistiques de performance & PR', included: true },
-        { label: 'Suivi sportif', included: true },
-        { label: 'Suivi nutritionnel', included: true },
-        { label: 'Suivi des mensurations', included: false },
-        { label: 'Suivi des habitudes', included: false },
-      ],
-    },
-    {
-      name: 'Communication & Engagement',
-      items: [
-        { label: 'Messagerie intégrée', included: true },
-        { label: 'Relance des membres inactifs', included: true },
-        { label: 'Rappels automatiques de check-in', included: false },
-      ],
-    },
-    {
-      name: 'Paiements & Analytics',
-      items: [
-        { label: 'Gestion des impayés', included: true },
-        { label: 'Rappels automatiques de paiement', included: true },
-        { label: 'Rapports hebdomadaires automatiques', included: true },
-        { label: 'Statistiques de croissance', included: false },
-      ],
-    },
-    {
-      name: 'Personnalisation',
-      items: [
-        { label: '5 thèmes disponibles', included: true },
-        { label: 'Mode clair / sombre', included: true },
-        { label: 'Photo de profil', included: false },
-        { label: 'Blog', included: false },
-        { label: 'Calculatrice intégrée', included: false },
-      ],
-    },
-  ],
-  growth: [
-    {
-      name: 'Membres & Contenu',
-      items: [
-        { label: '25 membres maximum', included: true },
-        { label: '1 000 exercices de bibliothèque', included: true },
-        { label: '300 générations IA d\'exercices', included: true },
-        { label: '200 générations de programmes', included: true },
-      ],
-    },
-    {
-      name: 'Coaching & Séances',
-      items: [
-        { label: 'Agenda intégré', included: true },
-        { label: 'Chrono, validation & notes de séance', included: true },
-        { label: 'Suivi des séances en direct', included: true },
-        { label: 'Check-in hebdomadaire', included: true },
-        { label: 'Rappels automatiques de check-in', included: true },
-      ],
-    },
-    {
-      name: 'Suivi des progrès',
-      items: [
-        { label: 'Suivi du poids', included: true },
-        { label: 'Suivi des mensurations', included: true },
-        { label: 'Statistiques de performance & PR', included: true },
-        { label: 'Suivi sportif', included: true },
-        { label: 'Suivi nutritionnel', included: true },
-        { label: 'Suivi des habitudes', included: true },
-      ],
-    },
-    {
-      name: 'Communication & Engagement',
-      items: [
-        { label: 'Messagerie intégrée', included: true },
-        { label: 'Relance des membres inactifs', included: true },
-      ],
-    },
-    {
-      name: 'Paiements & Analytics',
-      items: [
-        { label: 'Gestion des impayés', included: true },
-        { label: 'Rappels automatiques de paiement', included: true },
-        { label: 'Rapports hebdomadaires automatiques', included: true },
-        { label: 'Statistiques de croissance', included: true },
-      ],
-    },
-    {
-      name: 'Personnalisation',
-      items: [
-        { label: 'Thèmes illimités', included: true },
-        { label: 'Photo de profil', included: true },
-        { label: 'Mode clair / sombre', included: true },
-        { label: 'Blog limité', included: true },
-        { label: 'Calculatrice intégrée', included: true },
-      ],
-    },
-  ],
-  pro: [
-    {
-      name: 'Membres & Contenu',
-      items: [
-        { label: 'Membres illimités', included: true },
-        { label: 'Exercices de bibliothèque illimités', included: true },
-        { label: 'Générations IA d\'exercices illimitées', included: true },
-        { label: 'Générations de programmes illimitées', included: true },
-      ],
-    },
-    {
-      name: 'Coaching & Séances',
-      items: [
-        { label: 'Toutes les fonctionnalités incluses', included: true },
-      ],
-    },
-    {
-      name: 'Suivi des progrès',
-      items: [
-        { label: 'Toutes les fonctionnalités incluses', included: true },
-      ],
-    },
-    {
-      name: 'Communication & Engagement',
-      items: [
-        { label: 'Toutes les fonctionnalités incluses', included: true },
-      ],
-    },
-    {
-      name: 'Paiements & Analytics',
-      items: [
-        { label: 'Toutes les fonctionnalités incluses', included: true },
-      ],
-    },
-    {
-      name: 'Personnalisation',
-      items: [
-        { label: 'Blog complet (articles exclusifs)', included: true },
-        { label: 'Toutes les fonctionnalités incluses', included: true },
-      ],
-    },
-  ],
-}
+const ANNUAL_DISCOUNT = 0.2
 
-type Plan = {
-  id: string
-  name: string
-  clientLabel: string
-  popular?: boolean
-  free?: boolean
-  monthly: number
-  annualMonthly: number
-  annualTotal: number
-  metrics: { label: string; value: string }[]
-}
-
-const PLANS: Plan[] = [
+const PLANS = [
   {
-    id: 'free',
+    id: 'decouverte',
     name: 'Découverte',
-    clientLabel: '1 membre',
-    free: true,
-    monthly: 0,
-    annualMonthly: 0,
-    annualTotal: 0,
-    metrics: [
-      { label: 'Membre', value: '1' },
-      { label: 'Générations IA/mois', value: '1' },
-      { label: 'Biblio exercices', value: '100' },
+    tagline: 'Pour démarrer, gratuitement',
+    priceMonthly: 0,
+    isFree: true,
+    cta: 'Commencer gratuitement',
+    footnote: 'Aucune carte bancaire requise · Résiliable à tout moment',
+    content: [
+      '1 membre maximum',
+      '100 exercices de bibliothèque',
+      "10 générations IA d'exercices",
+      '1 génération de programme',
     ],
   },
   {
-    id: 'starter',
+    id: 'lancement',
     name: 'Lancement',
-    clientLabel: "Jusqu'à 10 membres",
-    monthly: 19,
-    annualMonthly: 15,
-    annualTotal: 180,
-    metrics: [
-      { label: 'Membres', value: '10' },
-      { label: 'Générations IA/mois', value: '150' },
-      { label: 'Biblio exercices', value: '500' },
+    tagline: 'Lancez votre activité de coach',
+    priceMonthly: 19,
+    isFree: false,
+    cta: 'Commencer',
+    footnote: 'Essai gratuit 14 jours · Sans carte bancaire',
+    content: [
+      '10 membres maximum',
+      '500 exercices de bibliothèque',
+      "150 générations IA d'exercices / mois",
+      '100 générations de programmes',
     ],
   },
   {
-    id: 'growth',
+    id: 'croissance',
     name: 'Croissance',
-    clientLabel: "Jusqu'à 25 membres",
-    popular: true,
-    monthly: 29,
-    annualMonthly: 23,
-    annualTotal: 275,
-    metrics: [
-      { label: 'Membres', value: '25' },
-      { label: 'Générations IA/mois', value: '300' },
-      { label: 'Biblio exercices', value: '1 000' },
+    tagline: 'Pour faire grandir votre clientèle',
+    priceMonthly: 29,
+    isFree: false,
+    recommended: true,
+    cta: 'Commencer',
+    footnote: 'Essai gratuit 14 jours · Sans carte bancaire',
+    content: [
+      '25 membres maximum',
+      '1 000 exercices de bibliothèque',
+      "300 générations IA d'exercices / mois",
+      '200 générations de programmes',
     ],
   },
   {
     id: 'pro',
     name: 'Pro',
-    clientLabel: "Jusqu'à 45 membres",
-    monthly: 49,
-    annualMonthly: 39,
-    annualTotal: 470,
-    metrics: [
-      { label: 'Membres', value: '45' },
-      { label: 'Générations IA', value: 'Illimitées' },
-      { label: 'Biblio exercices', value: 'Illimitée' },
+    tagline: 'Aucune limite, tout inclus',
+    priceMonthly: 49,
+    isFree: false,
+    cta: 'Commencer',
+    footnote: 'Essai gratuit 14 jours · Sans carte bancaire',
+    content: [
+      '45 membres maximum',
+      'Exercices de bibliothèque illimités',
+      "Générations IA d'exercices illimitées",
+      'Générations de programmes illimitées',
     ],
   },
 ]
 
-function MetricsBand({ metrics, popular }: { metrics: { label: string; value: string }[]; popular?: boolean }) {
+const CATEGORIES = [
+  {
+    name: 'Elève & contenu',
+    features: [
+      { label: 'Elève maximum', values: ['1', '10', '25', '45'] },
+      { label: 'Exercices de bibliothèque', values: ['100', '500', '1 000', 'Illimités'] },
+      { label: "Générations IA d'exercices", values: ['10 / mois', '150 / mois', '300 / mois', 'Illimitées'] },
+      { label: 'Générations de programmes', values: ['1', '100', '200', 'Illimitées'] },
+    ],
+  },
+  {
+    name: 'Coaching & séances',
+    features: [
+      { label: 'Agenda intégré', values: [true, true, true, true] },
+      { label: 'Chrono & validation de séance', values: [true, true, true, true] },
+      { label: 'Notes de séance', values: [false, true, true, true] },
+      { label: 'Check-in hebdomadaire', values: [true, true, true, true] },
+      { label: 'Suivi des séances en direct', values: [false, true, true, true] },
+      { label: 'Rappels automatiques de check-in', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Suivi des progrès',
+    features: [
+      { label: 'Suivi du poids', values: [true, true, true, true] },
+      { label: 'Suivi sportif', values: [true, true, true, true] },
+      { label: 'Suivi nutritionnel', values: [true, true, true, true] },
+      { label: 'Statistiques de performance & PR', values: [false, true, true, true] },
+      { label: 'Suivi des mensurations', values: [false, false, true, true] },
+      { label: 'Suivi des habitudes', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Communication & engagement',
+    features: [
+      { label: 'Messagerie intégrée', values: [false, true, true, true] },
+      { label: 'Relance des membres inactifs', values: [false, true, true, true] },
+    ],
+  },
+  {
+    name: 'Paiements & analytics',
+    features: [
+      { label: 'Gestion des impayés', values: [true, true, true, true] },
+      { label: 'Rappels automatiques de paiement', values: [false, true, true, true] },
+      { label: 'Rapports hebdomadaires automatiques', values: [false, true, true, true] },
+      { label: 'Statistiques de croissance', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Personnalisation',
+    features: [
+      { label: 'Thèmes disponibles', values: ['2', '5', 'Illimités', 'Illimités'] },
+      { label: 'Mode clair / sombre', values: [true, true, true, true] },
+      { label: 'Photo de profil', values: [false, false, true, true] },
+      { label: 'Calculatrice intégrée', values: [false, false, true, true] },
+      { label: 'Blog', values: [false, false, 'Limité', 'Complet'] },
+    ],
+  },
+]
+
+/* ─── Helpers ──────────────────────────────────────────── */
+
+function priceFor(plan: typeof PLANS[0], annual: boolean) {
+  if (plan.isFree) return { big: '0', sub: null, strike: null }
+  if (!annual) return { big: String(plan.priceMonthly), sub: 'par mois', strike: null }
+  const monthly = plan.priceMonthly * (1 - ANNUAL_DISCOUNT)
+  const big = monthly % 1 === 0 ? String(Math.round(monthly)) : monthly.toFixed(2).replace('.', ',')
+  const yearly = Math.round(plan.priceMonthly * 12 * (1 - ANNUAL_DISCOUNT))
+  return { big, sub: `soit ${yearly} € / an`, strike: `${plan.priceMonthly} €` }
+}
+
+/* ─── Icônes ───────────────────────────────────────────── */
+
+function IconCheck({ size = 12 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 13l4 4L19 7" />
+    </svg>
+  )
+}
+function IconArrow() {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M5 12h14M13 6l6 6-6 6" />
+    </svg>
+  )
+}
+function IconSpark() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2l1.8 5.6L19.5 9l-5.7 1.4L12 16l-1.8-5.6L4.5 9l5.7-1.4z" />
+    </svg>
+  )
+}
+
+/* ─── Composants ───────────────────────────────────────── */
+
+function PlanCard({ plan, annual, selected, onSelect }: {
+  plan: typeof PLANS[0]
+  annual: boolean
+  selected: boolean
+  onSelect: (id: string) => void
+}) {
+  const featured = !!plan.recommended
+  const p = priceFor(plan, annual)
+
   return (
     <div
-      className="rounded-xl grid grid-cols-3 overflow-hidden"
+      onClick={() => onSelect(plan.id)}
       style={{
-        background: popular ? 'rgba(255,255,255,0.06)' : '#F7F9FB',
-        border: popular ? '1px solid rgba(255,255,255,0.08)' : '1px solid #EDF0F3',
+        position: 'relative',
+        background: featured
+          ? 'linear-gradient(168deg, #13294f 0%, #0D1F3C 62%)'
+          : '#ffffff',
+        border: selected
+          ? featured ? '1px solid #4E9B6F' : '1px solid #4E9B6F'
+          : featured ? '1px solid transparent' : '1px solid #e7edf2',
+        borderRadius: 18,
+        padding: '26px 22px 22px',
+        display: 'flex',
+        flexDirection: 'column' as const,
+        boxShadow: selected
+          ? featured
+            ? '0 0 0 3px rgba(78,155,111,0.28), 0 30px 70px -28px rgba(13,31,60,0.45), 0 10px 24px -16px rgba(13,31,60,0.25)'
+            : '0 0 0 3px rgba(78,155,111,0.28), 0 8px 30px -12px rgba(13,31,60,0.16)'
+          : featured
+            ? '0 30px 70px -28px rgba(13,31,60,0.45), 0 10px 24px -16px rgba(13,31,60,0.25)'
+            : '0 1px 2px rgba(13,31,60,0.05)',
+        transform: featured ? 'translateY(-10px)' : 'none',
+        cursor: 'pointer',
+        transition: 'transform 0.28s cubic-bezier(0.22,1,0.36,1), box-shadow 0.28s ease',
       }}
     >
-      {metrics.map((m, i) => (
-        <div key={i} className="flex flex-col items-center justify-center py-3 px-1 relative text-center">
-          {i > 0 && (
-            <div className="absolute left-0 inset-y-2 w-px"
-              style={{ background: popular ? 'rgba(255,255,255,0.08)' : '#E8ECF0' }} />
-          )}
-          <span className={`font-black leading-none tracking-tight ${popular ? 'text-white' : 'text-[#0D1F3C]'} ${m.value.length > 4 ? 'text-[11px]' : 'text-[15px]'}`}>
-            {m.value}
-          </span>
-          <span className={`text-[8.5px] font-medium mt-1 text-center leading-[1.3] ${popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>
-            {m.label}
-          </span>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function FeatureList({ categories, popular }: { categories: Category[]; popular?: boolean }) {
-  return (
-    <div className="flex flex-col gap-4">
-      {categories.map((cat, ci) => (
-        <div key={ci}>
-          <p className={`text-[10px] font-bold uppercase tracking-[0.12em] mb-2 ${popular ? 'text-white/30' : 'text-[#94A3B8]'}`}>
-            {cat.name}
-          </p>
-          <ul className="flex flex-col gap-1.5">
-            {cat.items.map((item, fi) => (
-              <li key={fi} className="flex items-start gap-2">
-                {item.included ? (
-                  <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center mt-[2px]"
-                    style={{ background: 'rgba(78,155,111,0.18)' }}>
-                    <svg width="7" height="7" viewBox="0 0 8 8" fill="none">
-                      <path d="M1.5 4l2 2 3-3.5" stroke="#4E9B6F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </div>
-                ) : (
-                  <div className="w-3.5 h-3.5 rounded-full flex-shrink-0 flex items-center justify-center mt-[2px]"
-                    style={{ background: popular ? 'rgba(255,255,255,0.06)' : '#F1F5F9' }}>
-                    <svg width="6" height="6" viewBox="0 0 8 8" fill="none">
-                      <path d="M2 2l4 4M6 2L2 6" stroke={popular ? 'rgba(255,255,255,0.25)' : '#CBD5E1'} strokeWidth="1.4" strokeLinecap="round"/>
-                    </svg>
-                  </div>
-                )}
-                <span className={`text-[11.5px] leading-snug ${
-                  item.included
-                    ? popular ? 'text-white/70' : 'text-[#374151]'
-                    : popular ? 'text-white/25' : 'text-[#C4CDD6]'
-                }`}>
-                  {item.label}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function PlanCard({ plan, annual }: { plan: Plan; annual: boolean }) {
-  const price = annual ? plan.annualMonthly : plan.monthly
-  const features = PLAN_FEATURES[plan.id]
-
-  return (
-    <div className="relative">
-      {plan.popular && (
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap z-10">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wider uppercase px-3.5 py-1.5 rounded-full bg-[#4E9B6F] text-white shadow-md">
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-              <path d="M6 1l1.35 2.73L10.5 4.2l-2.25 2.19.53 3.09L6 7.95 3.22 9.48l.53-3.09L1.5 4.2l3.15-.47L6 1z" fill="currentColor"/>
-            </svg>
-            Notre recommandation
-          </span>
+      {/* Ribbon recommandé */}
+      {featured && (
+        <div style={{
+          position: 'absolute', top: 0, left: '50%',
+          transform: 'translate(-50%, -50%)',
+          display: 'inline-flex', alignItems: 'center', gap: 7,
+          background: '#4E9B6F', color: '#fff',
+          fontWeight: 700, fontSize: 11.5,
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          padding: '7px 15px', borderRadius: 999, whiteSpace: 'nowrap',
+          boxShadow: '0 8px 20px -8px rgba(78,155,111,0.7)',
+        }}>
+          <IconSpark /> Notre recommandation
         </div>
       )}
 
-      <div
-        className={`rounded-2xl flex flex-col gap-4 relative overflow-hidden ${plan.popular ? 'pt-10 px-6 pb-6' : 'pt-6 px-6 pb-6'}`}
-        style={plan.popular ? {
-          background: 'linear-gradient(145deg, #0f2318 0%, #0D1F3C 55%, #0a1a2e 100%)',
-          boxShadow: '0 0 0 2px #4E9B6F, 0 20px 60px rgba(13,31,60,0.35)',
-        } : {
-          background: 'white',
-          border: '1px solid #E8ECF0',
-          boxShadow: '0 2px 12px rgba(13,31,60,0.06)',
+      {/* Nom du plan */}
+      <h3 style={{
+        fontWeight: 600, fontSize: 15, letterSpacing: '0.02em',
+        color: featured ? '#fff' : '#0D1F3C', margin: 0,
+      }}>
+        {plan.name}
+      </h3>
+
+      {/* Tagline */}
+      <p style={{
+        fontSize: 13.5, color: featured ? 'rgba(255,255,255,0.62)' : '#5d6b80',
+        margin: '5px 0 0', minHeight: 20,
+      }}>
+        {plan.tagline}
+      </p>
+
+      {/* Prix */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 7, margin: '20px 0 2px' }}>
+        <span style={{
+          fontWeight: 800, fontSize: 46, lineHeight: 0.9,
+          letterSpacing: '-0.035em', color: featured ? '#fff' : '#0D1F3C',
+        }}>
+          {plan.isFree ? (
+            p.big
+          ) : (
+            <NumberFlow value={Number(p.big.replace(',', '.'))} />
+          )}
+          <span style={{ fontSize: 22, fontWeight: 600, verticalAlign: 'super', marginLeft: 2 }}>€</span>
+        </span>
+        {plan.isFree
+          ? <span style={{ fontSize: 13.5, color: featured ? 'rgba(255,255,255,0.6)' : '#5d6b80', paddingBottom: 5 }}>pour toujours</span>
+          : <span style={{ fontSize: 13.5, color: featured ? 'rgba(255,255,255,0.6)' : '#5d6b80', paddingBottom: 5 }}>/ mois</span>
+        }
+      </div>
+      <p style={{ fontSize: 12.5, color: featured ? 'rgba(255,255,255,0.5)' : '#8a97a8', margin: '6px 0 18px', minHeight: 17 }}>
+        {p.strike && <span style={{ textDecoration: 'line-through', opacity: 0.7, marginRight: 6 }}>{p.strike}</span>}
+        {p.sub}
+      </p>
+
+      {/* CTA */}
+      <Link
+        href={`/auth/signup?plan=${plan.id}_${annual ? 'annual' : 'monthly'}`}
+        onClick={(e) => e.stopPropagation()}
+        className="pricing-cta-btn"
+        style={{
+          width: '100%', border: featured ? 'none' : plan.isFree ? '1.5px solid #0D1F3C' : '1.5px solid #e7edf2',
+          cursor: 'pointer', fontWeight: 600, fontSize: 15,
+          padding: '13px 18px', borderRadius: 12,
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          textDecoration: 'none',
+          background: featured ? '#4E9B6F' : plan.isFree ? '#fff' : '#fff',
+          color: featured ? '#fff' : '#0D1F3C',
+          boxShadow: featured ? '0 6px 16px -8px rgba(78,155,111,0.8)' : 'none',
+          transition: 'background 0.18s ease, transform 0.2s ease, box-shadow 0.2s ease',
         }}
       >
-        {plan.popular && (
-          <>
-            <div className="absolute inset-x-0 top-0 h-px pointer-events-none"
-              style={{ background: 'linear-gradient(90deg, transparent, rgba(78,155,111,0.8), transparent)' }} />
-            <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full pointer-events-none"
-              style={{ background: 'radial-gradient(circle, rgba(78,155,111,0.10) 0%, transparent 70%)' }} />
-          </>
-        )}
+        {plan.cta} <IconArrow />
+      </Link>
 
-        {/* Nom */}
-        <h3 className={`font-bold leading-tight tracking-[-0.02em] ${plan.popular ? 'text-white text-[22px]' : 'text-[#0D1F3C] text-[20px]'}`}>
-          {plan.name}
-        </h3>
+      {/* Note sous le bouton */}
+      <p style={{
+        fontSize: 11.5, color: featured ? 'rgba(255,255,255,0.5)' : '#8a97a8',
+        textAlign: 'center', margin: '12px 0 0',
+      }}>
+        {plan.footnote}
+      </p>
 
-        <div className={`border-t ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
-
-        {/* Prix */}
-        <div>
-          {plan.free ? (
-            <div>
-              <p className={`text-[42px] font-black leading-none tracking-tight ${plan.popular ? 'text-white' : 'text-[#0D1F3C]'}`}>
-                Gratuit
-              </p>
-              <p className={`text-[12px] mt-1.5 ${plan.popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>
-                Pour toujours · sans carte
-              </p>
-            </div>
-          ) : (
-            <div>
-              <div className="flex items-baseline gap-1.5 flex-wrap">
-                <span className={`font-black leading-none tracking-tight flex items-baseline ${plan.popular ? 'text-white text-[56px]' : 'text-[#0D1F3C] text-[52px]'}`}>
-                  <NumberFlow value={price} />
-                  <span className={`ml-1 font-bold ${plan.popular ? 'text-white/45 text-[24px]' : 'text-[#94A3B8] text-[22px]'}`}>€</span>
-                </span>
-                {annual && (
-                  <span className={`text-[14px] font-medium line-through leading-none ${plan.popular ? 'text-white/25' : 'text-[#CBD5E1]'}`}>
-                    {plan.monthly} €
-                  </span>
-                )}
-                <span className={`text-[13px] font-medium ${plan.popular ? 'text-white/40' : 'text-[#94A3B8]'}`}>/ mois</span>
-              </div>
-              {annual
-                ? <p className={`text-[11.5px] mt-1.5 ${plan.popular ? 'text-white/35' : 'text-[#94A3B8]'}`}>soit {plan.annualTotal} € facturés annuellement</p>
-                : <div className="h-[18px]" />
-              }
-            </div>
-          )}
-        </div>
-
-        {/* Métriques */}
-        <MetricsBand metrics={plan.metrics} popular={plan.popular} />
-
-        {/* CTA */}
-        <Link
-          href={`/auth/signup?plan=${plan.id}_${annual ? 'annual' : 'monthly'}`}
-          className={`flex items-center justify-center gap-2 text-[13.5px] font-semibold py-3 rounded-xl transition-colors duration-150 ${
-            plan.popular
-              ? 'bg-[#4E9B6F] text-white hover:bg-[#3d8058]'
-              : plan.free
-              ? 'bg-[#0D1F3C] text-white hover:bg-[#152E55]'
-              : 'bg-[#F4F6F8] text-[#0D1F3C] hover:bg-[#EBEEF2]'
-          }`}
-        >
-          {plan.free ? 'Commencer gratuitement' : 'Commencer'}
-          <svg width="14" height="14" viewBox="0 0 15 15" fill="none">
-            <path d="M3 7.5h9M8.5 3.5l4 4-4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </Link>
-
-        <div className={`border-t ${plan.popular ? 'border-white/10' : 'border-[#F1F5F9]'}`} />
-
-        {/* Features */}
-        <FeatureList categories={features} popular={plan.popular} />
-
-        {/* Note bas */}
-        {!plan.free && (
-          <p className={`flex items-center gap-1.5 text-[11px] ${plan.popular ? 'text-white/30' : 'text-[#B0BAC6]'}`}>
-            <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
-              <path d="M2 6.5l2.5 2.5L10 3" stroke="#4E9B6F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-            Essai gratuit 14 jours · Sans carte bancaire
-          </p>
-        )}
-      </div>
+      {/* Liste inclus */}
+      <p style={{
+        fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
+        color: featured ? 'rgba(255,255,255,0.5)' : '#8a97a8', margin: '22px 0 12px',
+      }}>
+        {plan.isFree ? 'Inclus' : 'Tout le plan précédent, plus'}
+      </p>
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 11, flex: 1 }}>
+        {plan.content.map((item, i) => (
+          <li key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13.5, color: featured ? 'rgba(255,255,255,0.88)' : '#0D1F3C', lineHeight: 1.35 }}>
+            <span style={{
+              flexShrink: 0, width: 18, height: 18, borderRadius: '50%',
+              background: featured ? 'rgba(78,155,111,0.22)' : '#eef6f1',
+              color: featured ? '#8fdcae' : '#3f8a60',
+              display: 'grid', placeItems: 'center', marginTop: 1,
+            }}>
+              <IconCheck size={11} />
+            </span>
+            <span>{item}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }
 
-export function Pricing() {
-  const [annual, setAnnual] = useState(false)
-
-  const freePlan = PLANS.find(p => p.free)!
-  const paidPlans = PLANS.filter(p => !p.free)
-
+function BillingToggle({ annual, setAnnual }: { annual: boolean; setAnnual: (v: boolean) => void }) {
   return (
-    <section id="pricing" className="relative bg-[#F7F9FB] py-24 px-6 overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none" aria-hidden>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full opacity-[0.04]"
-          style={{ background: 'radial-gradient(ellipse, #4E9B6F 0%, transparent 70%)' }} />
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginTop: 30 }}>
+      <div style={{
+        display: 'inline-flex', position: 'relative',
+        background: '#fff', border: '1px solid #e7edf2',
+        padding: 5, borderRadius: 999,
+        boxShadow: '0 1px 2px rgba(13,31,60,0.05)',
+      }}>
+        {/* Thumb glissant */}
+        <div style={{
+          position: 'absolute', zIndex: 1, top: 5, left: 5, bottom: 5,
+          background: '#0D1F3C', borderRadius: 999,
+          width: annual ? 'calc(50% + 18px)' : 'calc(50% - 18px)',
+          transform: annual ? 'translateX(calc(100% - 36px))' : 'translateX(0)',
+          transition: 'transform 0.32s cubic-bezier(0.22,1,0.36,1), width 0.32s cubic-bezier(0.22,1,0.36,1)',
+          boxShadow: '0 4px 12px -4px rgba(13,31,60,0.4)',
+        }} />
+        <button
+          onClick={() => setAnnual(false)}
+          style={{
+            position: 'relative', zIndex: 2, border: 0, background: 'transparent', cursor: 'pointer',
+            fontWeight: 600, fontSize: 14.5, color: !annual ? '#fff' : '#5d6b80',
+            padding: '9px 20px', borderRadius: 999,
+          }}
+        >
+          Mensuel
+        </button>
+        <button
+          onClick={() => setAnnual(true)}
+          style={{
+            position: 'relative', zIndex: 2, border: 0, background: 'transparent', cursor: 'pointer',
+            fontWeight: 600, fontSize: 14.5, color: annual ? '#fff' : '#5d6b80',
+            padding: '9px 20px', borderRadius: 999,
+            display: 'inline-flex', alignItems: 'center', gap: 8,
+          }}
+        >
+          Annuel{' '}
+          <span style={{
+            fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
+            background: annual ? '#4E9B6F' : '#eef6f1',
+            color: annual ? '#fff' : '#3f8a60',
+            padding: '2px 7px', borderRadius: 6,
+          }}>
+            −{Math.round(ANNUAL_DISCOUNT * 100)}%
+          </span>
+        </button>
       </div>
+      <span style={{ fontSize: 13.5, color: '#8a97a8' }}>
+        {annual ? '2,4 mois offerts sur l\'abonnement annuel' : 'Sans engagement · changez ou annulez quand vous voulez'}
+      </span>
+    </div>
+  )
+}
 
-      <div className="max-w-5xl mx-auto relative z-[1]">
+function TableCell({ v }: { v: boolean | string }) {
+  if (v === true) return (
+    <span style={{ display: 'inline-grid', placeItems: 'center', width: 22, height: 22, borderRadius: '50%', background: '#eef6f1', color: '#3f8a60' }}>
+      <IconCheck size={12} />
+    </span>
+  )
+  if (v === false) return <span style={{ color: '#cdd6e0', fontSize: 18 }}>—</span>
+  return <span style={{ fontWeight: 600, fontSize: 14, color: '#0D1F3C' }}>{v}</span>
+}
 
-        {/* Header */}
-        <div className="text-center mb-14">
-          <p className="text-[11px] font-semibold tracking-[0.18em] uppercase text-[#4E9B6F] mb-4">Tarification</p>
-          <h2 className="text-[34px] md:text-[42px] font-bold text-[#0D1F3C] tracking-[-0.02em] mb-4 leading-tight">
-            Simple, transparent, sans surprise
-          </h2>
-          <p className="text-[15px] text-[#64748B] max-w-md mx-auto leading-relaxed">
-            14 jours d&apos;essai gratuit sur tous les plans.{' '}
-            Résiliable à tout moment, sans engagement.
-          </p>
-        </div>
-
-        {/* Toggle */}
-        <div className="flex justify-center mb-12">
-          <div className="flex items-center bg-white border border-[#E2E8F0] rounded-full p-1 gap-0.5 shadow-sm">
-            <button
-              onClick={() => setAnnual(false)}
-              className={`px-5 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 ${
-                !annual ? 'bg-[#0D1F3C] text-white shadow-sm' : 'text-[#94A3B8] hover:text-[#64748B]'
-              }`}
-            >
-              Mensuel
-            </button>
-            <button
-              onClick={() => setAnnual(true)}
-              className={`px-5 py-2 rounded-full text-[13px] font-semibold transition-all duration-200 flex items-center gap-2 ${
-                annual ? 'bg-[#4E9B6F] text-white shadow-sm' : 'text-[#94A3B8] hover:text-[#64748B]'
-              }`}
-            >
-              Annuel
-              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
-                annual ? 'bg-white/20 text-white' : 'bg-[#4E9B6F]/15 text-[#4E9B6F]'
-              }`}>
-                −20%
-              </span>
-            </button>
-          </div>
-        </div>
-
-        {/* Plans payants */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start">
-          {paidPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className="relative"
-              style={plan.popular ? { transform: 'translateY(-16px)', zIndex: 10 } : { marginTop: '16px' }}
-            >
-              <PlanCard plan={plan} annual={annual} />
-            </div>
-          ))}
-        </div>
-
-        {/* Plan Découverte */}
-        <div className="mt-6 mx-auto max-w-[700px]">
-          <PlanCard plan={freePlan} annual={annual} />
-        </div>
-
-        <p className="text-center text-[11px] text-[#C0C8D4] mt-7">
-          Aucune carte bancaire requise · Résiliable à tout moment
+function ComparisonTable({ annual }: { annual: boolean }) {
+  return (
+    <section style={{ marginTop: 88 }}>
+      <div style={{ textAlign: 'center', marginBottom: 30 }}>
+        <h2 style={{
+          fontWeight: 700, fontSize: 'clamp(24px, 3vw, 32px)',
+          letterSpacing: '-0.02em', color: '#0D1F3C', margin: '0 0 8px',
+        }}>
+          Comparez les formules en détail
+        </h2>
+        <p style={{ color: '#5d6b80', margin: 0, fontSize: 15.5 }}>
+          Toutes les fonctionnalités, catégorie par catégorie.
         </p>
       </div>
+
+      {/* Desktop table */}
+      <div style={{
+        background: '#fff', border: '1px solid #e7edf2', borderRadius: 18,
+        boxShadow: '0 1px 2px rgba(13,31,60,0.05)', overflow: 'hidden',
+        display: 'block',
+      }} className="pricing-table-desktop">
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr>
+                <th style={{ minWidth: 240, textAlign: 'left', padding: '13px 22px', position: 'sticky', left: 0, background: '#fff', zIndex: 2, fontWeight: 500, fontSize: 14, color: '#0D1F3C', borderBottom: '1px solid #e7edf2' }} />
+                {PLANS.map((pl) => {
+                  const p = priceFor(pl, annual)
+                  return (
+                    <th key={pl.id} style={{
+                      padding: '18px 12px 16px', borderBottom: '1px solid #e7edf2',
+                      verticalAlign: 'bottom', textAlign: 'center',
+                      background: pl.recommended ? '#0D1F3C' : '#fff',
+                    }}>
+                      {pl.recommended && (
+                        <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#4E9B6F', marginBottom: 5 }}>
+                          Recommandé
+                        </div>
+                      )}
+                      <div style={{ fontWeight: 600, fontSize: 16, color: pl.recommended ? '#fff' : '#0D1F3C' }}>{pl.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 22, color: pl.recommended ? '#fff' : '#0D1F3C', marginTop: 3 }}>
+                        {p.big}€ <small style={{ fontSize: 12, fontWeight: 500, color: pl.recommended ? 'rgba(255,255,255,0.6)' : '#8a97a8' }}>{pl.isFree ? '/ toujours' : '/ mois'}</small>
+                      </div>
+                    </th>
+                  )
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {CATEGORIES.map((cat) => (
+                <>
+                  <tr key={cat.name + '-header'}>
+                    <td colSpan={PLANS.length + 1} style={{
+                      textAlign: 'left', padding: '16px 22px 9px',
+                      fontWeight: 600, fontSize: 12,
+                      letterSpacing: '0.1em', textTransform: 'uppercase', color: '#3f8a60',
+                      background: '#eef6f1',
+                    }}>
+                      {cat.name}
+                    </td>
+                  </tr>
+                  {cat.features.map((f) => (
+                    <tr key={f.label} style={{ borderBottom: '1px solid #eef2f6' }}>
+                      <td style={{
+                        textAlign: 'left', padding: '13px 22px', fontWeight: 500, fontSize: 14, color: '#0D1F3C',
+                        position: 'sticky', left: 0, background: '#fff', zIndex: 1, minWidth: 240,
+                        borderBottom: '1px solid #eef2f6',
+                      }}>
+                        {f.label}
+                      </td>
+                      {f.values.map((v, i) => (
+                        <td key={i} style={{
+                          textAlign: 'center', fontSize: 14, color: '#0D1F3C',
+                          borderBottom: '1px solid #eef2f6', padding: '13px 12px',
+                          background: PLANS[i].recommended ? '#fafcfd' : undefined,
+                        }}>
+                          <TableCell v={v as boolean | string} />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td style={{ padding: '18px 12px 22px', borderTop: '1px solid #e7edf2', background: '#fff' }} />
+                {PLANS.map((pl) => (
+                  <td key={pl.id} style={{
+                    padding: '18px 12px 22px', borderTop: '1px solid #e7edf2', textAlign: 'center',
+                    background: pl.recommended ? '#fafcfd' : undefined,
+                  }}>
+                    <Link
+                      href={`/auth/signup?plan=${pl.id}_${annual ? 'annual' : 'monthly'}`}
+                      style={{
+                        border: 0, cursor: 'pointer', fontWeight: 600, fontSize: 13.5,
+                        padding: '9px 16px', borderRadius: 10,
+                        background: pl.recommended ? '#4E9B6F' : '#eef6f1',
+                        color: pl.recommended ? '#fff' : '#3f8a60',
+                        textDecoration: 'none', display: 'inline-block',
+                      }}
+                    >
+                      Choisir
+                    </Link>
+                  </td>
+                ))}
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* Mobile comparison */}
+      <ComparisonMobile annual={annual} />
     </section>
+  )
+}
+
+function ComparisonMobile({ annual }: { annual: boolean }) {
+  const initial = (PLANS.find((p) => p.recommended) || PLANS[0]).id
+  const [active, setActive] = useState(initial)
+  const idx = PLANS.findIndex((p) => p.id === active)
+  const plan = PLANS[idx]
+  const p = priceFor(plan, annual)
+
+  return (
+    <div className="pricing-cmp-mobile" style={{ display: 'none' }}>
+      {/* Tabs */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 5,
+        background: '#fff', border: '1px solid #e7edf2', borderRadius: 12, padding: 5,
+        position: 'sticky', top: 8, zIndex: 10,
+        boxShadow: '0 1px 2px rgba(13,31,60,0.05)',
+      }}>
+        {PLANS.map((pl) => (
+          <button
+            key={pl.id}
+            onClick={() => setActive(pl.id)}
+            style={{
+              border: 0, background: pl.id === active ? '#0D1F3C' : 'transparent',
+              cursor: 'pointer', whiteSpace: 'nowrap',
+              fontWeight: 600, fontSize: 12,
+              color: pl.id === active ? '#fff' : '#5d6b80',
+              padding: '10px 2px', borderRadius: 8,
+            }}
+          >
+            {pl.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Header plan */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 12, margin: '20px 2px 4px' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 21, color: '#0D1F3C' }}>{plan.name}</div>
+          <div style={{ fontSize: 13, color: '#5d6b80', marginTop: 3 }}>{plan.tagline}</div>
+        </div>
+        <div style={{ fontWeight: 800, fontSize: 25, color: '#0D1F3C', whiteSpace: 'nowrap' }}>
+          {p.big}€ <small style={{ fontSize: 12, fontWeight: 500, color: '#8a97a8' }}>{plan.isFree ? '/ toujours' : '/ mois'}</small>
+        </div>
+      </div>
+
+      {/* Categories */}
+      {CATEGORIES.map((cat) => (
+        <div key={cat.name} style={{ marginTop: 16 }}>
+          <div style={{
+            fontWeight: 600, fontSize: 11.5,
+            letterSpacing: '0.08em', textTransform: 'uppercase', color: '#3f8a60',
+            background: '#eef6f1', padding: '9px 13px', borderRadius: 9,
+          }}>
+            {cat.name}
+          </div>
+          <ul style={{ listStyle: 'none', margin: '2px 0 0', padding: 0 }}>
+            {cat.features.map((f) => {
+              const v = f.values[idx]
+              const off = v === false
+              return (
+                <li key={f.label} style={{
+                  display: 'flex', alignItems: 'center', gap: 11,
+                  padding: '12px 13px', borderBottom: '1px solid #eef2f6',
+                  fontSize: 14.5, color: off ? '#8a97a8' : '#0D1F3C',
+                }}>
+                  <span style={{ flexShrink: 0, width: 18, display: 'grid', placeItems: 'center', color: '#3f8a60' }}>
+                    {off ? <span style={{ color: '#cdd6e0', fontSize: 18 }}>—</span> : <IconCheck size={13} />}
+                  </span>
+                  <span style={{ flex: 1, lineHeight: 1.3 }}>{f.label}</span>
+                  {typeof v === 'string' && <span style={{ fontWeight: 700, color: '#0D1F3C', fontSize: 13.5, whiteSpace: 'nowrap' }}>{v}</span>}
+                </li>
+              )
+            })}
+          </ul>
+        </div>
+      ))}
+
+      <Link
+        href={`/auth/signup?plan=${plan.id}_${annual ? 'annual' : 'monthly'}`}
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          marginTop: 22, width: '100%', fontWeight: 600, fontSize: 15,
+          padding: '13px 18px', borderRadius: 12,
+          background: plan.recommended ? '#4E9B6F' : plan.isFree ? '#fff' : '#fff',
+          color: plan.recommended ? '#fff' : '#0D1F3C',
+          border: plan.isFree ? '1.5px solid #0D1F3C' : plan.recommended ? 'none' : '1.5px solid #e7edf2',
+          textDecoration: 'none',
+        }}
+      >
+        {plan.cta} <IconArrow />
+      </Link>
+      <p style={{ fontSize: 11.5, color: '#8a97a8', textAlign: 'center', marginTop: 12 }}>{plan.footnote}</p>
+    </div>
+  )
+}
+
+function Reassure() {
+  const items = [
+    {
+      icon: (
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z" /><path d="M9 12l2 2 4-4" />
+        </svg>
+      ),
+      title: 'Sans carte bancaire',
+      desc: "Testez gratuitement 14 jours. On ne vous demande rien avant que vous soyez convaincu.",
+    },
+    {
+      icon: (
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M4 8h13l-3-3M20 16H7l3 3" />
+        </svg>
+      ),
+      title: 'Changez à tout moment',
+      desc: "Montez ou descendez de formule en un clic, sans frais ni engagement.",
+    },
+    {
+      icon: (
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 20s-7-4.6-7-10a4 4 0 017-2.6A4 4 0 0119 10c0 5.4-7 10-7 10z" />
+        </svg>
+      ),
+      title: 'Pensé pour les coachs indépendants',
+      desc: "Un outil conçu pour le quotidien des coachs sportifs, pas une usine à gaz.",
+    },
+  ]
+  return (
+    <div style={{
+      marginTop: 64,
+      display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16,
+    }} className="pricing-reassure">
+      {items.map((it, i) => (
+        <div key={i} style={{
+          background: '#fff', border: '1px solid #e7edf2', borderRadius: 12,
+          padding: '20px 22px', display: 'flex', gap: 14, alignItems: 'flex-start',
+        }}>
+          <span style={{
+            flexShrink: 0, width: 38, height: 38, borderRadius: 10,
+            background: '#eef6f1', color: '#3f8a60',
+            display: 'grid', placeItems: 'center',
+          }}>
+            {it.icon}
+          </span>
+          <div>
+            <h4 style={{ margin: '0 0 3px', fontWeight: 600, fontSize: 15, color: '#0D1F3C' }}>{it.title}</h4>
+            <p style={{ margin: 0, fontSize: 13, color: '#5d6b80', lineHeight: 1.45 }}>{it.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ─── Export principal ─────────────────────────────────── */
+
+export function Pricing() {
+  const [annual, setAnnual] = useState(true)
+  const [selected, setSelected] = useState('croissance')
+
+  return (
+    <>
+      <style>{`
+        @media (max-width: 768px) {
+          .pricing-table-desktop { display: none !important; }
+          .pricing-cmp-mobile { display: block !important; }
+          .pricing-reassure { grid-template-columns: 1fr !important; }
+        }
+        @media (max-width: 1080px) {
+          .pricing-cards-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 600px) {
+          .pricing-wrap { padding: 44px 16px 72px !important; }
+          .pricing-cards-grid { grid-template-columns: 1fr !important; }
+        }
+        .pricing-cta-link:hover { opacity: 0.88; }
+      `}</style>
+
+      <section id="pricing" style={{
+        background: 'radial-gradient(1200px 520px at 50% -8%, #eef3f8 0%, rgba(238,243,248,0) 70%), #F8FAFB',
+        color: '#0D1F3C',
+        fontFamily: '"Inter", system-ui, sans-serif',
+      }}>
+        <div className="pricing-wrap" style={{ maxWidth: 1200, margin: '0 auto', padding: '64px 28px 96px' }}>
+
+          {/* Header */}
+          <header style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 44px' }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8,
+              fontWeight: 600, fontSize: 12.5, letterSpacing: '0.14em', textTransform: 'uppercase',
+              color: '#3f8a60', background: '#eef6f1',
+              border: '1px solid rgba(78,155,111,0.18)',
+              padding: '6px 13px', borderRadius: 999, marginBottom: 20,
+            }}>
+              <span className="tag-dot-blink" style={{ width: 6, height: 6, borderRadius: '50%', background: '#4E9B6F', display: 'inline-block', flexShrink: 0 }} />
+              Tarifs Coach
+            </span>
+            <h1 style={{
+              fontWeight: 700, fontSize: 'clamp(32px, 4.6vw, 50px)',
+              lineHeight: 1.04, letterSpacing: '-0.025em',
+              margin: '0 0 14px', color: '#0D1F3C',
+            }}>
+              Choisissez la formule qui suit votre rythme
+            </h1>
+            <p style={{ fontSize: 17.5, color: '#5d6b80', margin: '0 auto', maxWidth: 540 }}>
+              Des formules claires pour les coachs sportifs indépendants. À partir de 0€, puis évoluez quand votre clientèle grandit.
+            </p>
+            <BillingToggle annual={annual} setAnnual={setAnnual} />
+          </header>
+
+          {/* Grille des 4 cartes */}
+          <section className="pricing-cards-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: 18,
+            alignItems: 'stretch',
+            marginTop: 8,
+          }}>
+            {PLANS.map((pl) => (
+              <PlanCard
+                key={pl.id}
+                plan={pl}
+                annual={annual}
+                selected={selected === pl.id}
+                onSelect={setSelected}
+              />
+            ))}
+          </section>
+
+          {/* Tableau comparatif */}
+          <ComparisonTable annual={annual} />
+
+          {/* Bandeau réassurance */}
+          <Reassure />
+
+        </div>
+      </section>
+    </>
   )
 }

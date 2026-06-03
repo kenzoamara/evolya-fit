@@ -126,7 +126,7 @@ export default function HabitudesPage() {
   }
 
   if (loading) return (
-    <div className="flex-1 flex items-center justify-center min-h-screen">
+    <div className="flex-1 flex items-center justify-center min-h-dvh">
       <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin"
         style={{ borderColor: `${COLOR} transparent transparent transparent` }} />
     </div>

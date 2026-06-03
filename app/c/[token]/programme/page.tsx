@@ -579,7 +579,7 @@ export default function ClientProgrammePage() {
   }, [token])
 
   if (loading) return (
-    <div className="flex-1 flex items-center justify-center min-h-screen">
+    <div className="flex-1 flex items-center justify-center min-h-dvh">
       <div className="w-5 h-5 border-2 border-[#4E9B6F] border-t-transparent rounded-full animate-spin" />
     </div>
   )

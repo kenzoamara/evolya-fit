@@ -5,7 +5,7 @@ import { Logo } from '@/components/shared/logo'
 
 export default function SignupPage() {
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-dvh flex">
 
       {/* Panneau gauche — branding (desktop uniquement) */}
       <div className="hidden lg:flex lg:w-[44%] bg-[#0D1F3C] flex-col px-12 py-10 relative overflow-hidden">

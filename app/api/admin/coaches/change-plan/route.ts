@@ -4,19 +4,17 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 export const dynamic = 'force-dynamic'
 
+// Limites de membres alignées sur les vrais plans (lib/plan-limits.ts)
 const PLAN_LIMITS: Record<string, number> = {
-  trial: 3,
-  starter: 5,
+  trial: 1,
+  starter: 10,
   growth: 25,
   pro: 45,
-  scale: 100,
-  elite: 250,
-  unlimited: 9999,
   // Legacy
   standard: 25,
 }
 
-const VALID_PLANS = ['trial', 'starter', 'growth', 'pro', 'scale', 'elite', 'unlimited']
+const VALID_PLANS = ['trial', 'starter', 'growth', 'pro']
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient()
@@ -37,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await admin.from('profiles').update({
     plan,
-    client_limit: PLAN_LIMITS[plan] ?? 5,
+    client_limit: PLAN_LIMITS[plan] ?? 1,
   }).eq('id', coachId)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 

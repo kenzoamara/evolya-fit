@@ -252,7 +252,7 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
                 </button>
               ))}
               {!isUnlimited(themeLimit) && COLOR_SWATCHES.slice(themeLimit).map(c => (
-                <div key={c} className="w-8 h-8 rounded-lg border border-dashed border-[#CBD5E1] flex items-center justify-center opacity-40 cursor-not-allowed" style={{ backgroundColor: c }} title="Disponible sur un plan superieur" />
+                <div key={c} className="w-8 h-8 rounded-lg border border-dashed border-[#CBD5E1] flex items-center justify-center opacity-40 cursor-not-allowed" style={{ backgroundColor: c }} title="Disponible sur un plan supérieur" />
               ))}
               <label className="w-8 h-8 rounded-lg border border-[#E2E8F0] flex items-center justify-center cursor-pointer hover:border-brand transition-colors" title="Couleur personnalisée">
                 <Palette size={14} className="text-[#94A3B8]" />
@@ -287,68 +287,6 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
             </div>
           </div>
 
-          {/* Photo de profil */}
-          <PlanGate featureKey="photo_profil" userPlan={userPlan}>
-          <div className="bg-white rounded-xl border border-[#F1F5F9] p-4 space-y-3">
-            <div>
-              <p className="text-[13px] font-semibold text-[#0D1F3C]">Photo de profil</p>
-              <p className="text-[12px] text-[#94A3B8] mt-0.5">Apparaît dans votre espace coach. JPG, PNG ou WebP · max 3 Mo.</p>
-            </div>
-            <div className="flex items-center gap-4">
-              {/* Vignette actuelle */}
-              <div className="relative shrink-0">
-                {isPhotoUrl ? (
-                  <img
-                    src={icon}
-                    alt="Photo de profil"
-                    className="w-16 h-16 rounded-xl object-cover border border-[#E2E8F0]"
-                  />
-                ) : (
-                  <div
-                    className="w-16 h-16 rounded-xl flex items-center justify-center text-[20px] font-bold text-white"
-                    style={{ backgroundColor: primaryColor }}
-                  >
-                    {initials}
-                  </div>
-                )}
-                {isPhotoUrl && (
-                  <button
-                    onClick={handleRemovePhoto}
-                    className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-white border border-[#E2E8F0] rounded-full flex items-center justify-center shadow-sm hover:border-red-300 hover:text-red-500 transition-colors"
-                    title="Supprimer la photo"
-                  >
-                    <X size={10} />
-                  </button>
-                )}
-              </div>
-
-              {/* Zone de clic */}
-              <button
-                type="button"
-                onClick={() => photoInputRef.current?.click()}
-                disabled={uploadingPhoto}
-                className="flex-1 flex flex-col items-center justify-center gap-1.5 py-4 border-2 border-dashed border-[#E2E8F0] rounded-xl hover:border-brand hover:bg-[#F8FAFB] transition-colors disabled:opacity-60 cursor-pointer"
-              >
-                <Upload size={18} className="text-[#94A3B8]" />
-                <span className="text-[12px] font-medium text-[#64748B]">
-                  {uploadingPhoto ? 'Chargement…' : isPhotoUrl ? 'Changer la photo' : 'Choisir une photo'}
-                </span>
-              </button>
-
-              <input
-                ref={photoInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) handlePhotoUpload(file)
-                  e.target.value = ''
-                }}
-              />
-            </div>
-          </div>
-          </PlanGate>
 
         </div>
       </div>

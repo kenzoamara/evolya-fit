@@ -322,6 +322,16 @@ export type Testimonial = {
   created_at: string
 }
 
+export type Relance = {
+  id: string
+  client_id: string
+  coach_id: string
+  message_id: string | null
+  sent_at: string
+  created_at: string
+  updated_at: string
+}
+
 export type BilanSnapshot = {
   period_label: string
   period_weeks: number

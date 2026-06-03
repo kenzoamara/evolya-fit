@@ -19,7 +19,7 @@ export default function LoginPage() {
     setError(null)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
       setError('Email ou mot de passe incorrect.')
@@ -27,12 +27,23 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/dashboard')
+    // Redirection selon le rôle : les admins vont directement sur l'espace admin
+    let destination = '/dashboard'
+    if (data.user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single()
+      if (profile?.role === 'admin') destination = '/admin'
+    }
+
+    router.push(destination)
     router.refresh()
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-dvh flex">
 
       {/* Panneau gauche — branding (desktop uniquement) */}
       <div className="hidden lg:flex lg:w-[44%] bg-[#0D1F3C] flex-col px-12 py-10 relative overflow-hidden">

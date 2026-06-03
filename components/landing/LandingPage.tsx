@@ -8,8 +8,7 @@ import { HowItWorks } from './sections/HowItWorks'
 import { BeforeAfter } from './sections/BeforeAfter'
 import { Pricing } from './sections/Pricing'
 import { FAQ } from './sections/FAQ'
-import { Contact } from './sections/Contact'
-import { Referral } from './sections/Referral'
+import { FinalCTA } from './sections/FinalCTA'
 import { Footer } from './sections/Footer'
 
 export default function LandingPage() {
@@ -34,10 +33,8 @@ export default function LandingPage() {
       <Pricing />
       {/* 10 — Objections */}
       <FAQ />
-      {/* 11 — Contact */}
-      <Contact />
-      {/* 12 — Parrainage */}
-      <Referral />
+      {/* 11 — Clôture / conversion */}
+      <FinalCTA />
       <Footer />
     </div>
   )

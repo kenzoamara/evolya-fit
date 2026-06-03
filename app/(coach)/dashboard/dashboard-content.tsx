@@ -82,31 +82,27 @@ function getGreeting(): string {
   return 'Bonsoir'
 }
 
-// Renvoie le dernier dimanche 23:59:59 déjà passé (clôture de fenêtre check-in)
-function getLastWindowClose(now: Date): Date {
-  const d = new Date(now)
-  const dow = d.getDay() // 0=dim, 1=lun, ..., 6=sam
-  const daysSinceSunday = dow === 0 ? 0 : dow
-  d.setDate(d.getDate() - daysSinceSunday)
-  d.setHours(23, 59, 59, 999)
-  // Si ce dimanche 23:59 est dans le futur (on est dim avant 23:59), reculer d'une semaine
-  if (d > now) d.setDate(d.getDate() - 7)
-  return d
-}
-
-function getWeekStart(now: Date): Date {
+// Get current week boundaries (Monday 00:00 → Sunday 23:59)
+function getWeekBounds(now: Date) {
   const d = new Date(now)
   const day = d.getDay()
-  d.setDate(d.getDate() - (day === 0 ? 6 : day - 1))
-  d.setHours(0, 0, 0, 0)
-  return d
+  // Monday = 1, ..., Sunday = 0
+  const daysToMonday = day === 0 ? 6 : day - 1
+
+  const weekStart = new Date(d)
+  weekStart.setDate(weekStart.getDate() - daysToMonday)
+  weekStart.setHours(0, 0, 0, 0)
+
+  const weekEnd = new Date(weekStart)
+  weekEnd.setDate(weekStart.getDate() + 6)
+  weekEnd.setHours(23, 59, 59, 999)
+
+  return { weekStart, weekEnd }
 }
 
 export function DashboardContent({ profile, clients, programmes, tasks: initialTasks, upcomingSessions, todayStr, hasMessage }: Props) {
   const now = new Date()
-  const weekStart = getWeekStart(now)
-  const weekEnd = new Date(weekStart)
-  weekEnd.setDate(weekStart.getDate() + 6)
+  const { weekStart, weekEnd } = getWeekBounds(now)
   const weekStartStr = weekStart.toISOString().split('T')[0]
   const weekEndStr = weekEnd.toISOString().split('T')[0]
 
@@ -116,7 +112,7 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
   const [addingTask, setAddingTask] = useState(false)
   const [showAddTask, setShowAddTask] = useState(false)
   const [sendingRelance, setSendingRelance] = useState<string | null>(null)
-  const [relancedAt, setRelancedAt] = useState<Record<string, string>>({})
+  const [relances, setRelances] = useState<Record<string, string>>({})
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -124,10 +120,27 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
       const raw = localStorage.getItem(LS_KEY)
       if (raw) setClientVisits(JSON.parse(raw))
     } catch { /* ignore */ }
-    try {
-      const raw = localStorage.getItem('evolya_relance_ts')
-      if (raw) setRelancedAt(JSON.parse(raw))
-    } catch { /* ignore */ }
+  }, [])
+
+  // Load relances from database on mount
+  useEffect(() => {
+    async function loadRelances() {
+      try {
+        const res = await fetch('/api/relances/recent')
+        if (res.ok) {
+          const data = await res.json()
+          // Build map: clientId → latestRelanceDate ISO string
+          const map: Record<string, string> = {}
+          for (const r of data.relances || []) {
+            map[r.client_id] = r.sent_at
+          }
+          setRelances(map)
+        }
+      } catch (e) {
+        console.error('Failed to load relances:', e)
+      }
+    }
+    loadRelances()
   }, [])
 
   useEffect(() => {
@@ -137,37 +150,36 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
   const activeClients = useMemo(() => clients.filter(c => c.status === 'active'), [clients])
 
   const inactiveAlerts = useMemo(() => {
-    const threshold = profile.inactivity_threshold_days ?? 7
-    // Le compteur démarre à la clôture de la dernière fenêtre (dimanche 23:59)
-    const lastWindowClose = getLastWindowClose(now)
-    const daysSinceWindowClose = (now.getTime() - lastWindowClose.getTime()) / 86400000
-
-    // Pas encore assez de jours écoulés depuis la fermeture → aucune alerte
-    if (daysSinceWindowClose <= threshold) return []
+    const weekStartIso = weekStart.toISOString()
 
     return activeClients
       .filter(c => {
-        // Jamais soumis → toujours en alerte
-        if (c.checkins.length === 0) return true
-        const last = new Date(Math.max(...c.checkins.map(ch => new Date(ch.submitted_at).getTime())))
-        // En alerte si le dernier check-in est antérieur à la clôture de fenêtre
-        return last < lastWindowClose
+        // Count check-ins this week (Monday 00:00 onwards)
+        const checkinsThisWeek = c.checkins.filter(ch => ch.submitted_at >= weekStartIso)
+        // Alert only if no check-ins this week
+        return checkinsThisWeek.length === 0
       })
       .map(c => {
-        const neverCheckedIn = c.checkins.length === 0
-        const last = neverCheckedIn
-          ? null
-          : new Date(Math.max(...c.checkins.map(ch => new Date(ch.submitted_at).getTime())))
-        const daysAgo = last ? Math.floor((now.getTime() - last.getTime()) / 86400000) : null
-        const relancedAtStr = relancedAt[c.id] ?? null
-        const relancedDaysAgo = relancedAtStr
-          ? Math.floor((now.getTime() - new Date(relancedAtStr).getTime()) / 86400000)
+        const lastCheckinDate = c.checkins.length > 0
+          ? new Date(Math.max(...c.checkins.map(ch => new Date(ch.submitted_at).getTime())))
           : null
-        return { ...c, neverCheckedIn, last, daysAgo, relancedDaysAgo }
+        const lastRelanceDateStr = relances[c.id] ?? null
+        const lastRelanceDate = lastRelanceDateStr ? new Date(lastRelanceDateStr) : null
+
+        // Check if relance was sent this week
+        const relancedThisWeek = lastRelanceDate && lastRelanceDate >= weekStart
+
+        return {
+          ...c,
+          lastCheckinDate,
+          lastRelanceDate,
+          relancedThisWeek,
+          daysWithoutCheckin: lastCheckinDate
+            ? Math.floor((now.getTime() - lastCheckinDate.getTime()) / 86400000)
+            : null,
+        }
       })
-      // Caché pendant les 3 premiers jours après relance
-      .filter(c => c.relancedDaysAgo === null || c.relancedDaysAgo >= 3)
-  }, [activeClients, now, profile.inactivity_threshold_days, relancedAt])
+  }, [activeClients, weekStart, weekStartIso, relances, now])
 
   const weeklyCheckins = useMemo(() =>
     activeClients.reduce((count, c) =>
@@ -231,19 +243,35 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
 
   async function sendRelance(client: ClientRow) {
     setSendingRelance(client.id)
-    const firstName = client.full_name.split(' ')[0]
-    const content = `Salut ${firstName} ! Je voulais prendre de tes nouvelles — ça fait quelques jours que je n'ai pas reçu de check-in de ta part. Tout va bien ? N'hésite pas à me dire si tu as besoin de quelque chose. 💪`
-    await fetch('/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ clientId: client.id, content }),
-    })
-    const ts = new Date().toISOString()
-    const updated = { ...relancedAt, [client.id]: ts }
-    setRelancedAt(updated)
-    try { localStorage.setItem('evolya_relance_ts', JSON.stringify(updated)) } catch { /* ignore */ }
-    setSendingRelance(null)
-    toast.success(`Message envoyé à ${client.full_name}`)
+    try {
+      const res = await fetch('/api/relance/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id, clientName: client.full_name }),
+      })
+
+      if (res.status === 409) {
+        toast.error('Relance déjà envoyée cette semaine')
+        setSendingRelance(null)
+        return
+      }
+
+      if (!res.ok) {
+        const data = await res.json()
+        toast.error(data.error ?? 'Erreur lors de l\'envoi')
+        setSendingRelance(null)
+        return
+      }
+
+      const data = await res.json()
+      // Update relances map
+      setRelances(prev => ({ ...prev, [client.id]: data.relance.sent_at }))
+      toast.success(`Message envoyé à ${client.full_name}`)
+    } catch (e) {
+      toast.error('Erreur réseau')
+    } finally {
+      setSendingRelance(null)
+    }
   }
 
   async function addTask(e: React.FormEvent) {
@@ -307,73 +335,53 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
       <PlanGate featureKey="relance_inactifs" userPlan={profile.plan ?? 'free'}>
       {inactiveAlerts.length > 0 && (
         <div className="mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--evolya-card)', border: '1px solid var(--evolya-border)' }}>
-          <div className="flex items-center gap-2 px-5 py-3.5 border-b" style={{ borderColor: 'var(--evolya-border)' }}>
-            <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F59E0B' }}>
-              <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                <path d="M5 2v3M5 7.5v.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
+          <div className="px-5 py-3.5 border-b" style={{ borderColor: 'var(--evolya-border)' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0" style={{ backgroundColor: '#F59E0B' }}>
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                  <path d="M5 2v3M5 7.5v.5" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </div>
+              <p className="text-[13px] font-semibold" style={textStyle}>
+                {inactiveAlerts.length} client{inactiveAlerts.length > 1 ? 's' : ''} sans check-in cette semaine
+              </p>
             </div>
-            <p className="text-[13px] font-semibold" style={textStyle}>
-              {inactiveAlerts.length} membre{inactiveAlerts.length > 1 ? 's' : ''} inactif{inactiveAlerts.length > 1 ? 's' : ''}
+            <p className="text-[11px] ml-7" style={subtleStyle}>
+              Semaine du {fmtDate(weekStart.toISOString())} au {fmtDate(weekEnd.toISOString())}
             </p>
-            <span className="text-[11px]" style={subtleStyle}>
-              — aucun check-in depuis {profile.inactivity_threshold_days ?? 7}+ jours
-            </span>
           </div>
           <div>
-            {inactiveAlerts.map(c => (
-              <div key={c.id} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: '1px solid var(--evolya-border)' }}>
-                <div
-                  className="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0"
-                  style={{ backgroundColor: 'var(--evolya-bg)', color: 'var(--evolya-muted)' }}
-                >
-                  {c.full_name.charAt(0).toUpperCase()}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-medium truncate" style={textStyle}>{c.full_name}</p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    {c.relancedDaysAgo !== null && c.relancedDaysAgo >= 7 ? (
-                      <>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#DC2626] shrink-0" />
-                        <p className="text-[11px] text-[#DC2626]">
-                          Relancé il y a {c.relancedDaysAgo}j — toujours sans réponse
-                        </p>
-                      </>
-                    ) : c.relancedDaysAgo !== null && c.relancedDaysAgo >= 3 ? (
-                      <>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#F59E0B] shrink-0" />
-                        <p className="text-[11px] text-[#F59E0B]">
-                          Relancé il y a {c.relancedDaysAgo}j — pas encore de check-in
-                        </p>
-                      </>
-                    ) : c.neverCheckedIn ? (
-                      <>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
-                        <p className="text-[11px]" style={subtleStyle}>
-                          Jamais check-in — <span className="text-[#94A3B8]">pas encore onboardé</span>
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#F59E0B] shrink-0" />
-                        <p className="text-[11px]" style={subtleStyle}>
-                          Décrochage — <span className="text-[#F59E0B]">dernier check-in il y a {c.daysAgo}j</span>
-                        </p>
-                      </>
-                    )}
+            {inactiveAlerts.map(c => {
+              const canRelance = !c.relancedThisWeek
+              const relanceLabel = c.relancedThisWeek && c.lastRelanceDate
+                ? `Relancé le ${fmtDate(c.lastRelanceDate.toISOString())} — réessayez lundi`
+                : c.lastCheckinDate
+                  ? `Pas de check-in depuis ${c.daysWithoutCheckin}j`
+                  : 'Jamais check-in — pas encore onboardé'
+              return (
+                <div key={c.id} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: '1px solid var(--evolya-border)' }}>
+                  <div
+                    className="w-7 h-7 rounded-xl flex items-center justify-center text-[11px] font-bold shrink-0"
+                    style={{ backgroundColor: 'var(--evolya-bg)', color: 'var(--evolya-muted)' }}
+                  >
+                    {c.full_name.charAt(0).toUpperCase()}
                   </div>
-                </div>
-                <button
-                  onClick={() => sendRelance(c)}
-                  disabled={sendingRelance === c.id}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors disabled:opacity-50"
-                  style={{ backgroundColor: 'var(--brand-bg, rgba(78,155,111,0.1))', color: 'var(--brand)' }}
-                >
-                  {sendingRelance === c.id ? (
-                    <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
-                      <path d="M1 5.5h8M6.5 2.5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-[13px] font-medium truncate" style={textStyle}>{c.full_name}</p>
+                    <p className="text-[11px] mt-0.5" style={subtleStyle}>{relanceLabel}</p>
+                  </div>
+                  <button
+                    onClick={() => sendRelance(c)}
+                    disabled={sendingRelance === c.id || !canRelance}
+                    title={!canRelance ? 'Relance déjà envoyée cette semaine' : ''}
+                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[12px] font-semibold transition-colors disabled:opacity-50"
+                    style={{ backgroundColor: 'var(--brand-bg, rgba(78,155,111,0.1))', color: 'var(--brand)' }}
+                  >
+                    {sendingRelance === c.id ? (
+                      <span className="inline-block w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
+                        <path d="M1 5.5h8M6.5 2.5l3 3-3 3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   )}
                   Relancer

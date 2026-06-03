@@ -372,7 +372,7 @@ export function SettingsContent({ profile }: Props) {
 
   return (
     <main className="flex-1 px-4 sm:px-8 pt-6 pb-24 sm:py-8 max-w-2xl w-full mx-auto space-y-5 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C]">⚙️ Paramètres</h1>
+      <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C]">Paramètres</h1>
 
       {/* ── Profil ── */}
       <section className="bg-white border border-[#E2E8F0] rounded-lg p-5 sm:p-6">
@@ -443,12 +443,6 @@ export function SettingsContent({ profile }: Props) {
             </div>
           )}
 
-          <div className="flex items-center justify-between py-3">
-            <span className="text-sm text-[#64748B]">Limite clients</span>
-            <span className="text-sm font-medium text-[#0D1F3C]">
-              {profile.client_limit === 9999 ? 'Illimité' : `${profile.client_limit} membres`}
-            </span>
-          </div>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">

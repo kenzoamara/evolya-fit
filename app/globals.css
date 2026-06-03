@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Section tag dot blink animation ── */
+@keyframes tag-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.2; }
+}
+.tag-dot-blink {
+  animation: tag-blink 2s ease-in-out infinite;
+}
+
+/* ── Pricing CTA button — hover lift ── */
+.pricing-cta-btn:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 20px -6px rgba(13, 31, 60, 0.18) !important;
+}
+.pricing-cta-btn:active {
+  transform: translateY(0px) !important;
+}
+
 /* ── Mobile client interface safe area ── */
 .client-content-area {
   padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px));
@@ -20,6 +38,22 @@
 /* ── Prevent overscroll bounce on nav ── */
 nav {
   overscroll-behavior: none;
+}
+
+/* ── Mobile : champs en 16px (empêche le zoom auto iOS au focus) + cibles
+   tactiles ≥44px sur les champs et les boutons du design system ── */
+@media (max-width: 767px) {
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+  .ev-btn-sm,
+  .ev-btn-md,
+  .ev-btn-lg {
+    min-height: 44px;
+  }
 }
 
 @layer base {
@@ -107,10 +141,16 @@ nav {
     scroll-behavior: smooth;
     overflow-x: hidden;
     max-width: 100vw;
+    /* Supprime la « barre grise » d'overscroll sur mobile (rebond élastique iOS /
+       overscroll glow Android) : on bloque le rebond ET on aligne le fond de
+       <html> sur celui du contenu pour qu'aucune zone grise ne soit révélée. */
+    background-color: var(--evolya-bg);
+    overscroll-behavior-y: none;
   }
 
   body {
     background-color: var(--evolya-bg);
+    overscroll-behavior-y: none;
     color: var(--evolya-text);
     font-family: var(--font-barlow), 'Barlow', var(--font-inter), system-ui, sans-serif;
     font-size: 14px;

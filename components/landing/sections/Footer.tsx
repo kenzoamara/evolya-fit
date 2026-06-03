@@ -31,23 +31,16 @@ function StoreBadge({ icon, top, bottom }: { icon: React.ReactNode; top: string;
   )
 }
 
-const FOOTER_COLS = [
-  {
-    title: 'Produit',
-    links: [
-      { label: 'Fonctionnalites', href: '#features' },
-      { label: 'Tarifs', href: '#pricing' },
-      { label: 'Comment ca marche', href: '#how' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { label: 'Mentions legales', href: '/mentions-legales' },
-      { label: 'Politique de confidentialite', href: '/politique-confidentialite' },
-      { label: 'CGU', href: '/cgu' },
-    ],
-  },
+const PRODUCT_LINKS = [
+  { label: 'Fonctionnalités', href: '#features' },
+  { label: 'Tarifs', href: '#pricing' },
+  { label: 'Comment ça marche', href: '#how' },
+]
+
+const LEGAL_LINKS = [
+  { label: 'Mentions légales', href: '/mentions-legales' },
+  { label: 'Politique de confidentialité', href: '/politique-confidentialite' },
+  { label: 'CGU', href: '/cgu' },
 ]
 
 export function Footer() {
@@ -72,7 +65,7 @@ export function Footer() {
         </div>
 
         {/* ── Marque + navigation ── */}
-        <div className="grid md:grid-cols-4 gap-12 pb-12 border-b border-white/[0.06]">
+        <div className="grid md:grid-cols-3 gap-12 pb-12 border-b border-white/[0.06]">
           {/* Brand col */}
           <div className="md:col-span-2">
             <div className="mb-4">
@@ -83,23 +76,21 @@ export function Footer() {
             </p>
           </div>
 
-          {/* Link cols */}
-          {FOOTER_COLS.map((col, i) => (
-            <div key={i}>
-              <h4 className="text-[11px] font-bold text-white/70 tracking-[0.15em] uppercase mb-4">
-                {col.title}
-              </h4>
-              <ul className="space-y-2.5">
-                {col.links.map((link, j) => (
-                  <li key={j}>
-                    <Link href={link.href} className="text-[13px] text-white/45 hover:text-white transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          {/* Produit */}
+          <div>
+            <h4 className="text-[11px] font-bold text-white/70 tracking-[0.15em] uppercase mb-4">
+              Produit
+            </h4>
+            <ul className="space-y-2.5">
+              {PRODUCT_LINKS.map((link, j) => (
+                <li key={j}>
+                  <Link href={link.href} className="text-[13px] text-white/45 hover:text-white transition-colors">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
         {/* ── Mention légale (discrète) ── */}
@@ -108,7 +99,7 @@ export function Footer() {
             &copy; {year} Evolya. Tous droits réservés.
           </p>
           <div className="flex items-center gap-6 order-1 md:order-2">
-            {FOOTER_COLS[1].links.map((link, i) => (
+            {LEGAL_LINKS.map((link, i) => (
               <Link key={i} href={link.href} className="text-[12px] text-white/25 hover:text-white/50 transition-colors">
                 {link.label}
               </Link>

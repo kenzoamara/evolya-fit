@@ -180,7 +180,6 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
 
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-[22px]" style={{ background: 'var(--brand-bg)' }}>🏠</div>
         <div>
           <h1 className="text-[20px] font-bold text-[#0D1F3C]">
             Bonjour, {client.full_name.split(' ')[0]}

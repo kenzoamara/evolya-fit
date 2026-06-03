@@ -48,7 +48,7 @@ export function CoachThemeProvider({ children, themeMode, brand, font }: Props) 
   return (
     <div
       ref={ref}
-      className={`flex h-screen overflow-hidden${themeMode === 'dark' ? ' dark' : ''}`}
+      className={`flex h-dvh overflow-hidden${themeMode === 'dark' ? ' dark' : ''}`}
       style={{
         ['--brand' as string]: brand,
         ['--brand-bg' as string]: `color-mix(in srgb, ${brand} 12%, white)`,

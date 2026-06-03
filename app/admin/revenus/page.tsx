@@ -1,12 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { RevenusContent } from './revenus-content'
+import { planMrr } from '@/lib/stripe/plans'
 
 export const revalidate = 0
 
 export default async function AdminRevenusPage() {
   const supabase = createAdminClient()
-
-  const MRR_MAP: Record<string, number> = { trial: 0, free: 0, starter: 19, growth: 29, pro: 49, scale: 89, elite: 139, unlimited: 239, standard: 29 }
 
   const [{ data: coaches }, { data: stripeMonthly }] = await Promise.all([
     supabase
@@ -29,7 +28,7 @@ export default async function AdminRevenusPage() {
   const mrrFromStripe = (stripeMonthly ?? [])
     .filter(e => e.created_at >= startOfMonth.toISOString())
     .reduce((acc, e) => acc + Math.round(e.amount / 100), 0)
-  const mrrFromProfiles = active.reduce((acc, c) => acc + (MRR_MAP[c.plan] ?? 0), 0)
+  const mrrFromProfiles = active.reduce((acc, c) => acc + (planMrr(c.plan)), 0)
   // Utiliser stripe si données dispos, sinon profiles
   const mrr = mrrFromStripe > 0 ? mrrFromStripe : mrrFromProfiles
 
@@ -67,7 +66,7 @@ export default async function AdminRevenusPage() {
     ;(coaches ?? []).forEach(c => {
       if (c.plan !== 'trial') {
         const key = c.created_at.slice(0, 7)
-        if (monthly[key] !== undefined) monthly[key] += MRR_MAP[c.plan] ?? 0
+        if (monthly[key] !== undefined) monthly[key] += planMrr(c.plan)
       }
     })
   }
@@ -89,7 +88,7 @@ export default async function AdminRevenusPage() {
       mrrMonthly={mrrMonthly}
       coaches={(coaches ?? []).map(c => ({
         ...c,
-        mrr: MRR_MAP[c.plan] ?? 0,
+        mrr: planMrr(c.plan),
       }))}
     />
   )

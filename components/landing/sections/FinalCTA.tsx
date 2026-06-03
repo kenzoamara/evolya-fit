@@ -1,4 +1,5 @@
 ﻿import Link from 'next/link'
+import { SectionTag } from '@/components/landing/section-tag'
 
 export function FinalCTA() {
   return (
@@ -13,14 +14,11 @@ export function FinalCTA() {
 
       <div className="relative max-w-3xl mx-auto text-center">
         {/* Eyebrow */}
-        <div className="inline-flex items-center gap-2 bg-white/[0.06] border border-white/10 text-[#6AB384] text-[11px] font-semibold px-3.5 py-1.5 rounded-full mb-8 tracking-widest uppercase">
-          Pret a commencer ?
-        </div>
+        <SectionTag variant="dark">Prêt à commencer ?</SectionTag>
 
         {/* Title */}
         <h2 className="text-[42px] md:text-[52px] font-bold text-white tracking-[-0.02em] leading-[1.08] mb-6">
-          Simplifie ton suivi membre<br className="hidden md:block" />
-          des aujourd'hui
+          Récupère plus de 21h par semaine tout en préservant la qualité de la relation avec tes membres.
         </h2>
 
         {/* Subtitle */}
@@ -31,10 +29,10 @@ export function FinalCTA() {
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href="/#pricing"
+            href="/auth/signup"
             className="inline-flex items-center justify-center gap-2 bg-[#4E9B6F] text-white text-[15px] font-semibold px-8 py-4 rounded-xl hover:bg-[#3D7A5F] transition-colors"
           >
-            Creer mon compte gratuitement
+            Créer mon compte gratuitement
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
               <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>

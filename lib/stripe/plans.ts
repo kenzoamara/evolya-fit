@@ -1,18 +1,31 @@
 export type PlanConfig = { plan: string; client_limit: number }
 
+/**
+ * Prix mensuel réel (€) par plan — aligné sur la landing (section Pricing).
+ * free/trial = Découverte (0€) · starter = Lancement (19€) ·
+ * growth = Croissance (29€) · pro = Pro (49€) · standard = legacy → Croissance.
+ */
+export const PLAN_MONTHLY_PRICE: Record<string, number> = {
+  free: 0,
+  trial: 0,
+  starter: 19,
+  growth: 29,
+  pro: 49,
+  standard: 29, // legacy → Croissance
+}
+
+/** MRR mensuel (€) d'un plan donné. Source de vérité unique pour l'admin. */
+export function planMrr(plan: string | null | undefined): number {
+  return PLAN_MONTHLY_PRICE[plan ?? 'free'] ?? 0
+}
+
 export const PLAN_CONFIG: Record<string, PlanConfig> = {
-  starter_monthly:   { plan: 'starter',   client_limit: 10   },
-  starter_annual:    { plan: 'starter',   client_limit: 10   },
-  growth_monthly:    { plan: 'growth',    client_limit: 25   },
-  growth_annual:     { plan: 'growth',    client_limit: 25   },
-  pro_monthly:       { plan: 'pro',       client_limit: 45   },
-  pro_annual:        { plan: 'pro',       client_limit: 45   },
-  scale_monthly:     { plan: 'scale',     client_limit: 100  },
-  scale_annual:      { plan: 'scale',     client_limit: 100  },
-  elite_monthly:     { plan: 'elite',     client_limit: 250  },
-  elite_annual:      { plan: 'elite',     client_limit: 250  },
-  unlimited_monthly: { plan: 'unlimited', client_limit: 9999 },
-  unlimited_annual:  { plan: 'unlimited', client_limit: 9999 },
+  starter_monthly: { plan: 'starter', client_limit: 10 },
+  starter_annual:  { plan: 'starter', client_limit: 10 },
+  growth_monthly:  { plan: 'growth',  client_limit: 25 },
+  growth_annual:   { plan: 'growth',  client_limit: 25 },
+  pro_monthly:     { plan: 'pro',     client_limit: 45 },
+  pro_annual:      { plan: 'pro',     client_limit: 45 },
   // Legacy
   starter:  { plan: 'starter', client_limit: 10 },
   standard: { plan: 'growth',  client_limit: 25 },
@@ -22,18 +35,12 @@ export const PLAN_CONFIG: Record<string, PlanConfig> = {
 /** Retrouve la config depuis un price_id Stripe */
 export function getPlanFromPriceId(priceId: string): PlanConfig | null {
   const map: Record<string, string> = {
-    [process.env.STRIPE_PRICE_STARTER_MONTHLY!]:   'starter_monthly',
-    [process.env.STRIPE_PRICE_STARTER_ANNUAL!]:    'starter_annual',
-    [process.env.STRIPE_PRICE_GROWTH_MONTHLY!]:    'growth_monthly',
-    [process.env.STRIPE_PRICE_GROWTH_ANNUAL!]:     'growth_annual',
-    [process.env.STRIPE_PRICE_PRO_MONTHLY!]:       'pro_monthly',
-    [process.env.STRIPE_PRICE_PRO_ANNUAL!]:        'pro_annual',
-    [process.env.STRIPE_PRICE_SCALE_MONTHLY!]:     'scale_monthly',
-    [process.env.STRIPE_PRICE_SCALE_ANNUAL!]:      'scale_annual',
-    [process.env.STRIPE_PRICE_ELITE_MONTHLY!]:     'elite_monthly',
-    [process.env.STRIPE_PRICE_ELITE_ANNUAL!]:      'elite_annual',
-    [process.env.STRIPE_PRICE_UNLIMITED_MONTHLY!]: 'unlimited_monthly',
-    [process.env.STRIPE_PRICE_UNLIMITED_ANNUAL!]:  'unlimited_annual',
+    [process.env.STRIPE_PRICE_STARTER_MONTHLY!]: 'starter_monthly',
+    [process.env.STRIPE_PRICE_STARTER_ANNUAL!]:  'starter_annual',
+    [process.env.STRIPE_PRICE_GROWTH_MONTHLY!]:  'growth_monthly',
+    [process.env.STRIPE_PRICE_GROWTH_ANNUAL!]:   'growth_annual',
+    [process.env.STRIPE_PRICE_PRO_MONTHLY!]:     'pro_monthly',
+    [process.env.STRIPE_PRICE_PRO_ANNUAL!]:      'pro_annual',
   }
   const key = map[priceId]
   return key ? (PLAN_CONFIG[key] ?? null) : null

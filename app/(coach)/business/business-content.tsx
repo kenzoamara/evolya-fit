@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { TrendingUp, Users, CreditCard, Gift, Plus, Check, Clock, AlertTriangle, X, ArrowRight } from 'lucide-react'
 import { PageHeader } from '@/components/coach/page-header'
 import { InnerTabs } from '@/components/coach/inner-tabs'
-import { AnimatedBarCard } from '@/components/coach/animated-bar-card'
+import { StatsCard } from '@/components/ui/stats-card-1'
 import { getPlanLabel } from '@/lib/utils'
 import type { Profile } from '@/types/database'
 import { toast } from 'sonner'
@@ -316,45 +316,6 @@ function EditPaymentModal({ payment, onClose, onUpdated, onDeleted }: {
   )
 }
 
-// ─── Mini Bar Chart ───────────────────────────────────────────────────────────
-
-function MiniBarChart({ data, color }: { data: { label: string; value: number }[]; color: string }) {
-  const max = Math.max(...data.map(d => d.value), 1)
-  const BAR_H = 88 // px — fixed height for the bar zone
-
-  return (
-    <div className="flex gap-1.5 items-end">
-      {data.map((d, i) => {
-        const pct = (d.value / max) * 100
-        return (
-          <div key={i} className="flex-1 flex flex-col items-center gap-1">
-            {/* Value label — fixed height so all bars align */}
-            <span
-              className="text-[10px] font-bold leading-none"
-              style={{ color: d.value > 0 ? color : 'transparent', minHeight: 14 }}
-            >
-              {d.value > 0 ? d.value.toLocaleString('fr-FR') : '0'}
-            </span>
-
-            {/* Bar zone — explicit height so % is meaningful */}
-            <div className="relative w-full" style={{ height: BAR_H }}>
-              <div
-                className="absolute bottom-0 left-0 right-0 rounded-t-md transition-all duration-500"
-                style={{
-                  height: d.value > 0 ? `${Math.max(pct, 3)}%` : '3px',
-                  background: d.value > 0 ? color : '#E2E8F0',
-                  opacity: d.value > 0 ? 1 : 0.4,
-                }}
-              />
-            </div>
-
-            <span className="text-[9px] text-[#94A3B8] mt-0.5">{d.label}</span>
-          </div>
-        )
-      })}
-    </div>
-  )
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -497,8 +458,8 @@ export function BusinessContent({ profile, clients }: Props) {
             )}
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-              <StatCard icon={Users} label="Membres actifs" value={String(activeClients.length)} sub={`sur ${profile.client_limit === 9999 ? '∞' : profile.client_limit} max`} accent="#4E9B6F" />
-              <StatCard icon={Users} label="Membres inactifs" value={String(inactiveClients.length)} accent="#94A3B8" />
+              <StatCard icon={Users} label="Elève actifs" value={String(activeClients.length)} sub={`sur ${profile.client_limit === 9999 ? '∞' : profile.client_limit} max`} accent="#4E9B6F" />
+              <StatCard icon={Users} label="Elève inactifs" value={String(inactiveClients.length)} accent="#94A3B8" />
               <StatCard icon={TrendingUp} label="Plan" value={getPlanLabel(profile.plan)} accent="#3B82F6" />
               <StatCard icon={CreditCard} label="Statut" value={
                 profile.plan_status === 'active' ? 'Actif' :
@@ -671,7 +632,7 @@ export function BusinessContent({ profile, clients }: Props) {
               <div className="bg-white rounded-xl border border-[#F1F5F9] p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <Users size={13} className="text-[#4E9B6F]" />
-                  <span className="text-[11px] text-[#94A3B8] uppercase tracking-wide font-medium">Membres actifs</span>
+                  <span className="text-[11px] text-[#94A3B8] uppercase tracking-wide font-medium">Elève actifs</span>
                 </div>
                 <p className="text-[26px] font-bold text-[#0D1F3C] leading-none">{activeClients.length}</p>
                 <p className="text-[11px] mt-1" style={{ color: growthPct.startsWith('+') ? '#4E9B6F' : growthPct === '—' ? '#CBD5E1' : '#EF4444' }}>
@@ -690,28 +651,19 @@ export function BusinessContent({ profile, clients }: Props) {
               </div>
             </div>
 
-            {/* Charts côte à côte — style carte sombre animée */}
+            {/* Charts côte à côte — StatsCard animé */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-              {/* Clients */}
+              {/* Nouveaux membres 6 mois */}
               {(() => {
-                const MAX_CLIENTS = 15
                 const highestClients = Math.max(...monthlyGrowth.map(m => m.value), 1)
-                const clientChartH = Math.max(Math.round((highestClients / MAX_CLIENTS) * 120), 40)
-                const clientsChartData = monthlyGrowth.map((m, i) => ({
-                  name: m.label,
-                  value: Math.round((m.value / highestClients) * 100),
-                  highlighted: i === monthlyGrowth.length - 1,
-                }))
                 const totalNewClients = monthlyGrowth.reduce((s, m) => s + m.value, 0)
                 const thisMonthClients = monthlyGrowth[5].value
-                const lastMonthClients = monthlyGrowth[4].value
-                const diff = thisMonthClients - lastMonthClients
+                const diff = thisMonthClients - monthlyGrowth[4].value
                 return (
-                  <AnimatedBarCard
+                  <StatsCard
                     title="Nouveaux membres — 6 mois"
                     currentValue={thisMonthClients}
-                    formatValue={(v) => Math.round(v).toString()}
                     description={
                       diff > 0 ? (
                         <><span style={{ color: '#4E9B6F', fontWeight: 600 }}>+{diff} vs mois dernier</span> · {totalNewClients} sur 6 mois</>
@@ -721,39 +673,29 @@ export function BusinessContent({ profile, clients }: Props) {
                         <>Stable vs mois dernier · {totalNewClients} sur 6 mois</>
                       )
                     }
-                    chartData={clientsChartData}
-                    chartHeight={clientChartH}
-                    highlightedBarColor="#4E9B6F"
+                    chartData={monthlyGrowth.map((m, i) => ({
+                      name: m.label,
+                      value: Math.round((m.value / highestClients) * 100),
+                    }))}
+                    highlightedBarColor="bg-[#4E9B6F]"
                   />
                 )
               })()}
 
-              {/* Revenus */}
+              {/* Revenus encaissés 6 mois */}
               {loadingPayments ? (
-                <div className="rounded-2xl flex items-center justify-center h-[200px]"
-                  style={{ background: 'linear-gradient(145deg, #0f1f2e 0%, #0D1F3C 55%, #0a1a10 100%)' }}>
+                <div className="rounded-2xl flex items-center justify-center h-[200px] border border-[#E2E8F0] bg-white">
                   <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin border-[#4E9B6F]" />
                 </div>
               ) : (() => {
-                const MAX_REVENUE = 10000
                 const highestRev = Math.max(...revenueByMonth.map(m => m.value), 1)
-                // Hauteur du conteneur : grandit avec la valeur absolue (40px → 120px)
-                const revChartH = Math.max(Math.round((highestRev / MAX_REVENUE) * 120), 40)
-                // Barres normalisées entre elles (la plus haute = 100%) → toujours visibles
-                const revenueChartData = revenueByMonth.map((m, i) => ({
-                  name: m.label,
-                  value: Math.round((m.value / highestRev) * 100),
-                  highlighted: i === revenueByMonth.length - 1,
-                }))
                 const thisMonthRev = revenueByMonth[5].value
-                const lastMonthRev = revenueByMonth[4].value
-                const delta = Math.round(thisMonthRev - lastMonthRev)
+                const delta = Math.round(thisMonthRev - revenueByMonth[4].value)
                 return (
-                  <AnimatedBarCard
+                  <StatsCard
                     title="Revenus encaissés — 6 mois"
                     currentValue={thisMonthRev}
-                    formatValue={(v) => Math.round(v).toLocaleString('fr-FR') + ' €'}
-                    chartHeight={revChartH}
+                    valuePostfix=" €"
                     description={
                       payments.length === 0 ? (
                         <>Aucun paiement enregistré</>
@@ -765,8 +707,11 @@ export function BusinessContent({ profile, clients }: Props) {
                         <>Stable vs mois dernier</>
                       )
                     }
-                    chartData={revenueChartData}
-                    highlightedBarColor="#4E9B6F"
+                    chartData={revenueByMonth.map((m, i) => ({
+                      name: m.label,
+                      value: Math.round((m.value / highestRev) * 100),
+                    }))}
+                    highlightedBarColor="bg-[#4E9B6F]"
                   />
                 )
               })()}

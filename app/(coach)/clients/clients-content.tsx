@@ -253,54 +253,65 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
   }
 
   return (
-    <main className="flex-1 px-4 sm:px-8 lg:px-10 pt-6 pb-24 sm:py-8 max-w-7xl w-full mx-auto">
+    <main className="flex-1 px-4 sm:px-8 lg:px-10 pt-6 pb-6 sm:py-8 max-w-7xl w-full mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div>
-          <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C] tracking-tight">👥 Mes membres</h1>
+          <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C] tracking-tight">Mes membres</h1>
           <div className="flex items-center gap-3 mt-1.5">
             <p className="text-sm text-[#64748B]">
               {activeClients} actif{activeClients > 1 ? 's' : ''}
-              {profile.client_limit !== 9999 && ` sur ${profile.client_limit}`}
+              {clientMax !== -1 && ` sur ${clientMax}`}
             </p>
-            {profile.client_limit !== 9999 && (
+            {clientMax !== -1 && (
               <div className="flex items-center gap-2">
                 <div className="w-20 h-1.5 bg-[#F1F5F9] rounded-full overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
-                      width: `${Math.min(100, (activeClients / profile.client_limit) * 100)}%`,
-                      backgroundColor: activeClients >= profile.client_limit ? '#EF4444' : activeClients / profile.client_limit >= 0.8 ? '#F59E0B' : '#4E9B6F',
+                      width: `${Math.min(100, (activeClients / clientMax) * 100)}%`,
+                      backgroundColor: activeClients >= clientMax ? '#EF4444' : activeClients / clientMax >= 0.8 ? '#F59E0B' : '#4E9B6F',
                     }}
                   />
                 </div>
-                <span className="text-xs text-[#94A3B8]">{Math.round((activeClients / profile.client_limit) * 100)}%</span>
+                <span className="text-xs text-[#94A3B8]">{Math.round((activeClients / clientMax) * 100)}%</span>
               </div>
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          {/* Lien partageable */}
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {/* Lien partageable — désactivé si limite atteinte */}
           <button
-            onClick={() => setShareModal(true)}
-            title="Partager mon lien d'invitation"
-            className="flex items-center gap-1.5 px-3 py-2.5 bg-white border border-[#E2E8F0] hover:bg-[#F8FAFB] text-[#374151] text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
+            onClick={() => {
+              if (limitReached) {
+                router.push('/plans')
+              } else {
+                setShareModal(true)
+              }
+            }}
+            title={limitReached ? 'Limite atteinte — passer à un plan supérieur' : "Partager mon lien d'invitation"}
+            className={`flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-3 py-2.5 border text-sm font-medium rounded-lg transition-all active:scale-[0.98] whitespace-nowrap ${
+              limitReached
+                ? 'bg-[#FEF2F2] border-[#FECACA] text-[#DC2626] cursor-not-allowed opacity-70'
+                : 'bg-white border-[#E2E8F0] hover:bg-[#F8FAFB] text-[#374151]'
+            }`}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
             </svg>
-            Partager mon lien
+            <span className="sm:hidden">{limitReached ? 'Limite' : 'Partager'}</span>
+            <span className="hidden sm:inline">{limitReached ? 'Limite atteinte' : 'Partager mon lien'}</span>
           </button>
 
           {limitReached ? (
             <button onClick={() => router.push('/plans')}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#D4A853] hover:bg-[#c49940] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]">
-              ⚡ Plan supérieur
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-[#D4A853] hover:bg-[#c49940] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98] whitespace-nowrap">
+              Plan supérieur
             </button>
           ) : (
             <button onClick={() => setShowAddModal(true)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-[#4E9B6F] hover:bg-[#3d8058] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98]"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 bg-[#4E9B6F] hover:bg-[#3d8058] text-white text-sm font-medium rounded-lg transition-all active:scale-[0.98] whitespace-nowrap"
               style={{ boxShadow: '0 1px 2px rgba(97,128,112,0.2)' }}>
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
                 <path d="M6.5 1.5v10M1.5 6.5h10" stroke="white" strokeWidth="1.8" strokeLinecap="round"/>
@@ -311,13 +322,13 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
         </div>
       </div>
 
-      {/* Onglets Membres / Demandes reçues */}
+      {/* Onglets Elève / Demandes reçues */}
       <div className="flex items-center gap-1 mb-4 border-b border-[#E2E8F0]">
         <button
           onClick={() => setTab('membres')}
           className={`relative px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'membres' ? 'text-[#0D1F3C]' : 'text-[#94A3B8] hover:text-[#64748B]'}`}
         >
-          Membres
+          Elève
           {tab === 'membres' && <span className="absolute bottom-[-1px] left-0 right-0 h-0.5 bg-[#4E9B6F] rounded-full" />}
         </button>
         <button
@@ -398,7 +409,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
             </div>
             <div>
               <p className="text-sm font-semibold text-[#0D1F3C]">Limite de {clientMax} membres atteinte</p>
-              <p className="text-xs text-[#64748B] mt-0.5">Passez au plan superieur pour continuer a ajouter des membres.</p>
+              <p className="text-xs text-[#64748B] mt-0.5">Passez au plan supérieur pour continuer à ajouter des membres.</p>
             </div>
           </div>
           <button onClick={() => router.push('/plans')}
@@ -484,8 +495,8 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
                   </div>
                 </Link>
 
-                {/* Actions — always visible on mobile, hover on desktop */}
-                <div className="flex flex-col gap-1 items-center justify-center sm:opacity-0 sm:group-hover/card:opacity-100 transition-opacity">
+                {/* Actions — masquées sur mobile, hover sur desktop */}
+                <div className="hidden sm:flex flex-col gap-1 items-center justify-center sm:opacity-0 sm:group-hover/card:opacity-100 transition-opacity">
                   <button onClick={(e) => handleResendInvite(client, e)}
                     className="text-xs text-[#64748B] hover:text-[#4E9B6F] border border-[#E2E8F0] hover:border-[#4E9B6F]/30 bg-white px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
                     🔗 Lien
@@ -598,7 +609,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
                 </button>
                 <button type="submit" disabled={addLoading || !newFirstName.trim()}
                   className="flex-1 py-2.5 bg-[#4E9B6F] text-white text-sm font-medium rounded-lg hover:bg-[#3d8058] transition-all active:scale-[0.98] disabled:opacity-50">
-                  {addLoading ? 'Création...' : 'Créer l\'membre →'}
+                  {addLoading ? 'Création...' : 'Créer le membre →'}
                 </button>
               </div>
             </form>

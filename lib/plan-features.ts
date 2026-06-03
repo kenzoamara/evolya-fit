@@ -14,6 +14,7 @@ export const PLAN_LABELS: Record<string, string> = {
   starter: 'Lancement',
   growth:  'Croissance',
   pro:     'Pro',
+  standard: 'Croissance', // legacy → Croissance
 }
 
 export type FeatureKey =

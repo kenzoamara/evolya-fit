@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { CoachesAdminContent } from './coaches-admin-content'
+import { planMrr } from '@/lib/stripe/plans'
 
 export const revalidate = 0
 
@@ -26,7 +27,7 @@ export default async function AdminCoachesPage() {
   const enriched = (coaches ?? []).map(c => ({
     ...c,
     activeClients: countMap[c.id] ?? 0,
-    mrr: c.plan === 'standard' ? 49 : c.plan === 'starter' ? 19 : 0,
+    mrr: planMrr(c.plan),
   }))
 
   return <CoachesAdminContent coaches={enriched} />

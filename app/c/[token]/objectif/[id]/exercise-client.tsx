@@ -162,7 +162,7 @@ export function ExerciseClient({ objective, token, coachView = false }: Props) {
     : totalSeries > 0 ? completedCount / totalSeries : 0
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] flex flex-col">
+    <div className="min-h-dvh bg-[#F8FAFB] flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-[#E2E8F0] px-4 py-4 flex items-center justify-between max-w-2xl mx-auto w-full">
         <div className="flex-1 min-w-0">

@@ -85,7 +85,7 @@ export function PaiementsContent({ profile, initialOffers, transactions }: Props
   return (
     <main className="flex-1 px-4 sm:px-8 lg:px-10 pt-6 pb-24 sm:py-8 max-w-5xl w-full mx-auto">
       <div className="mb-6">
-        <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C] tracking-tight">💳 Paiements clients</h1>
+        <h1 className="text-xl sm:text-2xl font-semibold text-[#0D1F3C] tracking-tight">Paiements clients</h1>
         <p className="text-sm text-[#64748B] mt-1">Vends des packs de séances. L&apos;argent arrive directement sur ton compte.</p>
       </div>
 

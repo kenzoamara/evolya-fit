@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { AnimatedBackground } from '../AnimatedBackground'
+import { SectionTag } from '@/components/landing/section-tag'
 
 const STEPS = [
   {
@@ -33,9 +34,7 @@ export function HowItWorks() {
 
         {/* Header */}
         <div className="text-center mb-14">
-          <div className="inline-flex items-center gap-2 bg-white border border-[#E5E7EB] text-[#4E9B6F] text-[11px] font-bold px-3 py-1.5 rounded-full mb-5 tracking-[0.12em] uppercase">
-            Prise en main
-          </div>
+          <SectionTag>Prise en main</SectionTag>
           <h2 className="text-[36px] md:text-[44px] font-bold text-[#0D1F3C] tracking-[-0.02em] mb-5 leading-tight">
             De zéro à ton premier membre suivi{' '}
             <span className="text-[#4E9B6F]">en moins de 10 minutes.</span>

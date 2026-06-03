@@ -45,14 +45,14 @@ export function isTrialExpired(trialEndsAt: string | null): boolean {
 export function getPlanLabel(plan: string): string {
   const labels: Record<string, string> = {
     trial: 'Essai gratuit',
-    free: 'Gratuit',
-    starter: 'Starter',
-    growth: 'Growth',
+    free: 'Découverte',
+    starter: 'Lancement',
+    growth: 'Croissance',
     pro: 'Pro',
     scale: 'Scale',
     elite: 'Elite',
     unlimited: 'Unlimited',
-    standard: 'Growth',
+    standard: 'Croissance',
   }
   return labels[plan] ?? plan
 }

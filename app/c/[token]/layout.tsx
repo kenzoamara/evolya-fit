@@ -29,7 +29,7 @@ export default async function ClientLayout({
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-[#F8FAFB] flex items-center justify-center px-4">
+      <div className="min-h-dvh bg-[#F8FAFB] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="w-12 h-12 rounded-full bg-[#E2E8F0] flex items-center justify-center mx-auto mb-4">
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#94A3B8" strokeWidth="1.6" strokeLinecap="round">
@@ -77,7 +77,7 @@ export default async function ClientLayout({
 
   return (
     <ClientThemeProvider brand={brand} font={font}>
-      <div className="flex min-h-screen bg-[#F8FAFB]">
+      <div className="flex min-h-dvh bg-[#F8FAFB]">
         <ClientNav
           clientName={client.full_name}
           coachName={coachName}

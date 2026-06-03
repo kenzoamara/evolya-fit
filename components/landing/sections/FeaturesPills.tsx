@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
+import { SectionTag } from '@/components/landing/section-tag'
 
 const TOOLS = [
   {
@@ -28,6 +29,9 @@ const TOOLS = [
       'Agenda de planification intégré',
       'Lancement chrono minimaliste + enregistrement',
       'Notes privées enregistrées à chaque séance',
+      'Disponibilités configurables — tes membres réservent eux-mêmes',
+      'Prise de RDV en ligne directement depuis l\'espace membre',
+      'Synchronisation Google Agenda (bidirectionnel)',
     ],
   },
   {
@@ -83,6 +87,7 @@ const TOOLS = [
       'Demandes reçues : tu valides ou refuses en un clic',
       'Accès envoyé automatiquement par email à la validation',
       "Page d'inscription à ta marque (logo & couleur)",
+      'Formulaire d\'intake personnalisé — collecte les infos clés avant la 1ère séance',
     ],
   },
   {
@@ -209,9 +214,7 @@ export function FeaturesPills() {
 
         {/* Header */}
         <div className="mb-12">
-          <p className="text-[11px] font-bold text-[#4E9B6F] tracking-[0.15em] uppercase mb-3">
-            Fonctionnalités
-          </p>
+          <SectionTag>Fonctionnalités</SectionTag>
           <h2 className="text-[34px] md:text-[46px] font-bold text-white leading-tight tracking-tight mb-4">
             Un seul outil. Tout ce qu&apos;il te faut pour coacher.
           </h2>

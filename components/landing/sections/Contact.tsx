@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
+import { SectionTag } from '@/components/landing/section-tag'
 
 export function Contact() {
   const [sent, setSent] = useState(false)
@@ -46,9 +47,7 @@ export function Contact() {
 
           {/* Gauche — texte */}
           <div className="pt-2">
-            <p className="text-[11px] font-bold text-[#4E9B6F] tracking-[0.15em] uppercase mb-4">
-              Contact
-            </p>
+            <SectionTag>Contact</SectionTag>
             <h2 className="text-[40px] md:text-[52px] font-bold text-white leading-tight tracking-tight mb-5">
               Une question&nbsp;?
             </h2>

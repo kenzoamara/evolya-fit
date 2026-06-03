@@ -14,11 +14,12 @@ export async function GET(req: Request) {
 
     if (token) {
       // Client via magic token
+      const now = new Date().toISOString()
       const { data: client } = await admin
         .from('clients')
         .select('id')
         .eq('magic_token', token)
-        .gt('token_expires_at', new Date().toISOString())
+        .or(`token_expires_at.is.null,token_expires_at.gt.${now}`)
         .single()
 
       if (!client) return NextResponse.json({ error: 'Token invalide.' }, { status: 401 })
@@ -83,11 +84,12 @@ export async function POST(req: Request) {
 
     if (token) {
       // Client envoie un message
+      const now = new Date().toISOString()
       const { data: client } = await admin
         .from('clients')
         .select('id, coach_id')
         .eq('magic_token', token)
-        .gt('token_expires_at', new Date().toISOString())
+        .or(`token_expires_at.is.null,token_expires_at.gt.${now}`)
         .single()
 
       if (!client) return NextResponse.json({ error: 'Token invalide.' }, { status: 401 })

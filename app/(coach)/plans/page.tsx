@@ -4,7 +4,11 @@ import { PlansContent } from './plans-content'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PlansPage() {
+export default async function PlansPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/auth/login')
@@ -15,5 +19,14 @@ export default async function PlansPage() {
     .eq('id', user.id)
     .single()
 
-  return <PlansContent currentPlan={profile?.plan ?? 'free'} clientLimit={profile?.client_limit ?? 1} />
+  const sp = await searchParams
+  const onboarding = sp.onboarding === '1'
+
+  return (
+    <PlansContent
+      currentPlan={profile?.plan ?? 'free'}
+      clientLimit={profile?.client_limit ?? 1}
+      onboarding={onboarding}
+    />
+  )
 }

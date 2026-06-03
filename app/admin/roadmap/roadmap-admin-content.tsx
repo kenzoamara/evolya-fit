@@ -185,7 +185,7 @@ export function RoadmapAdminContent({ adminName, roadmapItems: initial, suggesti
   const totalVotes = items.reduce((acc, i) => acc + i.vote_count, 0) + suggestions.reduce((acc, s) => acc + s.vote_count, 0)
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB]">
+    <div className="min-h-dvh bg-[#F8FAFB]">
 
       {/* Top nav admin */}
       <header className="bg-white border-b border-[#E2E8F0] px-6 py-4 flex items-center justify-between">

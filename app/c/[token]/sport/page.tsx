@@ -587,7 +587,7 @@ export default function SportPage() {
   // ─── Loading ──────────────────────────────────────────────────────────────
 
   if (loading) return (
-    <div className="flex-1 flex items-center justify-center min-h-screen">
+    <div className="flex-1 flex items-center justify-center min-h-dvh">
       <div className="w-5 h-5 border-2 border-[var(--brand)] border-t-transparent rounded-full animate-spin" />
     </div>
   )

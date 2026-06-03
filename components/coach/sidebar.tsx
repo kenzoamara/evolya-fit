@@ -6,7 +6,27 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/shared/logo'
 import type { Profile } from '@/types/database'
-import { LogOut, Menu, ChevronDown, ChevronUp, Settings } from 'lucide-react'
+import { LogOut, ChevronDown, ChevronUp, Settings } from 'lucide-react'
+
+/* ── Icônes bottom-nav (SVG, jamais d'emoji) ── */
+function BottomIcon({ name, size = 22 }: { name: string; size?: number }) {
+  const s = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  switch (name) {
+    case 'home':     return <svg {...s}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1v-9.5z"/><path d="M9 21V14h6v7"/></svg>
+    case 'users':    return <svg {...s}><circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-3.5 3-6 7-6s7 2.5 7 6"/><path d="M16 4.5a3.5 3.5 0 010 7"/><path d="M22 21c0-3-2.5-5.5-5.5-6"/></svg>
+    case 'calendar': return <svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    case 'message':  return <svg {...s}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    case 'more':     return <svg {...s}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    default:         return null
+  }
+}
+
+const BOTTOM_TABS = [
+  { id: 'dashboard',  label: 'Accueil',  href: '/dashboard',  icon: 'home' },
+  { id: 'clients',    label: 'Elève',  href: '/clients',    icon: 'users' },
+  { id: 'agenda',     label: 'Planning', href: '/agenda',     icon: 'calendar' },
+  { id: 'messagerie', label: 'Messages', href: '/messagerie', icon: 'message' },
+] as const
 
 type NavItem = {
   id: string
@@ -95,7 +115,7 @@ function SidebarContent({ navGroups, active, profile, initials, logout }: Sideba
       </nav>
 
       {/* Trial badge */}
-      {profile.plan === 'trial' && profile.trial_ends_at && (() => {
+      {profile.plan_status === 'trial' && profile.trial_ends_at && (() => {
         const days = Math.max(0, Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400000))
         return days > 0 ? (
           <div className="mx-3 mb-2 px-3 py-2.5 bg-[#FFF7ED] border border-[#FED7AA] rounded-lg">
@@ -212,7 +232,6 @@ export function Sidebar({ profile }: Props) {
       label: 'PILOTAGE',
       items: [
         { id: 'business',     label: 'Business',     href: '/business',     emoji: '📊', emojiColor: '#4E9B6F', emojiBg: '#EEF9F3' },
-        { id: 'paiements',    label: 'Paiements',    href: '/paiements',    emoji: '💳', emojiColor: '#16A34A', emojiBg: '#F0FDF4' },
         { id: 'statistiques', label: 'Statistiques', href: '/statistiques', emoji: '📈', emojiColor: '#3B82F6', emojiBg: '#EFF6FF' },
         { id: 'calcul',       label: 'Calcul',       href: '/calcul',       emoji: '🧮', emojiColor: '#DB2777', emojiBg: '#FCE7F3' },
       ],
@@ -220,7 +239,8 @@ export function Sidebar({ profile }: Props) {
     {
       label: 'RÉGLAGES',
       items: [
-        { id: 'personnalisation', label: 'Personnalisation', href: '/personnalisation', emoji: '🎨', emojiColor: '#7C3AED', emojiBg: '#F5F3FF' },
+        { id: 'formulaire',       label: 'Formulaire accueil', href: '/formulaire',       emoji: '📋', emojiColor: '#0EA5E9', emojiBg: '#E0F2FE' },
+        { id: 'personnalisation', label: 'Personnalisation',   href: '/personnalisation', emoji: '🎨', emojiColor: '#7C3AED', emojiBg: '#F5F3FF' },
         { id: 'nouveautes',       label: 'Nouveautés',       href: '/nouveautes-vote',  emoji: '✨', emojiColor: '#D97706', emojiBg: '#FFFBEB', badge: newUpdates },
         { id: 'parametres',       label: 'Paramètres',       href: '/parametres',       emoji: '⚙️', emojiColor: '#64748B', emojiBg: '#F1F5F9' },
       ],
@@ -230,24 +250,76 @@ export function Sidebar({ profile }: Props) {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden md:flex w-[220px] shrink-0 h-screen sticky top-0 flex-col overflow-hidden" style={{ backgroundColor: 'var(--evolya-card)', borderRight: '1px solid var(--evolya-border)' }}>
+      <aside className="hidden md:flex w-[220px] shrink-0 h-dvh sticky top-0 flex-col overflow-hidden" style={{ backgroundColor: 'var(--evolya-card)', borderRight: '1px solid var(--evolya-border)' }}>
         <SidebarContent navGroups={NAV_GROUPS} active={active} profile={profile} initials={initials} logout={logout} />
       </aside>
 
-      {/* Mobile top bar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 h-12 flex items-center px-4 gap-3" style={{ backgroundColor: 'var(--evolya-card)', borderBottom: '1px solid var(--evolya-border)' }}>
-        <button onClick={() => setMobileOpen(true)} className="text-[#64748B] p-1 -ml-1" aria-label="Ouvrir le menu">
-          <Menu size={22} />
-        </button>
+      {/* Mobile top bar (logo + accès compte/menu via l'avatar) */}
+      <div
+        className="md:hidden fixed top-0 left-0 right-0 z-40 flex items-center px-4 gap-3"
+        style={{
+          backgroundColor: 'var(--evolya-card)',
+          borderBottom: '1px solid var(--evolya-border)',
+          height: 'calc(3rem + env(safe-area-inset-top))',
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
         <Logo height={28} variant="default" />
         <div className="flex-1" />
-        <div className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold text-white overflow-hidden" style={{ backgroundColor: 'var(--brand)' }}>
+        <button
+          onClick={() => setMobileOpen(true)}
+          aria-label="Ouvrir le menu"
+          className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold text-white overflow-hidden active:scale-95 transition-transform"
+          style={{ backgroundColor: 'var(--brand)' }}
+        >
           {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : (profile.brand_icon || initials)}
-        </div>
+        </button>
       </div>
 
-      {/* Mobile spacer */}
-      <div className="md:hidden h-12 shrink-0" />
+      {/* Mobile bottom nav (navigation principale au pouce) */}
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40"
+        style={{
+          backgroundColor: 'var(--evolya-card)',
+          borderTop: '1px solid var(--evolya-border)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+          height: 'calc(3.75rem + env(safe-area-inset-bottom))',
+        }}
+      >
+        <div className="flex items-stretch h-[60px]">
+          {BOTTOM_TABS.map(tab => {
+            const isActive = active(tab.href)
+            const badge = tab.id === 'messagerie' ? unread : 0
+            return (
+              <Link
+                key={tab.id}
+                href={tab.href}
+                className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] relative transition-colors"
+                style={{ color: isActive ? 'var(--brand)' : '#94A3B8' }}
+              >
+                <span className="relative">
+                  <BottomIcon name={tab.icon} size={22} />
+                  {badge > 0 && (
+                    <span className="absolute -top-1.5 -right-2 bg-[#EF4444] text-white text-[9px] font-bold rounded-full min-w-[15px] h-[15px] flex items-center justify-center px-1">
+                      {badge > 9 ? '9+' : badge}
+                    </span>
+                  )}
+                </span>
+                <span className={`text-[10px] leading-none ${isActive ? 'font-semibold' : 'font-medium'}`}>{tab.label}</span>
+              </Link>
+            )
+          })}
+          <button
+            onClick={() => setMobileOpen(true)}
+            aria-label="Plus de menus"
+            className="flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[44px] transition-colors"
+            style={{ color: (mobileOpen || !BOTTOM_TABS.some(t => active(t.href))) ? 'var(--brand)' : '#94A3B8' }}
+          >
+            <BottomIcon name="more" size={22} />
+            <span className="text-[10px] leading-none font-medium">Plus</span>
+          </button>
+        </div>
+      </nav>
 
       {/* Mobile drawer (slide-in) */}
       <div className={`md:hidden fixed inset-0 z-50 ${mobileOpen ? '' : 'pointer-events-none'}`}>
@@ -329,7 +401,7 @@ export function Sidebar({ profile }: Props) {
           </nav>
 
           {/* Trial badge */}
-          {profile.plan === 'trial' && profile.trial_ends_at && (() => {
+          {profile.plan_status === 'trial' && profile.trial_ends_at && (() => {
             const days = Math.max(0, Math.ceil((new Date(profile.trial_ends_at).getTime() - Date.now()) / 86400000))
             return days > 0 ? (
               <div className="mx-3 mb-3 px-3 py-2.5 bg-[#FFF7ED] border border-[#FED7AA] rounded-xl shrink-0">

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
+import { checkPlanActive } from '@/lib/plan-guard'
 
 export async function POST(req: Request) {
   try {
@@ -19,6 +20,10 @@ export async function POST(req: Request) {
       .eq('id', user.id)
       .single()
     if (!profile) return NextResponse.json({ error: 'Profil introuvable.' }, { status: 404 })
+
+    // Bloquer si abonnement résilié ou paiement en échec
+    const guard = await checkPlanActive(supabase, user.id)
+    if (guard.blocked) return guard.response
 
     const admin = createAdminClient()
 

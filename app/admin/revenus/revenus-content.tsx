@@ -1,9 +1,8 @@
 'use client'
 
-import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
-} from 'recharts'
+import { PLAN_LABELS } from '@/lib/plan-features'
+import { PointsChart } from '@/components/ui/points-chart'
+import { StatsCard } from '@/components/ui/stats-card-1'
 
 type Props = {
   mrr: number
@@ -17,8 +16,7 @@ type Props = {
   coaches: { id: string; plan: string; plan_status: string; suspended: boolean; created_at: string; mrr: number }[]
 }
 
-const PLAN_COLORS: Record<string, string> = { trial: '#E2E8F0', free: '#E2E8F0', starter: '#93C5FD', growth: '#60A5FA', pro: '#4E9B6F', scale: '#7C3AED', elite: '#A78BFA', unlimited: '#DC2626', standard: '#60A5FA' }
-const PLAN_LABELS: Record<string, string> = { trial: 'Trial', starter: 'Starter', standard: 'Pro' }
+const PLAN_COLORS: Record<string, string> = { trial: '#E2E8F0', free: '#E2E8F0', starter: '#93C5FD', growth: '#60A5FA', pro: '#4E9B6F', standard: '#60A5FA' }
 
 export function RevenusContent({ mrr, arr, newThisMonth, cancelledThisMonth, churnRate, arpu, planDist, mrrMonthly, coaches }: Props) {
   const kpis = [
@@ -31,9 +29,10 @@ export function RevenusContent({ mrr, arr, newThisMonth, cancelledThisMonth, chu
   ]
 
   const donutData = [
-    { name: 'Trial', value: planDist.trial, color: PLAN_COLORS.trial },
-    { name: 'Starter', value: planDist.starter, color: PLAN_COLORS.starter },
-    { name: 'Pro', value: planDist.standard, color: PLAN_COLORS.standard },
+    { name: 'Découverte', value: (planDist.free ?? 0) + (planDist.trial ?? 0), color: PLAN_COLORS.trial },
+    { name: 'Lancement', value: planDist.starter ?? 0, color: PLAN_COLORS.starter },
+    { name: 'Croissance', value: (planDist.growth ?? 0) + (planDist.standard ?? 0), color: PLAN_COLORS.growth },
+    { name: 'Pro', value: planDist.pro ?? 0, color: PLAN_COLORS.pro },
   ].filter(d => d.value > 0)
 
   function exportCSV() {
@@ -76,49 +75,40 @@ export function RevenusContent({ mrr, arr, newThisMonth, cancelledThisMonth, chu
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 mb-6">
-        {/* MRR 12 mois */}
-        <div className="lg:col-span-2 bg-white border border-[#E2E8F0] rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-[#0D1F3C] mb-4">MRR — 12 mois glissants</h2>
-          <ResponsiveContainer width="100%" height={200}>
-            <LineChart data={mrrMonthly}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="month" tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} />
-              <YAxis tick={{ fontSize: 10, fill: '#94A3B8' }} tickLine={false} axisLine={false} />
-              <Tooltip formatter={(v) => [`${v ?? 0}€`, 'MRR']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #E2E8F0' }} />
-              <Line type="monotone" dataKey="mrr" stroke="#4E9B6F" strokeWidth={2.5} dot={{ r: 3, fill: '#4E9B6F' }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+        {/* MRR 12 mois — PointsChart */}
+        <PointsChart
+          className="lg:col-span-2"
+          title="MRR — 12 mois glissants"
+          data={mrrMonthly.map((m, i, arr) => ({
+            date: m.month,
+            total: m.mrr,
+            change: i === 0 ? 0 : m.mrr - arr[i - 1].mrr,
+          }))}
+          formatValue={(v) => `${Math.round(v)}€`}
+          height={200}
+        />
 
-        {/* Donut plans */}
-        <div className="bg-white border border-[#E2E8F0] rounded-xl p-5">
-          <h2 className="text-sm font-semibold text-[#0D1F3C] mb-4">Répartition des plans</h2>
-          {donutData.length > 0 ? (
-            <>
-              <ResponsiveContainer width="100%" height={160}>
-                <PieChart>
-                  <Pie data={donutData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} dataKey="value">
-                    {donutData.map((d, i) => <Cell key={i} fill={d.color} />)}
-                  </Pie>
-                  <Tooltip formatter={(v, name) => [v ?? 0, name]} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="space-y-1 mt-2">
-                {donutData.map(d => (
-                  <div key={d.name} className="flex items-center justify-between text-xs">
-                    <div className="flex items-center gap-1.5">
-                      <div className="w-2.5 h-2.5 rounded-full" style={{ background: d.color }} />
-                      <span className="text-[#64748B]">{d.name}</span>
-                    </div>
-                    <span className="font-medium text-[#0D1F3C]">{d.value}</span>
-                  </div>
-                ))}
-              </div>
-            </>
-          ) : (
-            <p className="text-sm text-[#94A3B8] text-center py-8">Aucune donnée</p>
-          )}
-        </div>
+        {/* Répartition plans — StatsCard */}
+        {donutData.length > 0 ? (
+          <StatsCard
+            title="Répartition des plans"
+            currentValue={donutData.reduce((s, d) => s + d.value, 0)}
+            description="coaches actifs par plan"
+            chartData={(() => {
+              const maxVal = Math.max(...donutData.map(d => d.value), 1)
+              return donutData.map((d, i) => ({
+                name: d.name,
+                value: Math.round((d.value / maxVal) * 100),
+                color: i === donutData.length - 1 ? 'bg-[#4E9B6F]' : undefined,
+              }))
+            })()}
+            highlightedBarColor="bg-[#4E9B6F]"
+          />
+        ) : (
+          <div className="bg-white border border-[#E2E8F0] rounded-xl p-5 flex items-center justify-center">
+            <p className="text-sm text-[#94A3B8]">Aucune donnée</p>
+          </div>
+        )}
       </div>
 
       {/* Table transactions */}

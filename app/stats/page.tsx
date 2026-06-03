@@ -28,7 +28,7 @@ export default async function StatsPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] text-[#0D1F3C]">
+    <div className="min-h-dvh bg-[#F8FAFB] text-[#0D1F3C]">
 
       {/* Nav */}
       <nav className="border-b border-[#E2E8F0] bg-white px-6">

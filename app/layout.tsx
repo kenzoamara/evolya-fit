@@ -27,10 +27,13 @@ const barlowCondensed = Barlow_Condensed({
   weight: ['600', '700', '800'],
 })
 
+// Polices de marque optionnelles : chargées uniquement si un coach les choisit.
+// preload:false → pas de téléchargement eager pour la majorité (qui garde Inter/Barlow).
 const poppins = Poppins({
   subsets: ['latin'],
   variable: '--font-poppins',
   display: 'swap',
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
@@ -38,6 +41,7 @@ const montserrat = Montserrat({
   subsets: ['latin'],
   variable: '--font-montserrat',
   display: 'swap',
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
@@ -45,6 +49,7 @@ const raleway = Raleway({
   subsets: ['latin'],
   variable: '--font-raleway',
   display: 'swap',
+  preload: false,
   weight: ['400', '500', '600', '700'],
 })
 
@@ -123,7 +128,8 @@ export default function RootLayout({
         {children}
         <CookieNotice />
         <Toaster
-          position="bottom-right"
+          position="top-center"
+          richColors
           toastOptions={{
             style: {
               fontFamily: 'var(--font-inter), var(--font-geist-sans)',

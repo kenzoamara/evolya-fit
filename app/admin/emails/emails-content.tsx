@@ -13,9 +13,10 @@ type Tab = 'broadcast' | 'notifications' | 'history'
 
 const RECIPIENT_OPTIONS = [
   { value: 'all', label: 'Tous les coaches' },
-  { value: 'plan:trial', label: 'Plan Trial' },
-  { value: 'plan:starter', label: 'Plan Starter' },
-  { value: 'plan:standard', label: 'Plan Pro' },
+  { value: 'plan:trial', label: 'Plan Découverte' },
+  { value: 'plan:starter', label: 'Plan Lancement' },
+  { value: 'plan:growth', label: 'Plan Croissance' },
+  { value: 'plan:pro', label: 'Plan Pro' },
 ]
 
 function StatusBadge({ status }: { status: string }) {
@@ -170,7 +171,7 @@ export function EmailsContent({ history: initialHistory, notifications: initialN
                   <p className="text-xs text-[#64748B] mb-1">Objet :</p>
                   <p className="font-medium text-[#0D1F3C] mb-4">{subject || '(sans objet)'}</p>
                   <div className="border-t border-[#E2E8F0] pt-4 whitespace-pre-wrap text-sm text-[#0D1F3C] leading-relaxed">
-                    {body.replace(/{prenom}/g, 'Jean').replace(/{email}/g, 'jean@exemple.com').replace(/{plan}/g, 'Starter')}
+                    {body.replace(/{prenom}/g, 'Jean').replace(/{email}/g, 'jean@exemple.com').replace(/{plan}/g, 'Croissance')}
                   </div>
                 </div>
               </div>

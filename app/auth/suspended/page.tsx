@@ -12,7 +12,7 @@ export default async function SuspendedPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFB] flex items-center justify-center p-6">
+    <div className="min-h-dvh bg-[#F8FAFB] flex items-center justify-center p-6">
       <div className="max-w-md w-full bg-white border border-[#E2E8F0] rounded-2xl p-8 text-center">
         <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🔒</span>

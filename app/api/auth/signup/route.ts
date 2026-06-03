@@ -31,7 +31,7 @@ export async function POST(req: Request) {
     }
 
     if (!user) {
-      return NextResponse.json({ error: 'Erreur lors de la creation du compte.' }, { status: 500 })
+      return NextResponse.json({ error: 'Erreur lors de la création du compte.' }, { status: 500 })
     }
 
     // Generer un code referral unique (prefix EV-)

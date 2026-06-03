@@ -30,11 +30,13 @@ export default async function OnboardingPage({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('full_name')
+    .select('full_name, brand_icon')
     .eq('id', client.coach_id)
     .single()
 
-  const coachName = (profile as { full_name: string | null } | null)?.full_name ?? 'Votre coach'
+  const p = profile as { full_name: string | null; brand_icon: string | null } | null
+  const coachName  = p?.full_name ?? 'Votre coach'
+  const coachPhoto = p?.brand_icon?.startsWith('http') ? p.brand_icon : null
 
   return (
     <OnboardingFlow
@@ -42,6 +44,7 @@ export default async function OnboardingPage({
       token={token}
       initialName={client.full_name}
       coachName={coachName}
+      coachPhoto={coachPhoto}
     />
   )
 }

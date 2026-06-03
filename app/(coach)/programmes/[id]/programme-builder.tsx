@@ -1112,7 +1112,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
     <div className="flex flex-1">
       {/* Library Panel — Desktop (sticky sidebar) */}
       {showLibraryPanel && (
-        <div className="hidden lg:flex w-[220px] shrink-0 flex-col border-r border-[#E2E8F0] bg-white self-start sticky top-0 h-screen overflow-hidden">
+        <div className="hidden lg:flex w-[220px] shrink-0 flex-col border-r border-[#E2E8F0] bg-white self-start sticky top-0 h-dvh overflow-hidden">
           <LibraryPanel
             libraryExercises={libraryExercises}
             nutritionLibraryItems={nutritionLibraryItems}
@@ -1266,7 +1266,7 @@ export function ProgrammeBuilder({ programme, initialDays, clients, assignments,
         <>
           <button
             onClick={() => setShowLibrary(true)}
-            className="fixed bottom-6 right-6 lg:hidden z-40 flex items-center gap-2 px-4 py-3 bg-[#4E9B6F] text-white rounded-2xl shadow-lg text-[13px] font-semibold hover:bg-[#3d8058] transition-colors"
+            className="fixed right-6 lg:hidden z-40 flex items-center gap-2 px-4 py-3 bg-[#4E9B6F] text-white rounded-2xl shadow-lg text-[13px] font-semibold hover:bg-[#3d8058] transition-colors bottom-[calc(3.75rem+env(safe-area-inset-bottom)+1rem)] md:bottom-6"
           >
             <BookOpen size={15} />
             Bibliothèque

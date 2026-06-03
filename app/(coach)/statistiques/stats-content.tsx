@@ -135,7 +135,7 @@ function AnalyticsKPIStrip({ kpis }: { kpis: AnalyticsKPIs }) {
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
       {/* Actifs */}
       <div className="bg-white rounded-xl border border-[#F1F5F9] p-4">
-        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wide font-medium mb-2">Membres actifs</p>
+        <p className="text-[10px] text-[#94A3B8] uppercase tracking-wide font-medium mb-2">Elève actifs</p>
         <p className="text-[28px] font-bold text-[#0D1F3C] leading-none tabular-nums">{kpis.activeCount}</p>
         <p className="text-[11px] text-[#CBD5E1] mt-1">sur {kpis.totalCount} au total</p>
       </div>
@@ -453,7 +453,7 @@ export function StatsContent({
 
           {/* Danger */}
           <div>
-            <SectionLabel>Membres en danger</SectionLabel>
+            <SectionLabel>Elève en danger</SectionLabel>
             <DangerList athletes={dangerAthletes} />
           </div>
 
@@ -479,7 +479,7 @@ export function StatsContent({
 
           {/* KPIs classiques */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <KpiCard label="Membres actifs"         value={activeCount}          sub={`sur ${clients.length} au total`}         icon={Users}         accent="#4E9B6F" />
+            <KpiCard label="Elève actifs"         value={activeCount}          sub={`sur ${clients.length} au total`}         icon={Users}         accent="#4E9B6F" />
             <KpiCard label="Check-ins cette semaine" value={weekCheckinCount}      sub={`sur ${activeCount} actifs`}              icon={CheckSquare}   accent="#3B82F6" />
             <KpiCard label="En alerte"               value={inactiveCount}         sub="sans check-in depuis 14j+"                icon={AlertTriangle}  accent="#EF4444" />
             <KpiCard label="Séances ce mois"         value={monthSessionCount}     sub="présences confirmées"                     icon={Calendar}      accent="#F59E0B" />

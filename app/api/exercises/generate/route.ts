@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
 import { PLAN_LABELS } from '@/lib/plan-features'
+import { checkPlanActive } from '@/lib/plan-guard'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -11,6 +12,10 @@ export async function POST(req: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) return NextResponse.json({ error: 'Non authentifié.' }, { status: 401 })
+
+    // Bloquer si abonnement résilié ou paiement en échec
+    const guard = await checkPlanActive(supabase, user.id)
+    if (guard.blocked) return guard.response
 
     const { name, equipment } = await req.json()
 

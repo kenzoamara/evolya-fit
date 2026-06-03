@@ -2,7 +2,6 @@ import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { Sidebar } from '@/components/coach/sidebar'
 import { NotificationProvider } from '@/components/providers/NotificationProvider'
-import { Toaster } from 'sonner'
 import type { Profile } from '@/types/database'
 import type { CSSProperties } from 'react'
 
@@ -40,13 +39,12 @@ export default async function CoachLayout({ children }: { children: React.ReactN
   } as CSSProperties
 
   return (
-    <div className="flex h-screen overflow-hidden" style={rootStyle}>
+    <div className="flex min-h-dvh md:h-dvh md:overflow-hidden" style={rootStyle}>
       <NotificationProvider coachId={typedProfile.id} plan={typedProfile.plan} />
       <Sidebar profile={typedProfile} />
-      <main className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <main className="flex-1 flex flex-col min-w-0 md:overflow-y-auto pt-[calc(3rem+env(safe-area-inset-top))] pb-[calc(3.75rem+env(safe-area-inset-bottom))] md:pt-0 md:pb-0">
         {children}
       </main>
-      <Toaster position="top-right" richColors />
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Logo } from '@/components/shared/logo'
 import { Check } from 'lucide-react'
 
-type Step = 1 | 2 | 3 | 4 | 'done'
+type Step = 0 | 1 | 2 | 3 | 4 | 'done'
 
 type FormData = {
   firstName: string
@@ -85,11 +85,11 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputCls = 'w-full px-4 py-3 bg-white border border-[#E2E8F0] rounded-xl text-sm text-[#0D1F3C] placeholder:text-[#94A3B8] focus:outline-none focus:border-[var(--brand)] transition-all'
 
-type Props = { clientId: string; token: string; initialName: string; coachName: string }
+type Props = { clientId: string; token: string; initialName: string; coachName: string; coachPhoto?: string | null }
 
-export function OnboardingFlow({ clientId: _clientId, token, initialName, coachName }: Props) {
+export function OnboardingFlow({ clientId: _clientId, token, initialName, coachName, coachPhoto }: Props) {
   const router = useRouter()
-  const [step, setStep] = useState<Step>(1)
+  const [step, setStep] = useState<Step>(0)
   const [loading, setLoading] = useState(false)
 
   const nameParts = initialName.trim().split(' ')
@@ -135,8 +135,23 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
     setStep('done')
   }
 
+  // Destination après le done screen : formulaire si disponible, sinon dashboard
+  async function goAfterOnboarding() {
+    try {
+      const res = await fetch(`/api/client/coach-info?token=${token}`)
+      const data = await res.json()
+      if (data.hasIntakeForm) {
+        router.push(`/c/${token}/formulaire`)
+        return
+      }
+    } catch {}
+    router.push(`/c/${token}/dashboard`)
+  }
+
   function advance() {
-    if (step === 1) {
+    if (step === 0) {
+      setStep(1)
+    } else if (step === 1) {
       saveStep({ firstName: form.firstName, lastName: form.lastName, birthDate: form.birthDate })
       setStep(2)
     } else if (step === 2) {
@@ -155,7 +170,7 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
     else if (step === 4) finish()
   }
 
-  const stepNum = typeof step === 'number' ? step : null
+  const stepNum = typeof step === 'number' && step > 0 ? step : null
 
   return (
     <>
@@ -262,6 +277,64 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
             {/* Step content */}
             <div className="flex-1 flex flex-col justify-center">
               <div key={step} className="step-enter">
+
+                {/* STEP 0 — Bienvenue */}
+                {step === 0 && (
+                  <div className="flex flex-col items-center text-center space-y-8 py-4">
+                    {/* Avatar coach */}
+                    <div className="relative">
+                      {coachPhoto ? (
+                        <img
+                          src={coachPhoto}
+                          alt={coachName}
+                          className="w-24 h-24 rounded-full object-cover ring-4 ring-white shadow-xl"
+                        />
+                      ) : (
+                        <div
+                          className="w-24 h-24 rounded-full flex items-center justify-center ring-4 ring-white shadow-xl text-white text-3xl font-bold"
+                          style={{ backgroundColor: BRAND }}
+                        >
+                          {coachName.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div
+                        className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full border-2 border-white flex items-center justify-center"
+                        style={{ backgroundColor: BRAND }}
+                      >
+                        <Check size={13} className="text-white" strokeWidth={3} />
+                      </div>
+                    </div>
+
+                    {/* Message */}
+                    <div className="space-y-3 max-w-sm">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: BRAND }}>
+                        Message de votre coach
+                      </p>
+                      <h1 className="text-[26px] sm:text-[30px] font-semibold text-[#0D1F3C] leading-[1.2]">
+                        Bienvenue dans<br />votre espace {coachName.split(' ')[0]} !
+                      </h1>
+                      <p className="text-sm text-[#64748B] leading-relaxed">
+                        Je suis ravi de vous accompagner. Votre espace de suivi personnalisé est prêt.
+                        Prenons 2 minutes pour configurer votre profil ensemble.
+                      </p>
+                    </div>
+
+                    {/* Apercu des étapes */}
+                    <div className="w-full max-w-sm bg-white border border-[#E2E8F0] rounded-2xl p-4 text-left space-y-3">
+                      {STEP_LABELS.map((label, i) => (
+                        <div key={i} className="flex items-center gap-3">
+                          <div
+                            className="w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0"
+                            style={{ backgroundColor: BRAND, opacity: 0.7 + i * 0.1 }}
+                          >
+                            {i + 1}
+                          </div>
+                          <span className="text-sm text-[#475569]">{label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* STEP 1 — Identité */}
                 {step === 1 && (
@@ -551,26 +624,48 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
 
                 {/* DONE */}
                 {step === 'done' && (
-                  <div className="text-center py-8">
-                    <div
-                      className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-7"
-                      style={{ backgroundColor: BRAND }}
-                    >
-                      <Check size={28} className="text-white" strokeWidth={2.5} />
+                  <div className="text-center py-4 space-y-8">
+                    {/* Checkmark animé */}
+                    <div className="flex flex-col items-center gap-5">
+                      <div
+                        className="w-20 h-20 rounded-full flex items-center justify-center shadow-lg"
+                        style={{ backgroundColor: BRAND }}
+                      >
+                        <Check size={36} className="text-white" strokeWidth={2.5} />
+                      </div>
+                      <div>
+                        <h1 className="text-[28px] sm:text-[32px] font-semibold text-[#0D1F3C] mb-2 leading-tight">
+                          Profil complété !
+                        </h1>
+                        <p className="text-sm text-[#64748B] leading-relaxed">
+                          {coachName} a été notifié et prépare<br />votre programme personnalisé.
+                        </p>
+                      </div>
                     </div>
-                    <h1 className="text-[28px] sm:text-[32px] font-semibold text-[#0D1F3C] mb-3 leading-tight">
-                      Votre profil<br />est prêt.
-                    </h1>
-                    <p className="text-sm text-[#64748B] leading-relaxed mb-10">
-                      {coachName} peut maintenant personnaliser<br />
-                      votre programme de coaching.
-                    </p>
+
+                    {/* Prochaines étapes */}
+                    <div className="w-full bg-white border border-[#E2E8F0] rounded-2xl p-5 text-left space-y-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-widest text-[#94A3B8]">
+                        Prochaines étapes
+                      </p>
+                      {[
+                        { icon: '📋', label: 'Consultez votre programme dès qu\'il sera prêt' },
+                        { icon: '✅', label: 'Remplissez votre premier check-in cette semaine' },
+                        { icon: '🔔', label: 'Activez les notifications pour ne rien rater' },
+                      ].map((item, i) => (
+                        <div key={i} className="flex items-start gap-3">
+                          <span className="text-lg leading-none mt-0.5 shrink-0">{item.icon}</span>
+                          <span className="text-sm text-[#475569] leading-snug">{item.label}</span>
+                        </div>
+                      ))}
+                    </div>
+
                     <button
-                      onClick={() => router.push(`/c/${token}/dashboard`)}
+                      onClick={goAfterOnboarding}
                       className="w-full py-3.5 text-white text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98]"
                       style={{ backgroundColor: BRAND }}
                     >
-                      Accéder à mon espace →
+                      Continuer →
                     </button>
                   </div>
                 )}
@@ -579,11 +674,11 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
             </div>
 
             {/* Footer CTA */}
-            {stepNum && (
+            {(step === 0 || stepNum) && step !== 'done' && (
               <div className="shrink-0 pt-8 pb-4 space-y-2.5">
                 <button
                   onClick={advance}
-                  disabled={!canAdvance() || loading}
+                  disabled={step !== 0 && (!canAdvance() || loading)}
                   className="w-full py-3.5 text-white text-sm font-semibold rounded-xl transition-all hover:opacity-90 active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ backgroundColor: BRAND }}
                 >
@@ -592,7 +687,9 @@ export function OnboardingFlow({ clientId: _clientId, token, initialName, coachN
                         <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
                         Finalisation...
                       </span>
-                    : step === 4 ? 'Terminer' : 'Continuer →'}
+                    : step === 0 ? 'Commencer mon profil →'
+                    : step === 4 ? 'Terminer'
+                    : 'Continuer →'}
                 </button>
                 {(step === 3 || step === 4) && (
                   <button onClick={skip}

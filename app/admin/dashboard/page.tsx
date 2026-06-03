@@ -1,12 +1,11 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { DashboardAdminContent } from './dashboard-admin-content'
+import { planMrr } from '@/lib/stripe/plans'
 
 export const revalidate = 0
 
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient()
-
-  const MRR_MAP: Record<string, number> = { trial: 0, starter: 19, standard: 49 }
 
   // Coaches actifs
   const { data: coaches } = await supabase
@@ -16,7 +15,7 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
 
   const activeCoaches = (coaches ?? []).filter(c => !c.suspended && c.plan_status === 'active')
-  const mrr = activeCoaches.reduce((acc, c) => acc + (MRR_MAP[c.plan] ?? 0), 0)
+  const mrr = activeCoaches.reduce((acc, c) => acc + planMrr(c.plan), 0)
 
   // Nouveaux coaches (7 derniers jours)
   const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString()
@@ -51,6 +50,27 @@ export default async function AdminDashboardPage() {
     .order('created_at', { ascending: false })
     .limit(5)
 
+  // ── Données plateforme : membres + engagement réel (ce mois) ──
+  const startOfMonth = new Date(); startOfMonth.setDate(1); startOfMonth.setHours(0, 0, 0, 0)
+  const startISO = startOfMonth.toISOString()
+  const startDate = startISO.slice(0, 10)
+
+  const [
+    { count: totalMembers },
+    { count: activeMembers },
+    { count: sessionsMonth },
+    { count: checkinsMonth },
+    { count: messagesMonth },
+    { count: workoutsMonth },
+  ] = await Promise.all([
+    supabase.from('clients').select('id', { count: 'exact', head: true }),
+    supabase.from('clients').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase.from('sessions').select('id', { count: 'exact', head: true }).gte('session_date', startDate),
+    supabase.from('checkins').select('id', { count: 'exact', head: true }).gte('submitted_at', startISO),
+    supabase.from('messages').select('id', { count: 'exact', head: true }).gte('created_at', startISO),
+    supabase.from('workout_logs').select('id', { count: 'exact', head: true }).eq('completed', true).gte('log_date', startDate),
+  ])
+
   return (
     <DashboardAdminContent
       totalCoaches={(coaches ?? []).length}
@@ -58,6 +78,12 @@ export default async function AdminDashboardPage() {
       mrr={mrr}
       newCoaches={newCoaches}
       openTickets={openTickets ?? 0}
+      totalMembers={totalMembers ?? 0}
+      activeMembers={activeMembers ?? 0}
+      sessionsMonth={sessionsMonth ?? 0}
+      checkinsMonth={checkinsMonth ?? 0}
+      messagesMonth={messagesMonth ?? 0}
+      workoutsMonth={workoutsMonth ?? 0}
       recentCoaches={(recentCoaches ?? []) as { created_at: string; plan: string }[]}
       recentActivity={(recentActivity ?? []) as { id: string; full_name: string | null; plan: string; created_at: string }[]}
       recentTickets={(recentTickets ?? []) as unknown as { id: string; subject: string; created_at: string; profiles: { full_name: string | null } | null }[]}

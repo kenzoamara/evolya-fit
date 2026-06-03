@@ -1,7 +1,7 @@
 ﻿'use client'
 
 import Link from 'next/link'
-import ShaderBackground from '@/components/ui/shader-background'
+import { WebGLShader } from '@/components/ui/web-gl-shader'
 
 function FrenchFlag({ width = 20, height = 14 }: { width?: number; height?: number }) {
   return (
@@ -19,8 +19,8 @@ export function Hero() {
       className="relative overflow-hidden flex flex-col justify-center"
       style={{ minHeight: '100dvh', backgroundColor: '#0D1F3C' }}
     >
-      {/* WebGL Shader background */}
-      <ShaderBackground />
+      {/* WebGL Shader background — THREE.js, branding Evolya */}
+      <WebGLShader />
 
       {/* Overlay pour garantir la lisibilité du texte */}
       <div
@@ -33,25 +33,38 @@ export function Hero() {
       <div className="relative z-10 max-w-6xl mx-auto w-full px-4 sm:px-6 pt-24 pb-14 text-center">
 
         {/* Bannière France */}
-        <div className="inline-flex items-center gap-2.5 bg-white/10 border border-white/15 text-white/80 text-[12px] sm:text-[13px] font-medium px-4 py-1.5 rounded-full mb-6 sm:mb-8 backdrop-blur-sm">
+        <div className="inline-flex items-center gap-2 bg-white/10 border border-white/15 text-white/80 text-[10px] sm:text-[13px] font-medium px-3 sm:px-4 py-1.5 rounded-full mb-6 sm:mb-8 backdrop-blur-sm whitespace-nowrap">
           Pour les coachs sportifs indépendants francophones
-          <FrenchFlag width={18} height={13} />
+          <FrenchFlag width={16} height={11} />
         </div>
 
-        {/* Titre principal */}
-        <h1 className="text-[32px] sm:text-[40px] md:text-[52px] lg:text-[62px] font-bold text-white leading-[1.15] tracking-[-0.025em] mb-5 sm:mb-6">
-          Le système qui te permet de dépasser <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>30 membres</span> sans négliger la qualité de ton coaching
+        {/* Titre principal — desktop */}
+        <h1 className="hidden sm:block text-[48px] md:text-[68px] lg:text-[82px] xl:text-[92px] font-extrabold text-white leading-[1.06] tracking-[-0.03em] mb-5 sm:mb-6">
+          Arrête de jongler entre WhatsApp,{' '}
+          les suivis et l'administratif.{' '}
+          Dépasse les{' '}
+          <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>30 membres</span>{' '}
+          sans charge de travail supplémentaire ni{' '}
+          <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>perte de qualité.</span>
+        </h1>
+
+        {/* Titre principal — mobile */}
+        <h1 className="sm:hidden text-[34px] font-extrabold text-white leading-[1.1] tracking-[-0.025em] mb-5">
+          Arrête de gérer ton activité à l'ancienne et dépasse les{' '}
+          <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>30 membres</span>{' '}
+          sans augmenter ta charge de travail ni négliger la{' '}
+          <span className="text-[#4E9B6F]" style={{ fontFamily: 'var(--font-playfair), "Playfair Display", Georgia, serif', fontStyle: 'normal' }}>qualité de ton coaching</span>.
         </h1>
 
         {/* Sous-titre */}
         <p className="text-[15px] sm:text-[17px] md:text-[19px] text-white/65 leading-relaxed mb-8 sm:mb-10 max-w-2xl mx-auto">
-          Un système tout-en-un &amp; simplissime pour structurer ton coaching, automatiser sans affecter le lien avec tes membres et maintenir un suivi de haute qualité sans surcharge de travail.
+          Le système tout-en-un pour structurer ton coaching, automatiser le suivi et garder un lien fort avec chaque membre — sans surcharge de travail.
         </p>
 
         {/* CTA principal */}
         <div className="flex flex-col items-center gap-3 sm:gap-4">
           <Link
-            href="/#pricing"
+            href="/auth/signup"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-[#4E9B6F] hover:bg-[#3D7A5F] text-white text-[15px] sm:text-[16px] font-bold px-8 py-4 rounded-xl transition-colors shadow-[0_4px_24px_rgba(78,155,111,0.45)]"
           >
             Commencer gratuitement — 14 jours offerts

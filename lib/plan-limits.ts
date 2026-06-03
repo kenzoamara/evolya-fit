@@ -8,11 +8,11 @@ export type PlanLimits = {
 }
 
 export const PLAN_LIMITS: Record<string, PlanLimits> = {
-  free:    { clients: 1,   exercises: 100,  ai_exercises: 10,  ai_programmes: 1,   themes: 2,  habitudes: false },
-  trial:   { clients: 1,   exercises: 100,  ai_exercises: 10,  ai_programmes: 1,   themes: 2,  habitudes: false },
-  starter: { clients: 10,  exercises: 500,  ai_exercises: 150, ai_programmes: 100, themes: 5,  habitudes: false },
-  growth:  { clients: 25,  exercises: 1000, ai_exercises: 300, ai_programmes: 200, themes: -1, habitudes: true  },
-  pro:     { clients: 45,  exercises: -1,   ai_exercises: -1,  ai_programmes: -1,  themes: -1, habitudes: true  },
+  free:    { clients: 1,  exercises: 100,  ai_exercises: 10,  ai_programmes: 1,   themes: 2,  habitudes: false },
+  trial:   { clients: 1,  exercises: 100,  ai_exercises: 10,  ai_programmes: 1,   themes: 2,  habitudes: false },
+  starter: { clients: 10, exercises: 500,  ai_exercises: 150, ai_programmes: 100, themes: 5,  habitudes: false },
+  growth:  { clients: 25, exercises: 1000, ai_exercises: 300, ai_programmes: 200, themes: -1, habitudes: true  },
+  pro:     { clients: 45, exercises: -1,   ai_exercises: -1,  ai_programmes: -1,  themes: -1, habitudes: true  },
 }
 
 export function getPlanLimits(plan: string | null | undefined): PlanLimits {

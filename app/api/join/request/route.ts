@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
+import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
 
 export async function POST(req: Request) {
   try {
@@ -29,6 +30,28 @@ export async function POST(req: Request) {
 
     if (!coach) {
       return NextResponse.json({ error: 'Coach introuvable.' }, { status: 404 })
+    }
+
+    // Vérifier si le coach est à sa limite de membres actifs
+    const { data: coachPlan } = await admin
+      .from('profiles')
+      .select('plan')
+      .eq('id', coachId)
+      .single()
+
+    if (coachPlan) {
+      const limits = getPlanLimits(coachPlan.plan)
+      const { count: activeCount } = await admin
+        .from('clients')
+        .select('id', { count: 'exact', head: true })
+        .eq('coach_id', coachId)
+        .eq('status', 'active')
+
+      if (!isUnlimited(limits.clients) && (activeCount ?? 0) >= limits.clients) {
+        return NextResponse.json({
+          error: 'Ce coach a atteint sa limite de membres. Contacte-le directement.'
+        }, { status: 403 })
+      }
     }
 
     // Dédupe : éviter une 2e demande avec le même email pour ce coach

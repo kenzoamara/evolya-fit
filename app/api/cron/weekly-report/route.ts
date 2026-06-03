@@ -43,7 +43,7 @@ export async function GET(req: Request) {
     if (!coach.email) continue
 
     try {
-      // Membres de ce coach
+      // Elève de ce coach
       const { data: clients } = await admin
         .from('clients')
         .select('id, status, created_at')
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
         .in('client_id', clientIds)
         .gte('session_date', weekAgoDate)
 
-      // Membres inactifs (pas de check-in depuis 14+ jours)
+      // Elève inactifs (pas de check-in depuis 14+ jours)
       const { data: inactiveData } = await admin
         .from('clients')
         .select('id')
@@ -191,7 +191,7 @@ function buildWeeklyReportHtml({
     <div style="padding:0 24px 8px;">
       <table style="width:100%;border-collapse:separate;border-spacing:0;">
         <tr>
-          ${statCell('👥', String(activeCount),  'Membres actifs',      '#0D1F3C')}
+          ${statCell('👥', String(activeCount),  'Elève actifs',      '#0D1F3C')}
           ${statCell('✅', String(checkinCount), 'Check-ins reçus',      '#4E9B6F')}
         </tr>
         <tr>

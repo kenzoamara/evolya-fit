@@ -12,7 +12,7 @@ type Category = { name: string; items: Feature[] }
 const PLAN_FEATURES: Record<string, Category[]> = {
   free: [
     {
-      name: 'Membres & Contenu',
+      name: 'Elève & Contenu',
       items: [
         { label: '1 membre maximum', included: true },
         { label: '100 exercices de bibliothèque', included: true },
@@ -71,7 +71,7 @@ const PLAN_FEATURES: Record<string, Category[]> = {
   ],
   starter: [
     {
-      name: 'Membres & Contenu',
+      name: 'Elève & Contenu',
       items: [
         { label: '10 membres maximum', included: true },
         { label: '500 exercices de bibliothèque', included: true },
@@ -129,7 +129,7 @@ const PLAN_FEATURES: Record<string, Category[]> = {
   ],
   growth: [
     {
-      name: 'Membres & Contenu',
+      name: 'Elève & Contenu',
       items: [
         { label: '25 membres maximum', included: true },
         { label: '1 000 exercices de bibliothèque', included: true },
@@ -187,7 +187,7 @@ const PLAN_FEATURES: Record<string, Category[]> = {
   ],
   pro: [
     {
-      name: 'Membres & Contenu',
+      name: 'Elève & Contenu',
       items: [
         { label: '45 membres maximum', included: true },
         { label: 'Exercices de bibliothèque illimités', included: true },
@@ -256,7 +256,7 @@ const PLANS: Plan[] = [
     annualMonthly: 15,
     annualTotal: 180,
     metrics: [
-      { label: 'Membres', value: '10' },
+      { label: 'Elève', value: '10' },
       { label: 'Générations IA/mois', value: '150' },
       { label: 'Biblio exercices', value: '500' },
     ],
@@ -270,7 +270,7 @@ const PLANS: Plan[] = [
     annualMonthly: 23,
     annualTotal: 275,
     metrics: [
-      { label: 'Membres', value: '25' },
+      { label: 'Elève', value: '25' },
       { label: 'Générations IA/mois', value: '300' },
       { label: 'Biblio exercices', value: '1 000' },
     ],
@@ -283,12 +283,61 @@ const PLANS: Plan[] = [
     annualMonthly: 39,
     annualTotal: 470,
     metrics: [
-      { label: 'Membres', value: '45' },
+      { label: 'Elève', value: '45' },
       { label: 'Générations IA', value: 'Illimitées' },
       { label: 'Biblio exercices', value: 'Illimitée' },
     ],
   },
 ]
+
+// ─── Tableau comparatif — données ─────────────────────────────────────────────
+// Ordre colonnes : free, starter, growth, pro
+const COMPARISON_CATEGORIES = [
+  {
+    name: 'Elève & contenu',
+    features: [
+      { label: 'Elève maximum', values: ['1', '10', '25', '45'] },
+      { label: 'Exercices de bibliothèque', values: ['100', '500', '1 000', 'Illimités'] },
+      { label: "Générations IA d'exercices", values: ['10 / mois', '150 / mois', '300 / mois', 'Illimitées'] },
+      { label: 'Générations de programmes', values: ['1', '100', '200', 'Illimitées'] },
+    ],
+  },
+  {
+    name: 'Coaching & séances',
+    features: [
+      { label: 'Agenda intégré', values: [true, true, true, true] },
+      { label: 'Notes de séance', values: [false, true, true, true] },
+      { label: 'Suivi des séances en direct', values: [false, true, true, true] },
+      { label: 'Rappels automatiques de check-in', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Suivi des progrès',
+    features: [
+      { label: 'Suivi du poids', values: [true, true, true, true] },
+      { label: 'Statistiques de performance & PR', values: [false, true, true, true] },
+      { label: 'Suivi des mensurations', values: [false, false, true, true] },
+      { label: 'Suivi des habitudes', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Communication & paiements',
+    features: [
+      { label: 'Messagerie intégrée', values: [false, true, true, true] },
+      { label: 'Gestion des impayés', values: [true, true, true, true] },
+      { label: 'Rappels automatiques de paiement', values: [false, true, true, true] },
+      { label: 'Statistiques de croissance', values: [false, false, true, true] },
+    ],
+  },
+  {
+    name: 'Personnalisation',
+    features: [
+      { label: 'Thèmes disponibles', values: ['2', '5', 'Illimités', 'Illimités'] },
+      { label: 'Photo de profil', values: [false, false, true, true] },
+      { label: 'Blog intégré', values: [false, false, 'Limité', 'Complet'] },
+    ],
+  },
+] as const
 
 function MetricsBand({ metrics, popular, isCurrent }: { metrics: { label: string; value: string }[]; popular?: boolean; isCurrent?: boolean }) {
   const dark = popular || isCurrent
@@ -522,7 +571,7 @@ function PlanCard({
   )
 }
 
-export function PlansContent({ currentPlan }: { currentPlan: string; clientLimit: number }) {
+export function PlansContent({ currentPlan, onboarding = false }: { currentPlan: string; clientLimit: number; onboarding?: boolean }) {
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -540,14 +589,29 @@ export function PlansContent({ currentPlan }: { currentPlan: string; clientLimit
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch('/api/stripe/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceKey }),
-      })
-      const { url, error } = await res.json()
-      if (error || !url) { setError('Erreur Stripe. Réessayez.'); setLoading(false); return }
-      window.location.href = url
+      const planId = priceKey.split('_')[0]
+
+      if (onboarding) {
+        // Mode onboarding : démarre l'essai gratuit sans Stripe
+        const res = await fetch('/api/auth/select-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ planId }),
+        })
+        const data = await res.json()
+        if (!res.ok || data.error) { setError(data.error ?? 'Erreur.'); setLoading(false); return }
+        window.location.href = '/dashboard'
+      } else {
+        // Mode upgrade : passe par Stripe
+        const res = await fetch('/api/stripe/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ priceKey }),
+        })
+        const { url, error } = await res.json()
+        if (error || !url) { setError('Erreur Stripe. Réessayez.'); setLoading(false); return }
+        window.location.href = url
+      }
     } catch {
       setError('Erreur réseau. Réessayez.')
       setLoading(false)
@@ -555,17 +619,23 @@ export function PlansContent({ currentPlan }: { currentPlan: string; clientLimit
   }
 
   return (
-    <div className="flex-1 px-4 py-10 md:px-8 md:py-14 bg-[#F7F9FB] min-h-screen">
+    <div className="flex-1 px-4 py-10 md:px-8 md:py-14 bg-[#F7F9FB] min-h-dvh">
       <div className="max-w-5xl mx-auto">
 
         {/* Header */}
         <div className="text-center mb-12">
+          {onboarding && (
+            <div className="inline-flex items-center gap-2 bg-[#EEF9F3] border border-[#4E9B6F]/20 text-[#3f8a60] text-[12px] font-semibold px-4 py-1.5 rounded-full mb-5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#4E9B6F]" />
+              Sans carte bancaire · Essai 14 jours gratuit
+            </div>
+          )}
           <h1 className="text-[30px] md:text-[38px] font-bold text-[#0D1F3C] tracking-[-0.02em] mb-3 leading-tight">
-            Choisissez votre offre
+            {onboarding ? 'Choisissez votre formule' : 'Choisissez votre offre'}
           </h1>
           <p className="text-[15px] text-[#6B7280] max-w-sm mx-auto leading-relaxed">
-            <strong className="text-[#374151] font-semibold">14 jours d&apos;essai gratuit</strong> sur tous les plans payants.{' '}
-            Résiliable à tout moment.
+            <strong className="text-[#374151] font-semibold">14 jours d&apos;essai gratuit</strong> sur tous les plans.{' '}
+            {onboarding ? 'Aucune carte bancaire requise.' : 'Résiliable à tout moment.'}
           </p>
         </div>
 
@@ -632,10 +702,101 @@ export function PlansContent({ currentPlan }: { currentPlan: string; clientLimit
 
         <p className="text-center text-[12px] text-[#B0B7C3] mt-8">
           Aucune carte bancaire requise · Résiliable à tout moment ·{' '}
-          <Link href="/dashboard" className="underline underline-offset-2 hover:text-[#64748B] transition-colors">
-            Retour au dashboard
-          </Link>
+          {!onboarding && (
+            <Link href="/dashboard" className="underline underline-offset-2 hover:text-[#64748B] transition-colors">
+              Retour au dashboard
+            </Link>
+          )}
         </p>
+
+        {/* ── Tableau comparatif ────────────────────────────────────────── */}
+        <div className="mt-20">
+          <div className="text-center mb-8">
+            <h2 className="text-[24px] md:text-[30px] font-bold text-[#0D1F3C] tracking-[-0.02em] mb-2">
+              Comparez les formules en détail
+            </h2>
+            <p className="text-[14px] text-[#6B7280]">Toutes les fonctionnalités, catégorie par catégorie.</p>
+          </div>
+
+          <div className="bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr>
+                    <th className="text-left px-5 py-4 text-[13px] font-medium text-[#0D1F3C] border-b border-[#E2E8F0] min-w-[200px] sticky left-0 bg-white" />
+                    {PLANS.map(pl => (
+                      <th key={pl.id} className={`px-4 py-4 text-center border-b border-[#E2E8F0] ${pl.popular ? 'bg-[#0D1F3C]' : 'bg-white'}`}>
+                        {pl.popular && <div className="text-[9px] font-bold text-[#4E9B6F] uppercase tracking-widest mb-1">Recommandé</div>}
+                        <div className={`font-semibold text-[15px] ${pl.popular ? 'text-white' : 'text-[#0D1F3C]'}`}>{pl.name}</div>
+                        <div className={`text-[13px] font-bold mt-0.5 ${pl.popular ? 'text-white' : 'text-[#0D1F3C]'}`}>
+                          {pl.free ? '0€' : `${annual ? pl.annualMonthly : pl.monthly}€`}
+                          <span className={`text-[10px] font-normal ml-1 ${pl.popular ? 'text-white/50' : 'text-[#94A3B8]'}`}>
+                            {pl.free ? '/ toujours' : '/ mois'}
+                          </span>
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {COMPARISON_CATEGORIES.map(cat => (
+                    <>
+                      <tr key={cat.name + '-h'}>
+                        <td colSpan={PLANS.length + 1} className="px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-[#3f8a60] bg-[#EEF9F3]">
+                          {cat.name}
+                        </td>
+                      </tr>
+                      {cat.features.map(f => (
+                        <tr key={f.label} className="border-b border-[#F1F5F9] hover:bg-[#FAFCFD]">
+                          <td className="px-5 py-3 text-[13px] text-[#374151] sticky left-0 bg-white font-medium border-b border-[#F1F5F9]">{f.label}</td>
+                          {f.values.map((v, i) => (
+                            <td key={i} className={`px-4 py-3 text-center border-b border-[#F1F5F9] ${PLANS[i].popular ? 'bg-[#FAFCFD]' : ''}`}>
+                              {v === true ? (
+                                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#EEF9F3]">
+                                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2 2 4-4" stroke="#4E9B6F" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                                </span>
+                              ) : v === false ? (
+                                <span className="text-[#DDE2E8] text-[16px]">—</span>
+                              ) : (
+                                <span className="text-[12px] font-semibold text-[#0D1F3C]">{v}</span>
+                              )}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="px-5 py-4 sticky left-0 bg-white border-t border-[#E2E8F0]" />
+                    {PLANS.map(pl => {
+                      const isCurrent = pl.id === currentPlan || (currentPlan === 'trial' && pl.id === 'starter')
+                      return (
+                        <td key={pl.id} className={`px-4 py-4 text-center border-t border-[#E2E8F0] ${pl.popular ? 'bg-[#FAFCFD]' : ''}`}>
+                          {isCurrent ? (
+                            <span className="text-[12px] font-semibold text-[#D97706]">Plan actuel</span>
+                          ) : pl.free ? (
+                            <span className="text-[12px] text-[#CBD5E1]">—</span>
+                          ) : (
+                            <button
+                              onClick={() => handleChoose(`${pl.id}_${annual ? 'annual' : 'monthly'}`)}
+                              disabled={loading}
+                              className={`text-[12px] font-semibold px-4 py-2 rounded-xl transition-colors ${pl.popular ? 'bg-[#4E9B6F] text-white hover:bg-[#3d8058]' : 'bg-[#EEF9F3] text-[#3f8a60] hover:bg-[#DCF3E8]'}`}
+                            >
+                              Choisir
+                            </button>
+                          )}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   )

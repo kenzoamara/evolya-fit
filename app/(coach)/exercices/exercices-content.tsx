@@ -566,9 +566,9 @@ export function ExercicesContent({
           {exerciseLimit && exerciseLimit !== -1 && (
             <div className="mx-6 mb-3 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between gap-3 shrink-0">
               <p className="text-[12px] text-amber-700">
-                Bibliothèque limitée a <strong>{exerciseLimit} exercices</strong> sur votre plan actuel.
+                Bibliothèque limitée à <strong>{exerciseLimit} exercices</strong> sur votre plan actuel.
               </p>
-              <a href="/plans" className="text-[11px] font-semibold text-amber-700 underline whitespace-nowrap">Passer a un plan superieur</a>
+              <a href="/plans" className="text-[11px] font-semibold text-amber-700 underline whitespace-nowrap">Passer à un plan supérieur</a>
             </div>
           )}
 

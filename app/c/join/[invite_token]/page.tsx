@@ -23,7 +23,7 @@ export default async function JoinPage({
 
   if (!client || isExpired || isUsed) {
     return (
-      <div className="min-h-screen bg-[#F8FAFB] flex items-center justify-center px-4">
+      <div className="min-h-dvh bg-[#F8FAFB] flex items-center justify-center px-4">
         <div className="text-center max-w-sm">
           <div className="w-12 h-12 rounded-full bg-[#E2E8F0] flex items-center justify-center mx-auto mb-4">
             <span className="text-[#94A3B8] text-xl">✕</span>

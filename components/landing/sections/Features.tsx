@@ -1,11 +1,12 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { SectionTag } from '@/components/landing/section-tag'
 
 const CATS = [
   {
     id: 'clients',
-    label: 'Membres & suivi',
+    label: 'Elève & suivi',
     desc: 'Gère tous tes membres depuis un seul endroit. Visualise leur activité, leur progression et leurs blocages en temps réel.',
     items: [
       'Gestion complète de tes membres depuis une seule plateforme',
@@ -77,10 +78,7 @@ export function Features() {
         {/* Connecteur visuel */}
         <div className="flex items-center gap-4 mb-10">
           <div className="flex-1 h-px bg-[#E5E7EB]" />
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#4E9B6F]/30 bg-[#F0FAF4] text-[11px] font-bold text-[#4E9B6F] tracking-[0.12em] uppercase">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#4E9B6F] inline-block" />
-            Inclus dans chaque abonnement
-          </span>
+          <SectionTag>Inclus dans chaque abonnement</SectionTag>
           <div className="flex-1 h-px bg-[#E5E7EB]" />
         </div>
 

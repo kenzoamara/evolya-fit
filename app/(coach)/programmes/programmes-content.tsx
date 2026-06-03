@@ -71,20 +71,20 @@ const PROGRAMME_TEMPLATES: ProgrammeTemplate[] = [
   {
     id: 'tpl_prise_masse', title: 'Prise de masse — Push/Pull/Legs', type: 'sportif',
     description: 'Programme classique prise de masse en split PPL, 3 séances/sem., focus hypertrophie.',
-    duration_days: 56, frequency: 3, level: 'intermediaire',
-    prompt: 'Programme prise de masse, split Push/Pull/Legs, 3 séances par semaine, focus hypertrophie, exercices polyarticulaires en priorité, progression linéaire sur les charges.'
+    duration_days: 7, frequency: 3, level: 'intermediaire',
+    prompt: 'Programme prise de masse sur 1 semaine, split Push/Pull/Legs, 3 séances, focus hypertrophie, exercices polyarticulaires en priorité, progression linéaire sur les charges.'
   },
   {
     id: 'tpl_perte_poids', title: 'Perte de poids — Full Body', type: 'sportif',
     description: 'Programme full body 3j/sem. combinant cardio HIIT et musculation pour la dépense calorique.',
-    duration_days: 42, frequency: 3, level: 'debutant',
-    prompt: 'Programme perte de poids, full body 3 séances par semaine, combinaison musculation et cardio HIIT, durée séances 45-60 min, adapté débutant à intermédiaire.'
+    duration_days: 14, frequency: 3, level: 'debutant',
+    prompt: 'Programme perte de poids sur 2 semaines, full body 3 séances par semaine, combinaison musculation et cardio HIIT, durée séances 45-60 min, adapté débutant à intermédiaire.'
   },
   {
-    id: 'tpl_cardio', title: 'Cardio & Endurance — 8 semaines', type: 'sportif',
-    description: 'Développement progressif du cardio : montée en charge sur 8 semaines avec intervalles.',
-    duration_days: 56, frequency: 4, level: 'intermediaire',
-    prompt: 'Programme cardio et endurance, 4 séances par semaine, progression sur 8 semaines, mélange course longue lente et intervalles, culminant sur un objectif de 10km.'
+    id: 'tpl_cardio', title: 'Cardio & Endurance — 3 semaines', type: 'sportif',
+    description: 'Développement progressif du cardio : montée en charge sur 3 semaines avec intervalles.',
+    duration_days: 21, frequency: 4, level: 'intermediaire',
+    prompt: 'Programme cardio et endurance sur 3 semaines, 4 séances par semaine, progression des charges et durées, mélange course longue lente et intervalles, culminant sur un objectif de 10km.'
   },
   {
     id: 'tpl_nutrition_masse', title: 'Nutrition prise de masse', type: 'nutritionnel',

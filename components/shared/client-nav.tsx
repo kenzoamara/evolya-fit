@@ -6,6 +6,30 @@ import { usePathname, useSearchParams } from 'next/navigation'
 import { X } from 'lucide-react'
 import { Logo } from '@/components/shared/logo'
 
+/* ── Icônes de navigation (SVG monochromes, jamais d'emoji) ── */
+function NavIcon({ name, size = 22 }: { name: string; size?: number }) {
+  const s = { width: size, height: size, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: 1.8, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const }
+  switch (name) {
+    case 'home':      return <svg {...s}><path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1v-9.5z"/><path d="M9 21V14h6v7"/></svg>
+    case 'message':   return <svg {...s}><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    case 'programme': return <svg {...s}><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v2H9z"/><path d="M8.5 10h7M8.5 14h7M8.5 18h4"/></svg>
+    case 'sport':     return <svg {...s}><path d="M3 9v6M6.5 7.5v9M17.5 7.5v9M21 9v6M6.5 12h11"/></svg>
+    case 'nutrition': return <svg {...s}><path d="M11 20A7 7 0 014 13C4 7 11 4 20 3c-1 9-4 16-9 17z"/><path d="M11 20c0-5 2.5-8.5 6.5-11"/></svg>
+    case 'habitudes': return <svg {...s}><circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/></svg>
+    case 'agenda':    return <svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+    case 'progres':   return <svg {...s}><path d="M3 17l6-6 4 4 7-7"/><path d="M17 7h4v4"/></svg>
+    case 'stats':     return <svg {...s}><path d="M3 21h18"/><path d="M6 21V11M12 21V5M18 21v-7"/></svg>
+    case 'checkin':   return <svg {...s}><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4h6v2H9z"/><path d="M8.5 13l2.5 2.5 4-5"/></svg>
+    case 'bilan':     return <svg {...s}><circle cx="12" cy="9" r="5"/><path d="M8.5 13L7.5 21l4.5-2.2L16.5 21l-1-8"/></svg>
+    case 'calcul':    return <svg {...s}><rect x="5" y="3" width="14" height="18" rx="2"/><rect x="8" y="6" width="8" height="3" rx="0.5"/><path d="M9 13h.01M12 13h.01M15 13h.01M9 16h.01M12 16h.01M15 16h.01"/></svg>
+    case 'rdv':       return <svg {...s}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M12 14v4M10 16h4"/></svg>
+    case 'notes':     return <svg {...s}><path d="M6 3h12a1 1 0 011 1v16a1 1 0 01-1 1H6a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M9 3v18M12.5 8h4M12.5 12h4"/></svg>
+    case 'profil':    return <svg {...s}><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+    case 'more':      return <svg {...s}><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+    default:          return null
+  }
+}
+
 type Props = {
   clientName: string
   coachName: string
@@ -18,9 +42,7 @@ type Props = {
 type NavItem = {
   href: string
   label: string
-  emoji: string
-  color: string
-  bg: string
+  icon: string
   badge?: number
 }
 
@@ -35,35 +57,36 @@ const buildNav = (base: string, paymentBadge: number, coachView: boolean): NavSe
     {
       title: 'Mon espace',
       items: [
-        { href: `${base}/dashboard${q}`,    label: 'Accueil',         emoji: '🏠', color: '#6366F1', bg: '#EEF2FF' },
-        { href: `${base}/messages${q}`,     label: 'Messagerie',      emoji: '💬', color: '#0EA5E9', bg: '#E0F2FE' },
+        { href: `${base}/dashboard${q}`,    label: 'Accueil',         icon: 'home' },
+        { href: `${base}/messages${q}`,     label: 'Messagerie',      icon: 'message' },
       ],
     },
     {
       title: 'Mon programme',
       items: [
-        { href: `${base}/programme${q}`,   label: 'Vue ensemble',     emoji: '📋', color: '#8B5CF6', bg: '#F5F3FF' },
-        { href: `${base}/sport${q}`,       label: 'Entraînement',     emoji: '💪', color: '#F97316', bg: '#FFF7ED' },
-        { href: `${base}/nutrition${q}`,   label: 'Nutrition',        emoji: '🥗', color: '#22C55E', bg: '#F0FDF4' },
-        { href: `${base}/habitudes${q}`,   label: 'Habitudes',        emoji: '✅', color: '#A855F7', bg: '#FAF5FF' },
-        { href: `${base}/agenda${q}`,      label: 'Agenda',           emoji: '📅', color: '#3B82F6', bg: '#EFF6FF' },
+        { href: `${base}/programme${q}`,   label: 'Vue ensemble',     icon: 'programme' },
+        { href: `${base}/sport${q}`,       label: 'Entraînement',     icon: 'sport' },
+        { href: `${base}/nutrition${q}`,   label: 'Nutrition',        icon: 'nutrition' },
+        { href: `${base}/habitudes${q}`,   label: 'Habitudes',        icon: 'habitudes' },
+        { href: `${base}/agenda${q}`,      label: 'Agenda',           icon: 'agenda' },
       ],
     },
     {
       title: 'Mes progrès',
       items: [
-        { href: `${base}/progression${q}`,  label: 'Progrès',         emoji: '📈', color: '#4E9B6F', bg: '#EEF9F3' },
-        { href: `${base}/statistiques${q}`, label: 'Statistiques',    emoji: '📊', color: '#F43F5E', bg: '#FFF1F2' },
-        { href: `${base}/checkins${q}`,     label: 'Check-in',        emoji: '📋', color: '#14B8A6', bg: '#F0FDFA' },
-        { href: `${base}/bilan${q}`,        label: 'Mon Bilan',       emoji: '🏆', color: '#D4A853', bg: '#FFFBEB' },
+        { href: `${base}/progression${q}`,  label: 'Progrès',         icon: 'progres' },
+        { href: `${base}/statistiques${q}`, label: 'Statistiques',    icon: 'stats' },
+        { href: `${base}/checkins${q}`,     label: 'Check-in',        icon: 'checkin' },
+        { href: `${base}/bilan${q}`,        label: 'Mon Bilan',       icon: 'bilan' },
       ],
     },
     {
       title: 'Mon compte',
       items: [
-        { href: `${base}/paiement${q}`,    label: 'Paiement',         emoji: '💳', color: '#F59E0B', bg: '#FFFBEB', badge: paymentBadge > 0 ? paymentBadge : undefined },
-        { href: `${base}/notes${q}`,       label: 'Notes',            emoji: '📔', color: '#64748B', bg: '#F8FAFC' },
-        { href: `${base}/profil${q}`,      label: 'Profil',           emoji: '🪪', color: '#64748B', bg: '#F8FAFC' },
+        { href: `${base}/calcul${q}`,      label: 'Calculatrice',     icon: 'calcul' },
+        { href: `${base}/rdv${q}`,         label: 'Réserver',         icon: 'rdv' },
+        { href: `${base}/notes${q}`,       label: 'Notes',            icon: 'notes' },
+        { href: `${base}/profil${q}`,      label: 'Profil',           icon: 'profil' },
       ],
     },
   ]
@@ -71,10 +94,10 @@ const buildNav = (base: string, paymentBadge: number, coachView: boolean): NavSe
 
 // 4 onglets principaux fixes sur mobile
 const MAIN_TABS = (base: string, q: string) => [
-  { href: `${base}/dashboard${q}`,  label: 'Accueil',    emoji: '🏠', color: '#6366F1', bg: '#EEF2FF' },
-  { href: `${base}/sport${q}`,      label: 'Entraîn.',   emoji: '💪', color: '#F97316', bg: '#FFF7ED' },
-  { href: `${base}/programme${q}`,  label: 'Programme',  emoji: '📋', color: '#8B5CF6', bg: '#F5F3FF' },
-  { href: `${base}/messages${q}`,   label: 'Messages',   emoji: '💬', color: '#0EA5E9', bg: '#E0F2FE' },
+  { href: `${base}/dashboard${q}`,  label: 'Accueil',    icon: 'home' },
+  { href: `${base}/sport${q}`,      label: 'Entraîn.',   icon: 'sport' },
+  { href: `${base}/programme${q}`,  label: 'Programme',  icon: 'programme' },
+  { href: `${base}/messages${q}`,   label: 'Messages',   icon: 'message' },
 ]
 
 export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBadge = 0 }: Props) {
@@ -93,7 +116,7 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
   return (
     <>
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden md:flex w-52 min-h-screen bg-white flex-col flex-shrink-0 border-r border-[#E2E8F0]">
+      <aside className="hidden md:flex w-52 min-h-dvh bg-white flex-col flex-shrink-0 border-r border-[#E2E8F0]">
         <div className="px-5 pt-6 pb-4">
           <Logo height={48} variant="default" />
         </div>
@@ -119,8 +142,8 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                       {active && (
                         <div className="absolute left-0 w-0.5 h-4 rounded-r-full" style={{ backgroundColor: 'var(--brand)', marginLeft: '-8px' }} />
                       )}
-                      <span className="relative text-[15px] leading-none shrink-0">
-                        {item.emoji}
+                      <span className="relative shrink-0 flex items-center justify-center" style={active ? { color: 'var(--brand)' } : { color: '#94A3B8' }}>
+                        <NavIcon name={item.icon} size={18} />
                         {item.badge && (
                           <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-[#EF4444] border border-white" />
                         )}
@@ -187,10 +210,10 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                 style={{ color: active ? 'var(--brand)' : '#94A3B8' }}
               >
                 <span
-                  className="text-[20px] leading-none flex items-center justify-center w-9 h-9 rounded-xl transition-all"
+                  className="leading-none flex items-center justify-center w-9 h-9 rounded-xl transition-all"
                   style={active ? { backgroundColor: 'var(--brand-bg)', transform: 'scale(1.08)' } : {}}
                 >
-                  {item.emoji}
+                  <NavIcon name={item.icon} size={22} />
                 </span>
                 <span className={`text-[9px] leading-none font-medium ${active ? 'font-semibold' : ''}`}>
                   {item.label}
@@ -206,10 +229,10 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
             style={{ color: isMoreActive ? 'var(--brand, #4E9B6F)' : '#94A3B8' }}
           >
             <span
-              className="text-[20px] leading-none flex items-center justify-center w-9 h-9 rounded-xl transition-all"
+              className="leading-none flex items-center justify-center w-9 h-9 rounded-xl transition-all"
               style={isMoreActive ? { backgroundColor: 'var(--brand-bg, #EEF9F3)', transform: 'scale(1.08)' } : {}}
             >
-              {isMoreActive ? '●●●' : '···'}
+              <NavIcon name="more" size={22} />
             </span>
             <span className={`text-[9px] leading-none font-medium ${isMoreActive ? 'font-semibold' : ''}`}>Plus</span>
           </button>
@@ -267,7 +290,9 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
                             border: active ? '1.5px solid var(--brand-border)' : '1.5px solid transparent',
                           }}
                         >
-                          <span className="text-[24px] leading-none">{item.emoji}</span>
+                          <span className="leading-none flex items-center justify-center" style={{ color: active ? 'var(--brand)' : '#64748B' }}>
+                            <NavIcon name={item.icon} size={24} />
+                          </span>
                           <span
                             className="text-[11px] font-medium text-center leading-tight"
                             style={{ color: active ? 'var(--brand)' : '#64748B' }}

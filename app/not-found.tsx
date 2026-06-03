@@ -3,7 +3,7 @@ import { Logo } from '@/components/shared/logo'
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen bg-[#F8FAFB] flex flex-col items-center justify-center px-4">
+    <div className="min-h-dvh bg-[#F8FAFB] flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-md text-center">
 
         <div className="mb-8">

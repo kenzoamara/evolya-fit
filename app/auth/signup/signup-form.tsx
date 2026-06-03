@@ -60,7 +60,9 @@ export function SignupForm() {
 
   // Étape 4
   const [clientName, setClientName] = useState('')
+  const [clientEmail, setClientEmail] = useState('')
   const [inviteLink, setInviteLink] = useState<string | null>(null)
+  const [emailSent, setEmailSent] = useState(false)
   const [linkCopied, setLinkCopied] = useState(false)
 
   const totalSteps = 4
@@ -164,7 +166,7 @@ export function SignupForm() {
     setStep(4)
   }
 
-  // Étape 4 → génère le lien privé (sans email)
+  // Étape 4 → génère le lien + envoie l'email si fourni
   async function handleGenerateLink() {
     if (!clientName.trim()) return
     setLoading(true)
@@ -174,13 +176,17 @@ export function SignupForm() {
       const res = await fetch('/api/invite/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientName: clientName.trim() }),
+        body: JSON.stringify({
+          clientName: clientName.trim(),
+          clientEmail: clientEmail.trim() || undefined,
+        }),
       })
       const data = await res.json()
       if (!res.ok || data.error) { setError(data.error ?? 'Erreur lors de la génération.'); setLoading(false); return }
       setInviteLink(data.magicLink)
+      setEmailSent(!!(clientEmail.trim()))
     } catch {
-      setError('Erreur reseau.')
+      setError('Erreur réseau.')
     } finally {
       setLoading(false)
     }
@@ -194,22 +200,41 @@ export function SignupForm() {
   }
 
   async function handleFinish() {
+    // Pas de plan → rediriger vers la page de choix de plan (sans Stripe)
     if (!planParam || planParam === 'free') {
-      // Rechargement complet pour que le middleware lise le cookie de session
-      window.location.href = '/dashboard'
+      window.location.href = '/plans?onboarding=1'
       return
     }
+
+    // Plan choisi depuis les tarifs → activer l'essai gratuit directement
     setLoading(true)
     try {
-      const res = await fetch('/api/stripe/checkout', {
+      const planId = planParam.split('_')[0] // ex: "lancement_monthly" → "lancement"
+      // Mapper les IDs landing → IDs DB
+      const planMap: Record<string, string> = {
+        decouverte: 'free',
+        lancement: 'starter',
+        croissance: 'growth',
+        pro: 'pro',
+        // fallback IDs directs
+        free: 'free',
+        starter: 'starter',
+        growth: 'growth',
+      }
+      const dbPlanId = planMap[planId] ?? planId
+
+      const res = await fetch('/api/auth/select-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ priceKey: planParam }),
+        body: JSON.stringify({ planId: dbPlanId }),
       })
       const data = await res.json()
-      if (data.url) { window.location.href = data.url; return }
-      toast.error(data.error ?? 'Impossible de créer la session de paiement. Réessayez.')
-      setLoading(false)
+      if (!res.ok || data.error) {
+        toast.error(data.error ?? 'Impossible de sélectionner ce plan.')
+        setLoading(false)
+        return
+      }
+      window.location.href = '/dashboard'
     } catch {
       toast.error('Erreur réseau. Vérifiez votre connexion et réessayez.')
       setLoading(false)
@@ -562,7 +587,7 @@ export function SignupForm() {
           {!inviteLink ? (
             <>
               <p className="text-[13px] text-[#64748B] leading-relaxed">
-                Générez un lien privé à partager directement avec votre premier client — par SMS, WhatsApp ou tout autre canal.
+                Ajoutez votre premier client. Si vous renseignez son email, il recevra son lien d'accès directement — sinon, copiez-le et partagez-le vous-même.
               </p>
 
               <div>
@@ -573,6 +598,17 @@ export function SignupForm() {
                 />
               </div>
 
+              <div>
+                <label className="block text-[13px] font-medium text-[#0D1F3C] mb-2">
+                  Email du client
+                  <span className="text-[11px] font-normal text-[#94A3B8] ml-2">(facultatif — envoie l'invitation automatiquement)</span>
+                </label>
+                <input
+                  type="email" value={clientEmail} onChange={e => setClientEmail(e.target.value)}
+                  maxLength={254} placeholder="thomas@exemple.com" className={inputCls}
+                />
+              </div>
+
               {error && <ErrorBox>{error}</ErrorBox>}
 
               <button
@@ -580,7 +616,12 @@ export function SignupForm() {
                 disabled={loading || !clientName.trim()}
                 className="w-full py-3 bg-[#0D1F3C] text-white text-[14px] font-semibold rounded-xl transition-all hover:bg-[#162847] disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {loading ? <Spinner text="Génération..." /> : 'Générer le lien privé'}
+                {loading
+                  ? <Spinner text="Envoi en cours..." />
+                  : clientEmail.trim()
+                    ? 'Envoyer l\'invitation par email'
+                    : 'Générer le lien privé'
+                }
               </button>
 
               <button
@@ -592,20 +633,39 @@ export function SignupForm() {
             </>
           ) : (
             <div className="space-y-4">
-              <div className="bg-[#EEF9F3] border border-[#4E9B6F]/25 rounded-xl p-4">
-                <p className="text-[12px] font-semibold text-[#4E9B6F] mb-2">
-                  Lien généré pour {clientName}
-                </p>
-                <p className="text-[11px] text-[#334155] font-mono break-all leading-relaxed bg-white rounded-lg px-3 py-2 border border-[#E2E8F0]">
-                  {inviteLink}
-                </p>
-              </div>
+              {/* Email envoyé */}
+              {emailSent ? (
+                <div className="bg-[#EEF9F3] border border-[#4E9B6F]/25 rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                      <circle cx="7" cy="7" r="6" fill="#4E9B6F"/>
+                      <path d="M4.5 7l2 2 3-3.5" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    <p className="text-[12px] font-semibold text-[#4E9B6F]">
+                      Invitation envoyée à {clientEmail}
+                    </p>
+                  </div>
+                  <p className="text-[11px] text-[#64748B]">
+                    {clientName} recevra son lien d'accès personnel dans sa boîte mail.
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-[#EEF9F3] border border-[#4E9B6F]/25 rounded-xl p-4">
+                  <p className="text-[12px] font-semibold text-[#4E9B6F] mb-2">
+                    Lien généré pour {clientName}
+                  </p>
+                  <p className="text-[11px] text-[#334155] font-mono break-all leading-relaxed bg-white rounded-lg px-3 py-2 border border-[#E2E8F0]">
+                    {inviteLink}
+                  </p>
+                </div>
+              )}
 
+              {/* Copier le lien — toujours disponible */}
               <button
                 type="button" onClick={handleCopyLink}
                 className="w-full py-3 border-2 border-[#4E9B6F] text-[14px] font-semibold text-[#4E9B6F] rounded-xl transition-all hover:bg-[#EEF9F3]"
               >
-                {linkCopied ? 'Copié !' : 'Copier le lien'}
+                {linkCopied ? '✓ Copié !' : 'Copier le lien'}
               </button>
 
               <button
@@ -613,10 +673,10 @@ export function SignupForm() {
                 className="w-full py-3 bg-[#4E9B6F] text-white text-[14px] font-semibold rounded-xl transition-all hover:bg-[#3d8058] disabled:opacity-40"
               >
                 {loading
-                  ? <Spinner text="Redirection..." />
+                  ? <Spinner text="Activation..." />
                   : planParam && planParam !== 'free'
-                    ? 'Choisir mon plan'
-                    : 'Accéder à mon interface'
+                    ? 'Accéder à mon interface'
+                    : 'Choisir mon plan'
                 }
               </button>
             </div>

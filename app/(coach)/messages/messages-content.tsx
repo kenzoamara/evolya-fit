@@ -648,7 +648,7 @@ function GroupModal({ clients, onSend, onClose }: {
 
         <div className="px-4 py-3 border-b border-[#F1F5F9] max-h-48 overflow-y-auto">
           <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2 px-2">
-            Membres ({selected.size} sélectionné{selected.size !== 1 ? 's' : ''})
+            Elève ({selected.size} sélectionné{selected.size !== 1 ? 's' : ''})
           </p>
           {clients.map(c => (
             <button
@@ -811,7 +811,7 @@ export function MessagesContent({ profile, clients, initialMessages }: Props) {
       {showGroupModal && (
         <GroupModal clients={clients} onSend={handleGroupSend} onClose={() => setShowGroupModal(false)} />
       )}
-      <div className="flex-1 flex flex-col sm:flex-row h-[calc(100vh-48px)] md:h-screen overflow-hidden">
+      <div className="flex-1 flex flex-col sm:flex-row h-[calc(100dvh-3rem-3.75rem-env(safe-area-inset-top)-env(safe-area-inset-bottom))] md:h-dvh overflow-hidden">
 
         {/* Sidebar */}
         <div className={`w-full sm:w-[320px] flex-shrink-0 border-r border-[#E2E8F0] bg-white flex flex-col ${mobileShowChat ? 'hidden sm:flex' : 'flex'}`}>

@@ -22,11 +22,11 @@ export function PlanGate({ featureKey, userPlan, children, fullPage }: PlanGateP
           <Lock className="w-7 h-7 text-[#94A3B8]" />
         </div>
         <p className="text-[11px] font-semibold tracking-[0.14em] uppercase text-[#94A3B8] mb-2">
-          Fonctionnalite verrouillee
+          Fonctionnalité verrouillée
         </p>
         <h2 className="text-[20px] font-bold text-[#0D1F3C] mb-2">{feature.label}</h2>
         <p className="text-[13px] text-[#64748B] mb-7 max-w-xs leading-relaxed">
-          Cette fonctionnalite est disponible a partir du plan{' '}
+          Cette fonctionnalité est disponible à partir du plan{' '}
           <strong className="text-[#0D1F3C]">{planLabel}</strong>.
         </p>
         <Link

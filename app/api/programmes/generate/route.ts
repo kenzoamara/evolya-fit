@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { getPlanLimits, isUnlimited } from '@/lib/plan-limits'
 import { PLAN_LABELS } from '@/lib/plan-features'
+import { checkPlanActive } from '@/lib/plan-guard'
 
 export const maxDuration = 60 // secondes — nécessaire pour les plans Vercel Pro
 
@@ -43,6 +44,10 @@ export async function POST(req: NextRequest) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+  // Bloquer si abonnement résilié ou paiement en échec
+  const guard = await checkPlanActive(supabase, user.id)
+  if (guard.blocked) return guard.response
 
   // Vérifier et réinitialiser le compteur mensuel si nécessaire
   const now = new Date()

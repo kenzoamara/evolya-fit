@@ -14,7 +14,7 @@ type Props = {
 export function ClientThemeProvider({ children, brand, font }: Props) {
   const fontFamily = FONT_MAP[font] ?? FONT_MAP['Inter']
   return (
-    <div style={{ fontFamily, minHeight: '100vh' }}>
+    <div style={{ fontFamily, minHeight: '100dvh' }}>
       <style dangerouslySetInnerHTML={{
         __html: `:root {
           --brand: ${brand};

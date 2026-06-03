@@ -38,9 +38,10 @@ export async function POST(req: NextRequest) {
 
   // Fetch target coaches
   let query = admin.from('profiles').select('id, full_name, email, plan').eq('role', 'coach').neq('suspended', true)
-  if (recipients === 'plan:trial') query = query.eq('plan', 'trial')
-  else if (recipients === 'plan:starter') query = query.eq('plan', 'starter')
-  else if (recipients === 'plan:standard') query = query.eq('plan', 'standard')
+  // Filtre générique : "plan:<valeur>" cible les coachs de ce plan (trial/starter/growth/pro…)
+  if (typeof recipients === 'string' && recipients.startsWith('plan:')) {
+    query = query.eq('plan', recipients.slice(5))
+  }
 
   const { data: coaches } = await query
   if (!coaches || coaches.length === 0) {

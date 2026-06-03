@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PolitiqueConfidentialitePage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFB]">
+    <div className="min-h-dvh bg-[#F8FAFB]">
       <div className="border-b border-[#E2E8F0] bg-white px-6 py-4">
         <Link href="/" className="text-sm text-[#4E9B6F] hover:underline">← Retour à l'accueil</Link>
       </div>

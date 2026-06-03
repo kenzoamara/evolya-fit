@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { SectionTag } from '@/components/landing/section-tag'
 
 /* ─── Données FAQ ──────────────────────────────────────────── */
 
@@ -83,7 +84,7 @@ export function FAQ() {
 
         {/* Header FAQ */}
         <div className="text-center mb-10">
-          <p className="text-[11px] font-bold text-[#4E9B6F] tracking-[0.15em] uppercase mb-3">FAQ</p>
+          <SectionTag>FAQ</SectionTag>
           <h2 className="text-[28px] md:text-[34px] font-bold text-[#0D1F3C] tracking-tight leading-tight mb-3">
             Questions fréquentes
           </h2>

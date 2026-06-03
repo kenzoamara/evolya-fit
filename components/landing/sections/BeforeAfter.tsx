@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import { useState } from 'react'
+import { SectionTag } from '@/components/landing/section-tag'
 
 const BEFORE = [
   "Tu jongles entre WhatsApp, Sheets et plusieurs apps pour suivre tes membres.",
@@ -12,8 +13,8 @@ const BEFORE = [
 
 const AFTER = [
   "Un seul système. Tous tes membres. Tout est structuré.",
-  "Les check-ins partent automatiquement. Les relances aussi. Tu récupères plusieurs heures par semaine.",
-  "Tu peux gérer plus d'membres sans te disperser ni perdre en qualité.",
+  "Les check-ins partent automatiquement. Les relances aussi. Tu récupères jusqu'à 21h par semaine.",
+  "Tu peux gérer plus de membres sans te disperser ni perdre en qualité.",
   "Chaque suivi reste clair, précis et maîtrisé — ta charge mentale diminue.",
   "Tu passes d'un coaching dispersé à un système organisé et fluide, sans changer ta façon de coacher.",
 ]
@@ -88,9 +89,7 @@ export function BeforeAfter() {
 
         {/* Header */}
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold text-[#4E9B6F] tracking-[0.15em] uppercase mb-4">
-            La transformation
-          </p>
+          <SectionTag>La transformation</SectionTag>
           <h2 className="text-[26px] sm:text-[32px] md:text-[38px] font-bold text-[#0D1F3C] tracking-tight leading-tight max-w-3xl mx-auto">
             Le système inspiré des meilleurs outils du marché.{' '}
             <span className="text-[#4E9B6F]">Conçu pour les coachs sportifs indépendants.</span>{' '}

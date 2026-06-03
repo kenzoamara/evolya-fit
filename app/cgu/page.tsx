@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function CGUPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFB]">
+    <div className="min-h-dvh bg-[#F8FAFB]">
       <div className="border-b border-[#E2E8F0] bg-white px-6 py-4">
         <Link href="/" className="text-sm text-[#4E9B6F] hover:underline">← Retour à l'accueil</Link>
       </div>
@@ -44,7 +44,7 @@ export default function CGUPage() {
           <div className="text-sm text-[#0D1F3C] leading-relaxed space-y-2">
             <p><strong>Conditions d'accès :</strong> Le Coach doit être âgé d'au moins 18 ans et disposer de la capacité juridique pour contracter. L'utilisation professionnelle du service implique que le Coach exerce une activité de coaching déclarée.</p>
             <p><strong>Identifiants :</strong> Le Coach est seul responsable de la confidentialité de ses identifiants et de toute activité effectuée depuis son compte. Il s'engage à notifier Evolya immédiatement en cas d'accès non autorisé à <a href="mailto:contact.evolya.pro@gmail.com" className="text-[#4E9B6F] hover:underline">contact.evolya.pro@gmail.com</a>.</p>
-            <p><strong>Membres :</strong> Les membres des coachs accèdent au service via un lien personnalisé sécurisé généré par leur coach. Ils ne disposent pas de compte au sens de l'authentification classique.</p>
+            <p><strong>Elève :</strong> Les membres des coachs accèdent au service via un lien personnalisé sécurisé généré par leur coach. Ils ne disposent pas de compte au sens de l'authentification classique.</p>
           </div>
         </section>
 

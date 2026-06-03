@@ -3,6 +3,8 @@
 import { useState, useMemo, useEffect } from 'react'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
+import { planMrr } from '@/lib/stripe/plans'
+import { PLAN_LABELS } from '@/lib/plan-features'
 
 type Coach = {
   id: string
@@ -21,13 +23,14 @@ type Coach = {
 
 type Props = { coaches: Coach[] }
 
-const PLAN_LABELS: Record<string, string> = { trial: 'Trial', starter: 'Starter', standard: 'Pro' }
-
 function PlanBadge({ plan }: { plan: string }) {
   const styles: Record<string, string> = {
+    free: 'bg-[#F1F5F9] text-[#64748B]',
     trial: 'bg-[#F1F5F9] text-[#64748B]',
     starter: 'bg-blue-50 text-blue-700',
+    growth: 'bg-green-50 text-green-700',
     standard: 'bg-green-50 text-green-700',
+    pro: 'bg-[#F5F3FF] text-[#7C3AED]',
   }
   return (
     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${styles[plan] ?? styles.trial}`}>
@@ -70,14 +73,14 @@ export function CoachesAdminContent({ coaches: initial }: Props) {
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'profiles' }, (payload) => {
         const p = payload.new as Coach & { role?: string }
         if (p.role === 'coach') {
-          setCoaches(prev => [{ ...p, activeClients: 0, mrr: p.plan === 'standard' ? 49 : p.plan === 'starter' ? 19 : 0 } as Coach, ...prev])
+          setCoaches(prev => [{ ...p, activeClients: 0, mrr: planMrr(p.plan) } as Coach, ...prev])
           toast.info(`Nouveau coach : ${p.full_name ?? 'Coach'}`)
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, (payload) => {
         const p = payload.new as Coach & { role?: string }
         if (p.role === 'coach') {
-          setCoaches(prev => prev.map(c => c.id === p.id ? { ...c, ...p, mrr: p.plan === 'standard' ? 49 : p.plan === 'starter' ? 19 : 0 } : c))
+          setCoaches(prev => prev.map(c => c.id === p.id ? { ...c, ...p, mrr: planMrr(p.plan) } : c))
         }
       })
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'profiles' }, (payload) => {
@@ -196,9 +199,10 @@ export function CoachesAdminContent({ coaches: initial }: Props) {
         <select value={filterPlan} onChange={e => setFilterPlan(e.target.value)}
           className="px-3 py-1.5 border border-[#E2E8F0] rounded-lg text-sm bg-white focus:outline-none">
           <option value="all">Tous les plans</option>
-          <option value="trial">Trial</option>
-          <option value="starter">Starter</option>
-          <option value="standard">Pro</option>
+          <option value="trial">Découverte</option>
+          <option value="starter">Lancement</option>
+          <option value="growth">Croissance</option>
+          <option value="pro">Pro</option>
         </select>
         <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)}
           className="px-3 py-1.5 border border-[#E2E8F0] rounded-lg text-sm bg-white focus:outline-none">
@@ -301,9 +305,10 @@ export function CoachesAdminContent({ coaches: initial }: Props) {
                       <select value={newPlan} onChange={e => setNewPlan(e.target.value)}
                         className="flex-1 px-3 py-2 border border-[#E2E8F0] rounded-lg text-sm bg-white focus:outline-none focus:border-[#4E9B6F]">
                         <option value="">Sélectionner...</option>
-                        <option value="trial">Trial</option>
-                        <option value="starter">Starter (19€)</option>
-                        <option value="standard">Pro (49€)</option>
+                        <option value="trial">Découverte (0€)</option>
+                        <option value="starter">Lancement (19€)</option>
+                        <option value="growth">Croissance (29€)</option>
+                        <option value="pro">Pro (49€)</option>
                       </select>
                       <button onClick={handleChangePlan} disabled={!newPlan || loading}
                         className="px-3 py-2 bg-[#4E9B6F] text-white rounded-lg text-sm disabled:opacity-50 hover:bg-[#5a7a60] transition-colors">

@@ -172,10 +172,7 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
         <div className="px-3 py-4 border-t border-[#E2E8F0] shrink-0">
           <p className="text-[9px] text-[#CBD5E1] uppercase tracking-wider mb-1.5">Suivi par</p>
           <div className="flex items-center gap-2 mb-3">
-            {coachPhoto
-              ? <img src={coachPhoto} alt={coachName} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
-              : <div className="w-5 h-5 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B] flex-shrink-0">{coachName[0]}</div>
-            }
+            <div className="w-5 h-5 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B] flex-shrink-0">{coachName[0]}</div>
             <p className="text-[11px] text-[#64748B] truncate">{coachName}</p>
           </div>
           <div className="flex items-center gap-2.5">
@@ -313,10 +310,7 @@ export function ClientNav({ clientName, coachName, coachPhoto, token, paymentBad
 
               {/* Coach info dans le sheet */}
               <div className="mt-2 pt-4 border-t border-[#F1F5F9] flex items-center gap-3 px-1">
-                {coachPhoto
-                  ? <img src={coachPhoto} alt={coachName} className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                  : <div className="w-8 h-8 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[12px] font-bold text-[#64748B] flex-shrink-0">{coachName[0]}</div>
-                }
+                <div className="w-8 h-8 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[12px] font-bold text-[#64748B] flex-shrink-0">{coachName[0]}</div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[11px] text-[#94A3B8]">Suivi par</p>
                   <p className="text-[13px] font-semibold text-[#0D1F3C] truncate">{coachName}</p>

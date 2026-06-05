@@ -35,7 +35,6 @@ export default async function JoinRequestPage({
   const c = coach as { id: string; full_name: string | null; coaching_type: string | null; brand_color_primary: string | null; brand_icon: string | null }
   const brand = c.brand_color_primary ?? '#4E9B6F'
   const coachName = c.full_name ?? 'Votre coach'
-  const photo = c.brand_icon?.startsWith('http') ? c.brand_icon : null
   const initial = coachName.charAt(0).toUpperCase()
 
   return (
@@ -44,13 +43,9 @@ export default async function JoinRequestPage({
       <div className="w-full max-w-md">
         {/* Coach header */}
         <div className="text-center mb-6">
-          {photo ? (
-            <img src={photo} alt={coachName} className="w-16 h-16 rounded-2xl object-cover mx-auto mb-3" />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl mx-auto mb-3 flex items-center justify-center text-[26px] font-bold text-white" style={{ background: brand }}>
-              {initial}
-            </div>
-          )}
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-3 flex items-center justify-center text-[26px] font-bold text-white" style={{ background: brand }}>
+            {initial}
+          </div>
           <p className="text-[11px] font-semibold uppercase tracking-widest" style={{ color: brand }}>Rejoindre le coaching</p>
           <h1 className="text-[22px] font-bold text-[#0D1F3C] mt-1">{coachName}</h1>
           {c.coaching_type && <p className="text-[13px] text-[#64748B] mt-0.5">{c.coaching_type}</p>}

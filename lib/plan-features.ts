@@ -29,7 +29,6 @@ export type FeatureKey =
   | 'rappels_paiement'
   | 'rapports_hebdo'
   | 'stats_croissance'
-  | 'photo_profil'
   | 'blog'
   | 'calculatrice'
 
@@ -45,7 +44,6 @@ export const FEATURE_PLANS: Record<FeatureKey, { label: string; requiredPlan: Pl
   rappels_paiement: { label: 'Rappels automatiques de paiement',    requiredPlan: 'starter' },
   rapports_hebdo:   { label: 'Rapports hebdomadaires automatiques', requiredPlan: 'starter' },
   stats_croissance: { label: 'Statistiques de croissance',          requiredPlan: 'growth'  },
-  photo_profil:     { label: 'Photo de profil',                     requiredPlan: 'growth'  },
   blog:             { label: 'Blog',                                requiredPlan: 'growth'  },
   calculatrice:     { label: 'Calculatrice intégrée',               requiredPlan: 'growth'  },
 }

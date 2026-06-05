@@ -132,10 +132,7 @@ function SidebarContent({ navGroups, active, profile, initials, logout }: Sideba
             className="w-7 h-7 rounded-lg flex items-center justify-center text-[11px] font-bold shrink-0 text-white overflow-hidden"
             style={{ backgroundColor: 'var(--brand)' }}
           >
-            {profile.brand_icon?.startsWith('http')
-              ? <img src={profile.brand_icon} alt="" className="w-full h-full object-cover" />
-              : (profile.brand_icon || initials)
-            }
+            {initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[12.5px] font-semibold text-[--evolya-text] truncate leading-tight">{profile.full_name ?? 'Coach'}</p>
@@ -200,8 +197,6 @@ export function Sidebar({ profile }: Props) {
   function active(href: string) {
     return pathname === href || pathname.startsWith(href + '/')
   }
-
-  const photo = profile.brand_icon?.startsWith('http') ? profile.brand_icon : null
 
   async function logout() {
     const supabase = createClient()
@@ -272,7 +267,7 @@ export function Sidebar({ profile }: Props) {
           className="w-9 h-9 rounded-lg flex items-center justify-center text-[11px] font-bold text-white overflow-hidden active:scale-95 transition-transform"
           style={{ backgroundColor: 'var(--brand)' }}
         >
-          {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : (profile.brand_icon || initials)}
+          {initials}
         </button>
       </div>
 
@@ -337,7 +332,7 @@ export function Sidebar({ profile }: Props) {
           <div className="p-3 shrink-0">
             <div className="rounded-2xl bg-[#0D1F3C] px-3 py-3 flex items-center gap-3">
               <div className="w-11 h-11 rounded-full overflow-hidden flex items-center justify-center text-white font-bold text-[15px] shrink-0" style={{ backgroundColor: 'var(--brand)' }}>
-                {photo ? <img src={photo} alt="" className="w-full h-full object-cover" /> : (profile.brand_icon || initials)}
+                {initials}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold text-[15px] truncate leading-tight">{profile.full_name ?? 'Coach'}</p>

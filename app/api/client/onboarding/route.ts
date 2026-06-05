@@ -3,11 +3,12 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { Resend } from 'resend'
 
 function buildOnboardingUpdate(body: Record<string, string | boolean | undefined>, includeComplete: boolean): Record<string, unknown> {
-  const { firstName, lastName, birthDate, gender, heightCm, weightKg, mainGoal, activityLevel, injuries, dietaryHabits, avgSleepHours, sportPerformances, dailyCalories, parqCardiac, parqInjuries, parqMedical } = body
+  const { firstName, lastName, birthDate, whatsappPhone, gender, heightCm, weightKg, mainGoal, activityLevel, injuries, dietaryHabits, avgSleepHours, sportPerformances, dailyCalories, parqCardiac, parqInjuries, parqMedical } = body
   const update: Record<string, unknown> = {}
   const fullName = [String(firstName ?? '').trim(), String(lastName ?? '').trim()].filter(Boolean).join(' ')
   if (fullName)                          update.full_name                = fullName
   if (birthDate)                         update.birth_date               = birthDate
+  if (String(whatsappPhone ?? '').trim()) update.whatsapp_phone          = String(whatsappPhone).trim()
   if (gender)                            update.gender                   = gender
   if (heightCm)                          update.height_cm                = parseInt(String(heightCm), 10)
   if (weightKg)                          update.weight_kg                = parseFloat(String(weightKg))

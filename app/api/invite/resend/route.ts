@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     }
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const magicLink = `${appUrl}/c/${client.magic_token}/dashboard`
+    const magicLink = `${appUrl}/c/${client.magic_token}`
     const coachName = profile?.full_name ?? 'Votre coach'
 
     await resend.emails.send({
@@ -101,7 +101,7 @@ function reinviteEmailHtml({
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td bgcolor="#4E9B6F" style="border-radius:8px;background:#4E9B6F;">
-                          <a href="${magicLink}" target="_blank" style="display:inline-block;padding:13px 28px;background:#4E9B6F;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:8px;font-family:Arial,sans-serif;">Acceder a mon espace</a>
+                          <a href="${magicLink}" target="_blank" style="display:inline-block;padding:13px 28px;background:#4E9B6F;color:#ffffff;font-size:14px;font-weight:bold;text-decoration:none;border-radius:8px;font-family:Arial,sans-serif;">Creer mon compte</a>
                         </td>
                       </tr>
                     </table>

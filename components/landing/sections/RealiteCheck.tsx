@@ -264,8 +264,8 @@ export function RealiteCheck() {
 
                     <div className="space-y-2.5 mb-5">
                       {[
-                        { type: 'session' as BillingType, emoji: '💰', title: 'Par séance',               sub: 'Je facture un tarif fixe par session' },
-                        { type: 'other'   as BillingType, emoji: '📊', title: 'Pas par séance',            sub: 'Forfait, abonnement mensuel…' },
+                        { type: 'session' as BillingType, title: 'Par séance',               sub: 'Je facture un tarif fixe par session' },
+                        { type: 'other'   as BillingType, title: 'Pas par séance',            sub: 'Forfait, abonnement mensuel…' },
                       ].map(opt => (
                         <button
                           key={opt.type}
@@ -276,7 +276,25 @@ export function RealiteCheck() {
                             background: 'transparent',
                           }}
                         >
-                          <span className="text-[20px] shrink-0">{opt.emoji}</span>
+                          <span
+                            className="w-9 h-9 rounded-lg shrink-0 flex items-center justify-center"
+                            style={{ backgroundColor: 'rgba(13,31,60,0.06)', color: '#0D1F3C' }}
+                          >
+                            {opt.type === 'session' ? (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v1" />
+                                <path d="M3 7v10a2 2 0 0 0 2 2h14a1 1 0 0 0 1-1v-3" />
+                                <path d="M21 11h-4a2 2 0 0 0 0 4h4a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1z" />
+                              </svg>
+                            ) : (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d="M3 3v18h18" />
+                                <rect x="7" y="11" width="3" height="6" />
+                                <rect x="12" y="7" width="3" height="10" />
+                                <rect x="17" y="13" width="3" height="4" />
+                              </svg>
+                            )}
+                          </span>
                           <div className="flex-1 min-w-0">
                             <p className="text-[13px] font-semibold text-[#0D1F3C]">{opt.title}</p>
                             <p className="text-[11px]" style={{ color: '#9CA3AF' }}>{opt.sub}</p>

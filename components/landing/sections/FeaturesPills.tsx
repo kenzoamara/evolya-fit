@@ -1,13 +1,13 @@
-﻿'use client'
+'use client'
 
 import { useState } from 'react'
 import { AnimatedBackground } from '../AnimatedBackground'
 import { SectionTag } from '@/components/landing/section-tag'
+import { FeatureIcon } from '@/components/landing/feature-icons'
 
 const TOOLS = [
   {
     id: 'programme',
-    emoji: '📋',
     label: 'Programme',
     title: 'Crée et assigne des programmes en quelques minutes.',
     desc: "Construis des programmes sportifs, nutritionnels ou d'habitudes et assigne-les à tes membres instantanément — l'IA génère et tu valides.",
@@ -21,7 +21,6 @@ const TOOLS = [
   },
   {
     id: 'seance',
-    emoji: '⚡',
     label: 'Séance',
     title: 'Tes séances planifiées, suivies et archivées sans effort.',
     desc: "Un agenda intégré, une durée configurable par séance, des notes privées par membre. Plus de séances improvisées — chaque membre a son fil rouge.",
@@ -36,7 +35,6 @@ const TOOLS = [
   },
   {
     id: 'suivi',
-    emoji: '📊',
     label: 'Suivi membre',
     title: 'Ne rate plus jamais un signal faible chez tes membres.',
     desc: "Check-ins automatiques, mesures, performances, objectifs — tu vois qui avance, qui stagne, qui décroche. Plus besoin de tout mémoriser. Le système se souvient pour toi.",
@@ -50,7 +48,6 @@ const TOOLS = [
   },
   {
     id: 'messagerie',
-    emoji: '💬',
     label: 'Messagerie',
     title: 'Centralise tous tes échanges au même endroit',
     desc: "Discute avec tes membres, partage des informations et centralise toute la communication de ton coaching — en finir avec les outils éparpillés.",
@@ -63,7 +60,6 @@ const TOOLS = [
   },
   {
     id: 'espace-membre',
-    emoji: '📱',
     label: 'Espace membre',
     title: 'Tes membres ont leur propre espace — sur mobile et PC.',
     desc: "Chaque membre accède à son espace personnel via un lien unique — sans app à télécharger. Ils voient leur programme, suivent leur progression et restent engagés entre les séances.",
@@ -77,7 +73,6 @@ const TOOLS = [
   },
   {
     id: 'invitation',
-    emoji: '🔗',
     label: 'Invitations',
     title: 'Onboarde tes membres avec un seul lien.',
     desc: "Partage un lien unique par WhatsApp, SMS ou ta bio Instagram. Tes membres s'inscrivent eux-mêmes, tu valides en un clic — leur accès part automatiquement par email. Plus aucune saisie manuelle.",
@@ -92,7 +87,6 @@ const TOOLS = [
   },
   {
     id: 'business',
-    emoji: '📈',
     label: 'Business',
     title: 'Pilote ton activité avec les bons indicateurs',
     desc: "Vue d'ensemble de ta croissance, suivi des inactifs, gestion des impayés — tout ce qui compte pour ton activité depuis une seule interface.",
@@ -106,13 +100,12 @@ const TOOLS = [
   },
   {
     id: 'personnalisation',
-    emoji: '🎨',
     label: 'Personnalisation',
     title: "Une plateforme à ton image, pas un outil générique.",
-    desc: "Ta couleur de marque, ton logo, ta photo — tes membres voient TON identité, pas la nôtre. Tout l'espace membre s'habille à ta marque. La différence entre un freelance et un cabinet professionnel.",
+    desc: "Ta couleur de marque et ta police — tes membres voient TON identité, pas la nôtre. Tout l'espace membre s'habille à ta marque. La différence entre un freelance et un cabinet professionnel.",
     bullets: [
       'Ta couleur de marque appliquée à tout l\'espace membre',
-      'Logo et photo de profil personnalisés',
+      'Police d\'écriture personnalisée',
       'Page d\'invitation et espace membre à ton image',
       'Mode clair, sombre ou automatique',
     ],
@@ -122,7 +115,6 @@ const TOOLS = [
 const ENGAGEMENTS = [
   {
     id: 'fiabilite',
-    emoji: '🛡️',
     label: 'Fiabilité',
     title: 'Nous tenons nos engagements, sans exception',
     desc: "Ce qu'on annonce, on le livre. Chaque retour coach compte et façonne la prochaine mise à jour — tu n'es jamais ignoré.",
@@ -134,7 +126,6 @@ const ENGAGEMENTS = [
   },
   {
     id: 'intuitif',
-    emoji: '✨',
     label: 'Intuitif',
     title: 'Opérationnel en moins de 10 minutes',
     desc: "Pas de formation, pas de manuel. En quelques minutes, tu es prêt à coacher et tes membres aussi — depuis n'importe quel appareil.",
@@ -147,7 +138,6 @@ const ENGAGEMENTS = [
   },
   {
     id: 'automatiser',
-    emoji: '⚙️',
     label: 'Automatiser',
     title: 'Les tâches répétitives disparaissent. Le lien avec tes membres, lui, reste.',
     desc: "Evolya'Fit s'occupe des check-ins, des relances, des alertes, des bilans, etc. — pour que tu aies plus de temps pour ce qui compte : être présent pour tes membres. Automatiser, ce n'est pas devenir froid. C'est l'inverse.",
@@ -162,7 +152,6 @@ const ENGAGEMENTS = [
   },
   {
     id: 'ecoute',
-    emoji: '🎧',
     label: "À l'écoute",
     title: 'Un support disponible 7 jours sur 7',
     desc: "Une équipe accessible tous les jours de la semaine. Tu n'es jamais bloqué seul face à un problème — et chaque retour coach améliore la plateforme.",
@@ -177,8 +166,8 @@ const ENGAGEMENTS = [
 
 const ALL = [...TOOLS, ...ENGAGEMENTS]
 
-function NavItem({ emoji, label, active, onClick, accent }: {
-  emoji: string
+function NavItem({ id, label, active, onClick, accent }: {
+  id: string
   label: string
   active: boolean
   onClick: () => void
@@ -187,15 +176,20 @@ function NavItem({ emoji, label, active, onClick, accent }: {
   return (
     <button
       onClick={onClick}
-      className="w-full text-left px-4 py-2.5 text-[13px] transition-all duration-150 flex items-center gap-3 border-l-2"
+      className="w-full text-left px-4 py-3 text-[13px] transition-all duration-150 flex items-center gap-3 border-l-2"
       style={{
         borderLeftColor: active ? accent : 'transparent',
-        color:           active ? '#FFFFFF' : '#475569',
+        color:           active ? '#FFFFFF' : '#94A3B8',
         background:      active ? 'rgba(255,255,255,0.05)' : 'transparent',
         fontWeight:      active ? 600 : 400,
       }}
     >
-      <span className="text-[15px] leading-none flex-shrink-0">{emoji}</span>
+      <span
+        className="flex-shrink-0 transition-colors"
+        style={{ color: active ? accent : '#64748B' }}
+      >
+        <FeatureIcon id={id} size={17} />
+      </span>
       <span>{label}</span>
     </button>
   )
@@ -218,26 +212,26 @@ export function FeaturesPills() {
           <h2 className="text-[34px] md:text-[46px] font-bold text-white leading-tight tracking-tight mb-4">
             Un seul outil. Tout ce qu&apos;il te faut pour coacher.
           </h2>
-          <p className="text-[15px] text-[#64748B] max-w-xl leading-relaxed">
+          <p className="text-[15px] text-[#94A3B8] max-w-xl leading-relaxed">
             Des outils simples, efficaces et pensés pour te faire gagner du temps — une fonctionnalité qui ne te sert pas ? Supprime-la.
           </p>
         </div>
 
         {/* Mobile — onglets horizontaux scrollables */}
         <div className="md:hidden mb-6 -mx-6 px-6">
-          <div className="flex gap-1 overflow-x-auto pb-1" style={{ scrollbarWidth: 'none' }}>
+          <div className="flex gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {TOOLS.map(t => (
               <button
                 key={t.id}
                 onClick={() => setActive(t.id)}
-                className="flex-shrink-0 px-3 py-2 text-[12px] font-medium transition-all rounded-md flex items-center gap-1.5"
+                className="flex-shrink-0 min-h-[44px] px-3.5 text-[12.5px] font-medium transition-all rounded-lg flex items-center gap-1.5"
                 style={{
                   background:  active === t.id ? 'rgba(78,155,111,0.15)' : 'rgba(255,255,255,0.04)',
-                  color:       active === t.id ? '#4E9B6F' : '#64748B',
-                  borderBottom: active === t.id ? '2px solid #4E9B6F' : '2px solid transparent',
+                  color:       active === t.id ? '#4E9B6F' : '#94A3B8',
+                  border:      active === t.id ? '1px solid rgba(78,155,111,0.35)' : '1px solid transparent',
                 }}
               >
-                <span>{t.emoji}</span>
+                <FeatureIcon id={t.id} size={15} />
                 <span>{t.label}</span>
               </button>
             ))}
@@ -246,14 +240,14 @@ export function FeaturesPills() {
               <button
                 key={t.id}
                 onClick={() => setActive(t.id)}
-                className="flex-shrink-0 px-3 py-2 text-[12px] font-medium transition-all rounded-md flex items-center gap-1.5"
+                className="flex-shrink-0 min-h-[44px] px-3.5 text-[12.5px] font-medium transition-all rounded-lg flex items-center gap-1.5"
                 style={{
                   background:  active === t.id ? 'rgba(124,92,252,0.15)' : 'rgba(255,255,255,0.04)',
-                  color:       active === t.id ? '#7C5CFC' : '#64748B',
-                  borderBottom: active === t.id ? '2px solid #7C5CFC' : '2px solid transparent',
+                  color:       active === t.id ? '#7C5CFC' : '#94A3B8',
+                  border:      active === t.id ? '1px solid rgba(124,92,252,0.35)' : '1px solid transparent',
                 }}
               >
-                <span>{t.emoji}</span>
+                <FeatureIcon id={t.id} size={15} />
                 <span>{t.label}</span>
               </button>
             ))}
@@ -272,7 +266,7 @@ export function FeaturesPills() {
               {TOOLS.map(t => (
                 <NavItem
                   key={t.id}
-                  emoji={t.emoji}
+                  id={t.id}
                   label={t.label}
                   active={active === t.id}
                   onClick={() => setActive(t.id)}
@@ -288,7 +282,7 @@ export function FeaturesPills() {
               {ENGAGEMENTS.map(t => (
                 <NavItem
                   key={t.id}
-                  emoji={t.emoji}
+                  id={t.id}
                   label={t.label}
                   active={active === t.id}
                   onClick={() => setActive(t.id)}
@@ -312,8 +306,13 @@ export function FeaturesPills() {
                 }
               `}</style>
 
-              <div className="flex items-center gap-2.5 mb-4">
-                <span className="text-[22px] leading-none">{current.emoji}</span>
+              <div className="flex items-center gap-3 mb-5">
+                <div
+                  className="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                  style={{ backgroundColor: `${accent}1F`, color: accent }}
+                >
+                  <FeatureIcon id={current.id} size={19} />
+                </div>
                 <p
                   className="text-[10px] font-bold tracking-[0.2em] uppercase"
                   style={{ color: accent }}
@@ -326,7 +325,7 @@ export function FeaturesPills() {
                 {current.title}
               </h3>
 
-              <p className="text-[14px] text-[#64748B] leading-relaxed max-w-md mb-6">
+              <p className="text-[14px] text-[#94A3B8] leading-relaxed max-w-md mb-6">
                 {current.desc}
               </p>
 
@@ -341,7 +340,7 @@ export function FeaturesPills() {
                         <path d="M1.5 4.5l2 2 3-4" stroke={accent} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     </div>
-                    <span className="text-[13px] text-white/65 leading-snug">{b}</span>
+                    <span className="text-[13px] text-white/70 leading-snug">{b}</span>
                   </li>
                 ))}
               </ul>

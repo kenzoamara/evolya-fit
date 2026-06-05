@@ -189,10 +189,7 @@ export function ClientProfil({ client, coachName, coachingType, coachPhoto }: Pr
         style={{ background: 'linear-gradient(135deg, #0D1F3C 0%, #1e3a5f 100%)' }}
       >
         <div className="w-12 h-12 rounded-2xl flex-shrink-0 overflow-hidden" style={{ background: 'rgba(255,255,255,0.15)' }}>
-          {coachPhoto
-            ? <img src={coachPhoto} alt={coachName} className="w-full h-full object-cover" />
-            : <div className="w-full h-full flex items-center justify-center text-[18px] font-bold text-white">{coachName.charAt(0).toUpperCase()}</div>
-          }
+          <div className="w-full h-full flex items-center justify-center text-[18px] font-bold text-white">{coachName.charAt(0).toUpperCase()}</div>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-white/50 mb-0.5">Ton coach</p>

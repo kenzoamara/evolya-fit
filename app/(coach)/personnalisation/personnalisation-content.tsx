@@ -1,10 +1,10 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
-import { Palette, Check, Sun, Moon, Monitor, RotateCcw, Upload, X } from 'lucide-react'
+import { Palette, Check, Sun, Moon, Monitor, RotateCcw } from 'lucide-react'
 import { PageHeader } from '@/components/coach/page-header'
 import { PlanGate } from '@/components/ui/plan-gate'
 import type { Profile } from '@/types/database'
@@ -39,43 +39,11 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
   const [primaryColor, setPrimaryColor] = useState(profile.brand_color_primary ?? '#4E9B6F')
   const [accentColor, setAccentColor] = useState(profile.brand_color_accent ?? '#0D1F3C')
   const [font, setFont] = useState(profile.brand_font ?? 'Inter')
-  const [icon, setIcon] = useState(profile.brand_icon ?? '')
   const [themeMode, setThemeMode] = useState<ThemeMode>((profile.theme_mode as ThemeMode) ?? 'light')
   const [saving, setSaving] = useState(false)
-  const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  const photoInputRef = useRef<HTMLInputElement>(null)
 
   const initials = (profile.full_name ?? 'C')
     .split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()
-  const isPhotoUrl = icon.startsWith('http')
-  const previewIcon = icon || initials
-
-  async function handlePhotoUpload(file: File) {
-    if (!file.type.startsWith('image/')) { toast.error('Fichier non supporté. Utilisez une image (JPG, PNG, WebP).'); return }
-    if (file.size > 3 * 1024 * 1024) { toast.error('Taille max : 3 Mo.'); return }
-    setUploadingPhoto(true)
-    const supabase = createClient()
-    const ext = file.name.split('.').pop() ?? 'jpg'
-    const path = `${profile.id}/avatar.${ext}`
-    const { error: uploadError } = await supabase.storage
-      .from('coach-avatars')
-      .upload(path, file, { upsert: true, contentType: file.type })
-    if (uploadError) {
-      toast.error("Erreur lors de l'upload. Vérifiez que le bucket 'coach-avatars' existe dans Supabase Storage.")
-      setUploadingPhoto(false)
-      return
-    }
-    const { data } = supabase.storage.from('coach-avatars').getPublicUrl(path)
-    // Ajoute un cache-bust pour forcer le rechargement de l'image
-    const publicUrl = `${data.publicUrl}?t=${Date.now()}`
-    setIcon(publicUrl)
-    setUploadingPhoto(false)
-    toast.success('Photo chargée — cliquez sur Sauvegarder pour confirmer.')
-  }
-
-  async function handleRemovePhoto() {
-    setIcon('')
-  }
 
   async function handleSave() {
     setSaving(true)
@@ -86,7 +54,7 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
         brand_color_primary: primaryColor,
         brand_color_accent: accentColor,
         brand_font: font,
-        brand_icon: icon || null,
+        brand_icon: null,
         theme_mode: themeMode,
       })
       .eq('id', profile.id)
@@ -102,7 +70,6 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
     setPrimaryColor('#4E9B6F')
     setAccentColor('#0D1F3C')
     setFont('Inter')
-    setIcon('')
     setThemeMode('light')
     const supabase = createClient()
     const { error } = await supabase
@@ -155,20 +122,12 @@ export function PersonnalisationContent({ profile, userPlan }: Props) {
           <div className="bg-white rounded-xl border border-[#F1F5F9] p-4">
             <p className="text-[12px] text-[#94A3B8] uppercase tracking-wide font-medium mb-3">Aperçu</p>
             <div className="flex items-center gap-3 p-3 bg-[#F8FAFB] rounded-lg">
-              {isPhotoUrl ? (
-                <img
-                  src={icon}
-                  alt="Photo de profil"
-                  className="w-9 h-9 rounded-xl object-cover shrink-0"
-                />
-              ) : (
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold text-white shrink-0"
-                  style={{ backgroundColor: primaryColor }}
-                >
-                  {previewIcon}
-                </div>
-              )}
+              <div
+                className="w-9 h-9 rounded-xl flex items-center justify-center text-[13px] font-bold text-white shrink-0"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {initials}
+              </div>
               <div>
                 <p className="text-[13px] font-semibold text-[#0D1F3C]" style={{ fontFamily: font }}>
                   {profile.full_name ?? 'Mon nom'}

@@ -13,8 +13,10 @@ export async function POST(req: Request) {
     if (!clientName) {
       return NextResponse.json({ error: 'Nom requis.' }, { status: 400 })
     }
-    // Email optionnel — on génère un placeholder si absent
-    const resolvedEmail = clientEmail?.trim() || `client_${crypto.randomUUID().slice(0, 8)}@evolya.internal`
+    if (!clientEmail?.trim()) {
+      return NextResponse.json({ error: 'Email requis.' }, { status: 400 })
+    }
+    const resolvedEmail = clientEmail.trim()
 
     // Récupérer le coach connecté
     const supabase = await createClient()
@@ -77,24 +79,22 @@ export async function POST(req: Request) {
 
     // Envoyer l'email d'invitation — non bloquant (Resend peut échouer sans casser le flux)
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-    const magicLink = `${appUrl}/c/${newMagicToken}/dashboard`
+    const magicLink = `${appUrl}/c/${newMagicToken}`
     const coachName = profile.full_name ?? 'Votre coach'
 
-    if (clientEmail?.trim() && !resolvedEmail.includes('@evolya.internal')) {
-      try {
-        await resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL ?? 'Evolyafit <noreply@evolyafit.fr>',
-          to: resolvedEmail,
-          subject: `${coachName} a créé votre espace de coaching`,
-          html: invitationEmailHtml({ clientName, coachName, magicLink }),
-          headers: {
-            'List-Unsubscribe': '<mailto:contact@evolyafit.fr>',
-            'X-Entity-Ref-ID': newClient.id,
-          },
-        })
-      } catch (emailErr) {
-        console.error('[invite/send] Email error (non-blocking):', emailErr)
-      }
+    try {
+      await resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL ?? 'Evolyafit <noreply@evolyafit.fr>',
+        to: resolvedEmail,
+        subject: `${coachName} a créé votre espace de coaching`,
+        html: invitationEmailHtml({ clientName, coachName, magicLink }),
+        headers: {
+          'List-Unsubscribe': '<mailto:contact@evolyafit.fr>',
+          'X-Entity-Ref-ID': newClient.id,
+        },
+      })
+    } catch (emailErr) {
+      console.error('[invite/send] Email error (non-blocking):', emailErr)
     }
 
     return NextResponse.json({ success: true, clientId: newClient.id, magicLink })
@@ -173,7 +173,7 @@ function invitationEmailHtml({
                     <table role="presentation" cellpadding="0" cellspacing="0" border="0">
                       <tr>
                         <td bgcolor="#4E9B6F" style="border-radius:8px;background:#4E9B6F;">
-                          <a href="${magicLink}" target="_blank" style="display:inline-block;padding:14px 32px;background:#4E9B6F;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;font-family:Arial,sans-serif;">Acceder a mon espace</a>
+                          <a href="${magicLink}" target="_blank" style="display:inline-block;padding:14px 32px;background:#4E9B6F;color:#ffffff;font-size:15px;font-weight:bold;text-decoration:none;border-radius:8px;font-family:Arial,sans-serif;">Creer mon compte</a>
                         </td>
                       </tr>
                     </table>

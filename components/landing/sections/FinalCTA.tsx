@@ -52,10 +52,10 @@ export function FinalCTA() {
             'Configuration en 10 min',
             'Support 7j/7',
           ].map((signal, i) => (
-            <div key={i} className="flex items-center gap-2 text-[13px] text-white/40">
+            <div key={i} className="flex items-center gap-2 text-[13px] text-white/60">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                <circle cx="7" cy="7" r="6" stroke="rgba(255,255,255,0.2)" strokeWidth="1.2"/>
-                <path d="M4.5 7l1.8 1.8L9.5 5" stroke="rgba(255,255,255,0.4)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="7" cy="7" r="6" stroke="rgba(78,155,111,0.5)" strokeWidth="1.2"/>
+                <path d="M4.5 7l1.8 1.8L9.5 5" stroke="#4E9B6F" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
               {signal}
             </div>

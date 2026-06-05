@@ -35,8 +35,8 @@ export function DashboardPreview() {
         </div>
       </div>
 
-      {/* ── Demo wrapper — pleine largeur ── */}
-      <div className="max-w-6xl mx-auto relative z-[1]">
+      {/* ── Demo wrapper ── */}
+      <div className="max-w-5xl mx-auto relative z-[1]">
         <div
           onMouseEnter={() => setGlowing(true)}
           onMouseLeave={() => setGlowing(false)}
@@ -62,7 +62,7 @@ export function DashboardPreview() {
           </div>
 
           {/* ── App body — Interactive Program ── */}
-          <div className="relative bg-white p-0" style={{ minHeight: 620 }}>
+          <div className="relative bg-white p-0">
             <InteractiveProgram />
           </div>{/* fin app body */}
         </div>{/* fin mockup rounded-2xl */}

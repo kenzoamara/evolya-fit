@@ -2,6 +2,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { sendCoachPushNotification } from '@/lib/push'
+import { sendWhatsAppMessage } from '@/lib/whatsapp'
 
 // GET /api/messages?token=xxx  (client via magic token)
 // GET /api/messages?clientId=xxx  (coach authenticated)
@@ -131,12 +132,29 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: 'Erreur envoi.' }, { status: 500 })
 
-      // Récupérer le token de l'membre pour construire l'URL de notif
+      // Récupérer le token de l'membre pour construire l'URL de notif + WhatsApp
       const { data: clientData } = await admin
         .from('clients')
-        .select('magic_token, full_name')
+        .select('magic_token, full_name, whatsapp_phone')
         .eq('id', clientId)
         .single()
+
+      // Envoyer aussi via WhatsApp si le coach est connecté et le client a un numéro
+      if (clientData?.whatsapp_phone) {
+        const { data: coachProfile } = await admin
+          .from('profiles')
+          .select('whatsapp_session_id, whatsapp_connected')
+          .eq('id', user.id)
+          .single()
+
+        if (coachProfile?.whatsapp_connected && coachProfile?.whatsapp_session_id) {
+          sendWhatsAppMessage(
+            coachProfile.whatsapp_session_id,
+            clientData.whatsapp_phone,
+            content.trim()
+          ).catch(() => {}) // fire & forget, pas bloquant
+        }
+      }
 
       // Envoyer la push notification à l'membre (fire & forget)
       if (clientData?.magic_token) {

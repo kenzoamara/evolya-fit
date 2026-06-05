@@ -9,9 +9,9 @@ export async function GET() {
 
   const { data: clients } = await supabase
     .from('clients')
-    .select('id, first_name, last_name')
+    .select('id, full_name')
     .eq('coach_id', user.id)
-    .order('first_name')
+    .order('full_name')
 
   return NextResponse.json({ clients: clients ?? [] })
 }

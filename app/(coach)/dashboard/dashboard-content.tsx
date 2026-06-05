@@ -8,14 +8,22 @@ import type { Profile } from '@/types/database'
 import { PlanGate } from '@/components/ui/plan-gate'
 import { OnboardingChecklist } from '@/components/coach/onboarding-checklist'
 
-type SessionRow = { id: string; session_date: string; session_time: string | null; created_at: string }
+type SessionRow = { id: string; session_date: string; session_time: string | null; created_at: string; attendance?: string | null }
 type ClientRow = {
   id: string
   full_name: string
   status: string
+  rest_days?: number[]
   objectives: Array<{ status: string; completed_at?: string | null }>
   checkins: Array<{ submitted_at: string }>
   sessions: SessionRow[]
+  programme_assignments?: Array<{
+    id: string
+    programme_id: string
+    start_date: string
+    active: boolean
+    programmes: { id: string; title: string; duration_days: number | null } | null
+  }>
 }
 type Programme = { id: string; title: string; created_at: string }
 type Task = { id: string; title: string; completed: boolean; created_at: string }
@@ -137,37 +145,59 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
   const activeClients = useMemo(() => clients.filter(c => c.status === 'active'), [clients])
 
   const inactiveAlerts = useMemo(() => {
-    const threshold = profile.inactivity_threshold_days ?? 7
-    // Le compteur démarre à la clôture de la dernière fenêtre (dimanche 23:59)
-    const lastWindowClose = getLastWindowClose(now)
-    const daysSinceWindowClose = (now.getTime() - lastWindowClose.getTime()) / 86400000
-
-    // Pas encore assez de jours écoulés depuis la fermeture → aucune alerte
-    if (daysSinceWindowClose <= threshold) return []
+    const INACTIVITY_DAYS = 5 // Pas de session depuis 5 jours
 
     return activeClients
       .filter(c => {
-        // Jamais soumis → toujours en alerte
-        if (c.checkins.length === 0) return true
-        const last = new Date(Math.max(...c.checkins.map(ch => new Date(ch.submitted_at).getTime())))
-        // En alerte si le dernier check-in est antérieur à la clôture de fenêtre
-        return last < lastWindowClose
+        // Alerte 1: Pas de session marquée depuis 5 jours
+        const attendedSessions = (c.sessions ?? []).filter(s => s.attendance === 'attended')
+        if (attendedSessions.length === 0) return true // Jamais de session → alerte
+
+        const lastSession = new Date(Math.max(...attendedSessions.map(s => new Date(s.session_date).getTime())))
+        const daysSinceSession = (now.getTime() - lastSession.getTime()) / 86400000
+        if (daysSinceSession >= INACTIVITY_DAYS) return true
+
+        // Alerte 2: Programme assigné expiré avec < 50% des séances
+        const assignments = (c.programme_assignments ?? []).filter(a => a.active && a.programmes)
+        for (const assignment of assignments) {
+          const prog = assignment.programmes
+          if (!prog) continue
+          const startDate = new Date(assignment.start_date)
+          const durationDays = prog.duration_days ?? 14
+          const endDate = new Date(startDate)
+          endDate.setDate(startDate.getDate() + durationDays)
+
+          // Si programme expiré
+          if (now >= endDate) {
+            // Compter les sessions pendant la durée du programme
+            const sessionsDuring = c.sessions.filter(s => {
+              const sDate = new Date(s.session_date)
+              return sDate >= startDate && sDate <= endDate && s.attendance === 'attended'
+            })
+            const completionRate = durationDays > 0 ? (sessionsDuring.length / durationDays) : 0
+            if (completionRate < 0.5) return true // Moins de 50% → alerte
+          }
+        }
+
+        return false
       })
       .map(c => {
-        const neverCheckedIn = c.checkins.length === 0
-        const last = neverCheckedIn
-          ? null
-          : new Date(Math.max(...c.checkins.map(ch => new Date(ch.submitted_at).getTime())))
-        const daysAgo = last ? Math.floor((now.getTime() - last.getTime()) / 86400000) : null
+        const attendedSessions = (c.sessions ?? []).filter(s => s.attendance === 'attended')
+        const lastSession = attendedSessions.length > 0
+          ? new Date(Math.max(...attendedSessions.map(s => new Date(s.session_date).getTime())))
+          : null
+        const daysAgo = lastSession ? Math.floor((now.getTime() - lastSession.getTime()) / 86400000) : null
+
         const relancedAtStr = relancedAt[c.id] ?? null
         const relancedDaysAgo = relancedAtStr
           ? Math.floor((now.getTime() - new Date(relancedAtStr).getTime()) / 86400000)
           : null
-        return { ...c, neverCheckedIn, last, daysAgo, relancedDaysAgo }
+
+        return { ...c, lastSession, daysAgo, relancedDaysAgo, neverCheckedIn: attendedSessions.length === 0 }
       })
       // Caché pendant les 3 premiers jours après relance
       .filter(c => c.relancedDaysAgo === null || c.relancedDaysAgo >= 3)
-  }, [activeClients, now, profile.inactivity_threshold_days, relancedAt])
+  }, [activeClients, now, relancedAt])
 
   const weeklyCheckins = useMemo(() =>
     activeClients.reduce((count, c) =>
@@ -232,7 +262,7 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
   async function sendRelance(client: ClientRow) {
     setSendingRelance(client.id)
     const firstName = client.full_name.split(' ')[0]
-    const content = `Salut ${firstName} ! Je voulais prendre de tes nouvelles — ça fait quelques jours que je n'ai pas reçu de check-in de ta part. Tout va bien ? N'hésite pas à me dire si tu as besoin de quelque chose. 💪`
+    const content = `Salut ${firstName} ! Je voulais prendre de tes nouvelles — ça fait quelques jours que je n'ai pas reçu de séance marquée de ta part. Tout va bien ? N'hésite pas à me dire si tu as besoin de quelque chose. 💪`
     await fetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -303,7 +333,7 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
         hasMessage={hasMessage}
       />
 
-      {/* Alerte inactivité */}
+      {/* Alerte inactivité / Programme */}
       <PlanGate featureKey="relance_inactifs" userPlan={profile.plan ?? 'free'}>
       {inactiveAlerts.length > 0 && (
         <div className="mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--evolya-card)', border: '1px solid var(--evolya-border)' }}>
@@ -314,10 +344,10 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
               </svg>
             </div>
             <p className="text-[13px] font-semibold" style={textStyle}>
-              {inactiveAlerts.length} membre{inactiveAlerts.length > 1 ? 's' : ''} inactif{inactiveAlerts.length > 1 ? 's' : ''}
+              {inactiveAlerts.length} élève{inactiveAlerts.length > 1 ? 's' : ''} sans activité
             </p>
             <span className="text-[11px]" style={subtleStyle}>
-              — aucun check-in depuis {profile.inactivity_threshold_days ?? 7}+ jours
+              — aucune séance depuis 5+ jours
             </span>
           </div>
           <div>
@@ -336,28 +366,28 @@ export function DashboardContent({ profile, clients, programmes, tasks: initialT
                       <>
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#DC2626] shrink-0" />
                         <p className="text-[11px] text-[#DC2626]">
-                          Relancé il y a {c.relancedDaysAgo}j — toujours sans réponse
+                          Relancé il y a {c.relancedDaysAgo}j — toujours inactif
                         </p>
                       </>
                     ) : c.relancedDaysAgo !== null && c.relancedDaysAgo >= 3 ? (
                       <>
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#F59E0B] shrink-0" />
                         <p className="text-[11px] text-[#F59E0B]">
-                          Relancé il y a {c.relancedDaysAgo}j — pas encore de check-in
+                          Relancé il y a {c.relancedDaysAgo}j — pas encore marqué de séance
                         </p>
                       </>
                     ) : c.neverCheckedIn ? (
                       <>
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#94A3B8] shrink-0" />
                         <p className="text-[11px]" style={subtleStyle}>
-                          Jamais check-in — <span className="text-[#94A3B8]">pas encore onboardé</span>
+                          Jamais de séance — <span className="text-[#94A3B8]">pas encore commencé</span>
                         </p>
                       </>
                     ) : (
                       <>
                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-[#F59E0B] shrink-0" />
                         <p className="text-[11px]" style={subtleStyle}>
-                          Décrochage — <span className="text-[#F59E0B]">dernier check-in il y a {c.daysAgo}j</span>
+                          Inactif — <span className="text-[#F59E0B]">dernière séance il y a {c.daysAgo}j</span>
                         </p>
                       </>
                     )}

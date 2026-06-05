@@ -22,7 +22,7 @@ export default async function MessagesPage() {
 
   const { data: clients } = await supabase
     .from('clients')
-    .select('id, full_name, email, status, last_seen')
+    .select('id, full_name, email, status, last_seen, whatsapp_phone')
     .eq('coach_id', user.id)
     .eq('status', 'active')
     .order('full_name', { ascending: true })

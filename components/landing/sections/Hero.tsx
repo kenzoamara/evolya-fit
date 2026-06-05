@@ -78,15 +78,22 @@ export function Hero() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/60 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
               <FrenchFlag width={13} height={10} />
               Conçu en France
             </span>
-            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/60 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+                <path d="M3 8.5l3 3 7-8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
               Sans carte bancaire
             </span>
-            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/55 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
-              🔒 Hébergé en Europe
+            <span className="flex items-center gap-1.5 bg-white/[0.07] border border-white/10 text-white/60 text-[11px] sm:text-[12px] font-medium px-3 py-1.5 rounded-full whitespace-nowrap">
+              <svg width="12" height="12" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="4" y="9" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5"/>
+                <path d="M7 9V6a3 3 0 0 1 6 0v3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              Hébergé en Europe
             </span>
           </div>
         </div>

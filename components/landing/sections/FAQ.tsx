@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: 'Puis-je personnaliser la plateforme pour garder mon image professionnelle ?',
-    a: 'Tu choisis la couleur principale de ton interface, la police d\'écriture et le mode clair ou sombre. Tes membres voient ton nom, ta photo de profil et un espace à tes couleurs — pas un outil générique. Tout se configure en quelques clics dans les paramètres, sans rien de technique.',
+    a: 'Tu choisis la couleur principale de ton interface, la police d\'écriture et le mode clair ou sombre. Tes membres voient ton nom et un espace à tes couleurs — pas un outil générique. Tout se configure en quelques clics dans les paramètres, sans rien de technique.',
   },
   {
     q: 'La plateforme est-elle vraiment facile à prendre en main ?',

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { Trash2, ChevronDown, ChevronRight, GripVertical, Plus, Search, Copy } from 'lucide-react'
+import { Trash2, ChevronDown, ChevronRight, GripVertical, Plus, Search, Copy, ArrowLeft, Users, RefreshCw } from 'lucide-react'
 
 type Exercise = {
   id: string
@@ -50,39 +50,14 @@ const LIBRARY_EXERCISES: LibraryExercise[] = [
   { id: '20', name: 'Tractions', category: 'Dos' },
 ]
 
-const NUTRITION_ITEMS: LibraryExercise[] = [
-  { id: 'n1', name: 'Blanc de poulet riz brocoli', category: 'Repas Principal' },
-  { id: 'n2', name: 'Boeuf 5% pâtes complet', category: 'Repas Principal' },
-  { id: 'n3', name: 'Saumon patate douce épinards', category: 'Repas Principal' },
-  { id: 'n4', name: 'Oeufs flocons avoine miel', category: 'Petit-déjeuner' },
-  { id: 'n5', name: 'Yaourt grec banane amandes', category: 'Collation' },
-  { id: 'n6', name: 'Riz blanc sauce tomate', category: 'Accompagnement' },
-  { id: 'n7', name: 'Pâtes al dente', category: 'Accompagnement' },
-  { id: 'n8', name: 'Dinde rôtie légumes', category: 'Repas Principal' },
-  { id: 'n9', name: 'Whey protéine + banana', category: 'Collation' },
-  { id: 'n10', name: 'Thon boîte riz', category: 'Repas Principal' },
-]
-
-const HABITS_ITEMS: LibraryExercise[] = [
-  { id: 'h1', name: 'Réveil à heure fixe', category: 'Sommeil' },
-  { id: 'h2', name: 'Boire 2L d\'eau', category: 'Hydratation' },
-  { id: 'h3', name: 'Méditation 10min', category: 'Bien-être' },
-  { id: 'h4', name: 'Étirement du soir', category: 'Mobilité' },
-  { id: 'h5', name: 'Coucher à heure fixe', category: 'Sommeil' },
-  { id: 'h6', name: 'Marche 30min', category: 'Activité' },
-  { id: 'h7', name: 'Respiration profonde', category: 'Bien-être' },
-  { id: 'h8', name: 'Lecture 20min', category: 'Mental' },
-  { id: 'h9', name: 'Jambes surélevées', category: 'Récupération' },
-  { id: 'h10', name: 'Hydratation matin', category: 'Hydratation' },
-]
-
-function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercise, onUpdateExercise, onDrop, dragCounter }: {
+function DayCard({ day, exercises, onAddExercise, onDeleteExercise, onUpdateExercise, onUpdateTitle, onDeleteDay, onDrop, dragCounter }: {
   day: Day
-  programmeType: 'sportif' | 'nutritionnel' | 'habitudes'
   exercises: Exercise[]
   onAddExercise: () => void
   onDeleteExercise: (exId: string) => void
   onUpdateExercise: (exId: string, field: keyof Exercise, val: any) => void
+  onUpdateTitle: (val: string) => void
+  onDeleteDay: () => void
   onDrop: (e: React.DragEvent) => void
   dragCounter: React.MutableRefObject<number>
 }) {
@@ -134,13 +109,11 @@ function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercis
         </span>
         <input
           value={day.title}
-          onChange={e => e.stopPropagation()}
+          onChange={e => onUpdateTitle(e.target.value)}
           onClick={e => e.stopPropagation()}
           className="flex-1 text-[13px] font-semibold text-[#0D1F3C] bg-transparent focus:outline-none"
         />
-        <span className="text-[11px] text-[#94A3B8] shrink-0">
-          {exercises.length} {programmeType === 'sportif' ? 'ex.' : programmeType === 'nutritionnel' ? 'repas' : 'habit.'}
-        </span>
+        <span className="text-[11px] text-[#94A3B8] shrink-0">{exercises.length} ex.</span>
         {isDragOver && <span className="text-[10px] text-[#4E9B6F] font-medium shrink-0">Déposer ici</span>}
         {open ? <ChevronDown size={14} className="text-[#94A3B8]" /> : <ChevronRight size={14} className="text-[#94A3B8]" />}
       </div>
@@ -149,56 +122,50 @@ function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercis
         <div className="px-4 pb-4 border-t border-[#F1F5F9]">
           <div className="pt-2">
             {exercises.length === 0 ? (
-              <p className="text-[12px] text-[#CBD5E1] py-2 text-center">
-                Aucun {programmeType === 'sportif' ? 'exercice' : programmeType === 'nutritionnel' ? 'repas' : 'habitude'}
-              </p>
+              <p className="text-[12px] text-[#CBD5E1] py-2 text-center">Aucun exercice</p>
             ) : (
               <div className="space-y-0">
                 {sortedExercises.map((ex) => (
                   <div key={ex.id} className="py-2 border-b border-[#F1F5F9] last:border-0">
                     <div className="flex items-center gap-2">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-1.5">
-                          <input
-                            value={ex.exercise_name}
-                            onChange={e => onUpdateExercise(ex.id, 'exercise_name', e.target.value)}
-                            className="flex-1 text-[13px] font-medium text-[#0D1F3C] bg-transparent focus:outline-none placeholder:text-[#CBD5E1]"
-                          />
-                        </div>
+                        <input
+                          value={ex.exercise_name}
+                          onChange={e => onUpdateExercise(ex.id, 'exercise_name', e.target.value)}
+                          className="flex-1 text-[13px] font-medium text-[#0D1F3C] bg-transparent focus:outline-none placeholder:text-[#CBD5E1]"
+                        />
                       </div>
 
-                      {programmeType === 'sportif' && (
-                        <div className="flex items-center gap-1 shrink-0">
-                          <input
-                            type="number"
-                            min={1}
-                            value={ex.sets ?? ''}
-                            onChange={e => onUpdateExercise(ex.id, 'sets', e.target.value ? parseInt(e.target.value) : null)}
-                            placeholder="—"
-                            className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
-                          />
-                          <span className="text-[10px] text-[#CBD5E1]">×</span>
-                          <input
-                            type="number"
-                            min={1}
-                            value={ex.reps ?? ''}
-                            onChange={e => onUpdateExercise(ex.id, 'reps', e.target.value ? parseInt(e.target.value) : null)}
-                            placeholder="—"
-                            className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
-                          />
-                          <span className="text-[10px] text-[#CBD5E1]">reps</span>
-                          <input
-                            type="number"
-                            min={0}
-                            step={0.5}
-                            value={ex.weight_kg ?? ''}
-                            onChange={e => onUpdateExercise(ex.id, 'weight_kg', e.target.value ? parseFloat(e.target.value) : null)}
-                            placeholder="—"
-                            className="w-11 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
-                          />
-                          <span className="text-[10px] text-[#CBD5E1]">kg</span>
-                        </div>
-                      )}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <input
+                          type="number"
+                          min={1}
+                          value={ex.sets ?? ''}
+                          onChange={e => onUpdateExercise(ex.id, 'sets', e.target.value ? parseInt(e.target.value) : null)}
+                          placeholder="—"
+                          className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                        />
+                        <span className="text-[10px] text-[#CBD5E1]">×</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={ex.reps ?? ''}
+                          onChange={e => onUpdateExercise(ex.id, 'reps', e.target.value ? parseInt(e.target.value) : null)}
+                          placeholder="—"
+                          className="w-9 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                        />
+                        <span className="text-[10px] text-[#CBD5E1]">reps</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step={0.5}
+                          value={ex.weight_kg ?? ''}
+                          onChange={e => onUpdateExercise(ex.id, 'weight_kg', e.target.value ? parseFloat(e.target.value) : null)}
+                          placeholder="—"
+                          className="w-11 text-center text-[12px] border border-[#E2E8F0] rounded-lg px-1 py-1 focus:outline-none focus:border-[#4E9B6F] bg-white text-[#0D1F3C]"
+                        />
+                        <span className="text-[10px] text-[#CBD5E1]">kg</span>
+                      </div>
                       <button
                         onClick={() => onDeleteExercise(ex.id)}
                         className="p-1 text-[#CBD5E1] hover:text-red-400 transition-colors shrink-0"
@@ -217,14 +184,16 @@ function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercis
               onClick={onAddExercise}
               className="flex items-center gap-1.5 text-[12px] text-[#4E9B6F] font-medium hover:text-[#3d8058] transition-colors"
             >
-              <Plus size={12} />
-              {programmeType === 'sportif' ? 'Ajouter' : programmeType === 'nutritionnel' ? 'Ajouter un repas' : 'Ajouter une habitude'}
+              <Plus size={12} /> Ajouter
             </button>
             <div className="flex-1" />
             <button className="text-[11px] text-[#64748B] hover:text-[#4E9B6F] transition-colors flex items-center gap-1">
               <Copy size={11} /> Copier
             </button>
-            <button className="text-[11px] text-[#CBD5E1] hover:text-red-400 transition-colors flex items-center gap-1">
+            <button
+              onClick={onDeleteDay}
+              className="text-[11px] text-[#CBD5E1] hover:text-red-400 transition-colors flex items-center gap-1"
+            >
               <Trash2 size={11} /> Supprimer
             </button>
             <button className="px-3 py-1.5 bg-[#4E9B6F] text-white rounded-lg text-[12px] font-medium hover:bg-[#3d8058] transition-colors">
@@ -238,42 +207,35 @@ function DayCard({ day, programmeType, exercises, onAddExercise, onDeleteExercis
 }
 
 export function InteractiveProgram() {
-  const [programmeType, setProgrammeType] = useState<'sportif' | 'nutritionnel' | 'habitudes'>('sportif')
   const [search, setSearch] = useState('')
   const dragCounterRef = useRef(0)
 
-  const initializeDays = (): Day[] => {
-    return Array.from({ length: 7 }, (_, i) => ({
-      id: `day-${i + 1}`,
-      day_number: i + 1,
-      title: [
-        'Push - Poitrine/Epaules/Triceps',
-        'Pull - Dos/Biceps',
-        'Jambes',
-        'Repos actif',
-        'Full body',
-        'Cardio',
-        'Étirement'
-      ][i] || `Jour ${i + 1}`,
-      exercises: i === 0 ? [
+  const [days, setDays] = useState<Day[]>([
+    {
+      id: 'day-1',
+      day_number: 1,
+      title: 'Push - Poitrine/Epaules/Triceps',
+      exercises: [
         { id: 'ex-1', exercise_name: 'Développé couché barre', sets: 4, reps: 6, weight_kg: 80, position: 1, rest_seconds: 90, notes: null },
         { id: 'ex-2', exercise_name: 'Développé incliné haltères', sets: 3, reps: 8, weight_kg: 30, position: 2, rest_seconds: 60, notes: null },
         { id: 'ex-3', exercise_name: 'Dips', sets: 3, reps: 8, weight_kg: null, position: 3, rest_seconds: 60, notes: null },
-      ] : []
-    }))
-  }
+      ]
+    },
+    {
+      id: 'day-2',
+      day_number: 2,
+      title: 'Pull - Dos/Biceps',
+      exercises: []
+    },
+    {
+      id: 'day-3',
+      day_number: 3,
+      title: 'Jambes',
+      exercises: []
+    },
+  ])
 
-  const [days, setDays] = useState<Day[]>(initializeDays())
-
-  const getLibraryItems = (): LibraryExercise[] => {
-    switch (programmeType) {
-      case 'nutritionnel': return NUTRITION_ITEMS
-      case 'habitudes': return HABITS_ITEMS
-      default: return LIBRARY_EXERCISES
-    }
-  }
-
-  const filteredLibrary = getLibraryItems().filter(item =>
+  const filteredLibrary = LIBRARY_EXERCISES.filter(item =>
     item.name.toLowerCase().includes(search.toLowerCase())
   )
 
@@ -294,8 +256,8 @@ export function InteractiveProgram() {
         const newEx: Exercise = {
           id: `ex-${Date.now()}`,
           exercise_name: libItem.name,
-          sets: programmeType === 'sportif' ? 3 : null,
-          reps: programmeType === 'sportif' ? 10 : null,
+          sets: 3,
+          reps: 10,
           weight_kg: null,
           rest_seconds: 60,
           notes: null,
@@ -333,95 +295,106 @@ export function InteractiveProgram() {
     ))
   }
 
+  const addDay = () => {
+    setDays(prev => {
+      const nextNum = prev.length > 0 ? Math.max(...prev.map(d => d.day_number)) + 1 : 1
+      return [...prev, { id: `day-${Date.now()}`, day_number: nextNum, title: `Jour ${nextNum}`, exercises: [] }]
+    })
+  }
+
+  const updateDayTitle = (dayId: string, val: string) => {
+    setDays(prev => prev.map(d => d.id === dayId ? { ...d, title: val } : d))
+  }
+
+  const deleteDay = (dayId: string) => {
+    setDays(prev => prev.filter(d => d.id !== dayId))
+  }
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-[#E2E8F0] flex flex-col" style={{ height: '800px' }}>
-      {/* HEADER */}
-      <div className="flex items-center gap-4 px-6 py-4 border-b border-[#E2E8F0] bg-[#FAFBFD] shrink-0">
-        <div className="text-[16px] font-bold text-[#0D1F3C]">Evolya'Fit</div>
-        <div className="flex gap-2 ml-auto">
-          <button
-            onClick={() => { setProgrammeType('sportif'); setDays(initializeDays()) }}
-            className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors ${
-              programmeType === 'sportif'
-                ? 'bg-[#4E9B6F] text-white'
-                : 'bg-white border border-[#E2E8F0] text-[#0D1F3C] hover:bg-[#F8FAFB]'
-            }`}
-          >
-            Sportif
-          </button>
-          <button
-            onClick={() => { setProgrammeType('nutritionnel'); setDays(initializeDays()); setSearch('') }}
-            className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors ${
-              programmeType === 'nutritionnel'
-                ? 'bg-[#4E9B6F] text-white'
-                : 'bg-white border border-[#E2E8F0] text-[#0D1F3C] hover:bg-[#F8FAFB]'
-            }`}
-          >
-            Nutritionnel
-          </button>
-          <button
-            onClick={() => { setProgrammeType('habitudes'); setDays(initializeDays()); setSearch('') }}
-            className={`px-4 py-2 rounded-lg text-[12px] font-semibold transition-colors ${
-              programmeType === 'habitudes'
-                ? 'bg-[#4E9B6F] text-white'
-                : 'bg-white border border-[#E2E8F0] text-[#0D1F3C] hover:bg-[#F8FAFB]'
-            }`}
-          >
-            Habitude
-          </button>
+    <div className="bg-white rounded-2xl overflow-hidden border border-[#E2E8F0] flex" style={{ height: '640px' }}>
+      {/* LIBRARY PANEL */}
+      <div className="w-[220px] bg-white border-r border-[#E2E8F0] flex flex-col shrink-0">
+        <div className="p-3 border-b border-[#E2E8F0] shrink-0">
+          <div className="relative">
+            <Search size={14} className="absolute left-2 top-2.5 text-[#94A3B8]" />
+            <input
+              type="text"
+              placeholder="Chercher..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              className="w-full pl-8 pr-3 py-2 text-[12px] border border-[#E2E8F0] rounded-lg bg-white focus:outline-none focus:border-[#4E9B6F]"
+            />
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-2 space-y-1">
+            {filteredLibrary.map(item => (
+              <div
+                key={item.id}
+                draggable
+                onDragStart={e => handleDragStartLibrary(e, item)}
+                className="flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-[#EEF9F3] cursor-grab active:cursor-grabbing rounded transition-colors"
+              >
+                <GripVertical size={11} className="text-[#CBD5E1] shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-[#0D1F3C] truncate">{item.name}</p>
+                  <p className="text-[10px] text-[#94A3B8]">{item.category}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        {/* LIBRARY */}
-        <div className="w-64 bg-[#F8FAFB] border-r border-[#E2E8F0] flex flex-col shrink-0">
-          <div className="p-3 border-b border-[#E2E8F0] shrink-0">
-            <div className="relative">
-              <Search size={14} className="absolute left-2 top-2.5 text-[#94A3B8]" />
-              <input
-                type="text"
-                placeholder="Chercher..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-[12px] border border-[#E2E8F0] rounded-lg bg-white focus:outline-none focus:border-[#4E9B6F]"
-              />
+      {/* MAIN CONTENT */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* HEADER */}
+        <div className="border-b border-[#E2E8F0] px-8 py-5 bg-white shrink-0">
+          <div className="max-w-3xl flex items-center gap-3">
+            <button className="p-1.5 text-[#94A3B8] hover:text-[#64748B] transition-colors">
+              <ArrowLeft size={18} />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-[20px] font-bold text-[#0D1F3C] truncate">Prise de masse — Push/Pull/Legs</h1>
+              <p className="text-[12px] text-[#94A3B8] mt-0.5">{days.length} jour{days.length > 1 ? 's' : ''} · sportif</p>
             </div>
-          </div>
-          <div className="flex-1 overflow-y-auto">
-            <div className="p-2 space-y-1">
-              {filteredLibrary.map(item => (
-                <div
-                  key={item.id}
-                  draggable
-                  onDragStart={e => handleDragStartLibrary(e, item)}
-                  className="flex items-center gap-2 px-3 py-2 text-[12px] hover:bg-[#EEF9F3] cursor-grab active:cursor-grabbing rounded transition-colors"
-                >
-                  <GripVertical size={11} className="text-[#CBD5E1] shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[#0D1F3C] truncate">{item.name}</p>
-                    <p className="text-[10px] text-[#94A3B8]">{item.category}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="flex items-center gap-2">
+              <button className="flex items-center gap-1.5 px-3 py-2 border border-[#E2E8F0] text-[#64748B] rounded-xl text-[12px] font-medium hover:bg-[#F8FAFB] transition-colors">
+                <RefreshCw size={13} />
+                Régénérer
+              </button>
+              <button className="flex items-center gap-1.5 px-3.5 py-2 bg-[#4E9B6F] text-white rounded-xl text-[13px] font-medium hover:bg-[#3d8058] transition-colors">
+                <Users size={14} /> Assigner
+              </button>
             </div>
           </div>
         </div>
 
-        {/* DAYS */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          {days.map(day => (
-            <DayCard
-              key={day.id}
-              day={day}
-              programmeType={programmeType}
-              exercises={day.exercises}
-              onAddExercise={() => addExercise(day.id)}
-              onDeleteExercise={(exId) => deleteExercise(day.id, exId)}
-              onUpdateExercise={(exId, field, val) => updateExercise(day.id, exId, field, val)}
-              onDrop={handleDropToDay(day.id)}
-              dragCounter={dragCounterRef}
-            />
-          ))}
+        {/* DAYS CONTENT */}
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="max-w-3xl space-y-3">
+            {days.map(day => (
+              <DayCard
+                key={day.id}
+                day={day}
+                exercises={day.exercises}
+                onAddExercise={() => addExercise(day.id)}
+                onDeleteExercise={(exId) => deleteExercise(day.id, exId)}
+                onUpdateExercise={(exId, field, val) => updateExercise(day.id, exId, field, val)}
+                onUpdateTitle={(val) => updateDayTitle(day.id, val)}
+                onDeleteDay={() => deleteDay(day.id)}
+                onDrop={handleDropToDay(day.id)}
+                dragCounter={dragCounterRef}
+              />
+            ))}
+
+            <button
+              onClick={addDay}
+              className="w-full py-3 border-2 border-dashed border-[#E2E8F0] rounded-xl text-[13px] text-[#94A3B8] font-medium hover:border-[#4E9B6F] hover:text-[#4E9B6F] transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus size={14} /> Ajouter un jour manuellement
+            </button>
+          </div>
         </div>
       </div>
     </div>

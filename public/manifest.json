@@ -1,23 +1,53 @@
-﻿{
+{
   "name": "Evolya'Fit",
   "short_name": "Evolya'Fit",
   "description": "Ton espace membre — suivi, messages et objectifs avec ton coach.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F8FAFB",
+  "background_color": "#0D1F3C",
   "theme_color": "#4E9B6F",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/logo-evolya-icon-v2.png",
-      "sizes": "192x192",
+      "src": "../icons/icon-48.webp",
       "type": "image/png",
+      "sizes": "48x48",
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-evolya-icon-v2.png",
-      "sizes": "512x512",
+      "src": "../icons/icon-72.webp",
       "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-96.webp",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-128.webp",
+      "type": "image/png",
+      "sizes": "128x128",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-192.webp",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-256.webp",
+      "type": "image/png",
+      "sizes": "256x256",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-512.webp",
+      "type": "image/png",
+      "sizes": "512x512",
       "purpose": "any maskable"
     }
   ]

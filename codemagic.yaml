@@ -10,6 +10,17 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install
+      - name: Prepare web assets (out/)
+        script: |
+          # L'app Capacitor charge l'URL distante (evolyafit.fr) ; on fournit
+          # un placeholder minimal pour que `cap sync` trouve le webDir 'out'.
+          mkdir -p out
+          cat > out/index.html <<'HTML'
+          <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+          <title>Evolya'Fit</title><style>html,body{margin:0;height:100%;background:#0D1F3C;color:#fff;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}.logo{font-size:30px;font-weight:800}.logo span{color:#4E9B6F}.sp{width:30px;height:30px;border:3px solid rgba(255,255,255,.18);border-top-color:#4E9B6F;border-radius:50%;animation:r .8s linear infinite}.t{font-size:13px;color:rgba(255,255,255,.55)}@keyframes r{to{transform:rotate(360deg)}}</style></head>
+          <body><div class="wrap"><div class="logo">Evolya<span>'Fit</span></div><div class="sp"></div><div class="t">Chargement…</div></div></body></html>
+          HTML
       - name: Sync Capacitor
         script: npx cap sync android
       - name: Build Android AAB (Play Store)
@@ -41,6 +52,17 @@ workflows:
     scripts:
       - name: Install dependencies
         script: npm install
+      - name: Prepare web assets (out/)
+        script: |
+          # Placeholder minimal pour que `cap sync` trouve le webDir 'out'
+          # (l'app charge l'URL distante evolyafit.fr).
+          mkdir -p out
+          cat > out/index.html <<'HTML'
+          <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+          <title>Evolya'Fit</title><style>html,body{margin:0;height:100%;background:#0D1F3C;color:#fff;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}.wrap{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px}.logo{font-size:30px;font-weight:800}.logo span{color:#4E9B6F}.sp{width:30px;height:30px;border:3px solid rgba(255,255,255,.18);border-top-color:#4E9B6F;border-radius:50%;animation:r .8s linear infinite}.t{font-size:13px;color:rgba(255,255,255,.55)}@keyframes r{to{transform:rotate(360deg)}}</style></head>
+          <body><div class="wrap"><div class="logo">Evolya<span>'Fit</span></div><div class="sp"></div><div class="t">Chargement…</div></div></body></html>
+          HTML
       - name: Install CocoaPods
         script: |
           cd ios/App

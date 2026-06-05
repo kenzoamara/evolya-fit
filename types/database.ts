@@ -30,6 +30,9 @@ export type Profile = {
   connect_account_id: string | null
   connect_charges_enabled: boolean
   connect_status: 'none' | 'pending' | 'active' | 'restricted'
+  whatsapp_session_id: string | null
+  whatsapp_connected: boolean
+  whatsapp_phone: string | null
   created_at: string
 }
 
@@ -188,6 +191,7 @@ export type Client = {
   status: 'active' | 'inactive' | 'pending'
   last_checkin_at: string | null
   rest_days: number[]
+  whatsapp_phone: string | null
   created_at: string
   // Onboarding fields
   birth_date: string | null

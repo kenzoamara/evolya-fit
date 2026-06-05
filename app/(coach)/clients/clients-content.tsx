@@ -102,7 +102,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   const [showAddModal, setShowAddModal] = useState(false)
-  const [clientLink, setClientLink] = useState<{ name: string; url: string } | null>(null)
+  const [clientLink, setClientLink] = useState<{ name: string; url: string; email?: string } | null>(null)
   const [linkCopied, setLinkCopied] = useState(false)
   const [newFirstName, setNewFirstName] = useState('')
   const [newLastName, setNewLastName] = useState('')
@@ -185,13 +185,35 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
     setEditingClient(client)
   }
 
-  function handleResendInvite(client: ClientWithRelations, e: React.MouseEvent) {
+  async function handleResendInvite(client: ClientWithRelations, e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.evolyafit.fr'
-    const link = `${appUrl}/c/${client.magic_token}/dashboard`
-    setClientLink({ name: client.full_name, url: link })
-    setShowAddModal(true)
+
+    // Pas d'email réel → afficher le lien à copier
+    if (!client.email || client.email.includes('@evolya.internal')) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.evolyafit.fr'
+      const link = `${appUrl}/c/${client.magic_token}`
+      setClientLink({ name: client.full_name, url: link })
+      setShowAddModal(true)
+      return
+    }
+
+    // Email présent → renvoi par email
+    try {
+      const res = await fetch('/api/invite/resend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientId: client.id }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        toast.error(data.error ?? "Erreur lors de l'envoi.")
+      } else {
+        toast.success(`Invitation renvoyée à ${client.email}`)
+      }
+    } catch {
+      toast.error('Erreur réseau. Réessayez.')
+    }
   }
 
   async function handleEditName(e: React.FormEvent) {
@@ -242,7 +264,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
       })
       const data = await res.json()
       if (data.error) { toast.error(data.error); return }
-      setClientLink({ name: fullName, url: data.magicLink })
+      setClientLink({ name: fullName, url: data.magicLink, email: newEmail.trim() })
       setNewFirstName(''); setNewLastName(''); setNewEmail('')
       router.refresh()
     } catch {
@@ -499,11 +521,11 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
                 <div className="hidden sm:flex flex-col gap-1 items-center justify-center sm:opacity-0 sm:group-hover/card:opacity-100 transition-opacity">
                   <button onClick={(e) => handleResendInvite(client, e)}
                     className="text-xs text-[#64748B] hover:text-[#4E9B6F] border border-[#E2E8F0] hover:border-[#4E9B6F]/30 bg-white px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-                    🔗 Lien
+                    Inviter
                   </button>
                   <button onClick={(e) => openEditName(client, e)}
                     className="text-xs text-[#64748B] hover:text-[#4E9B6F] border border-[#E2E8F0] hover:border-[#4E9B6F]/30 bg-white px-2.5 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-                    ✏ Nom
+                    Nom
                   </button>
                   {deleteConfirmId === client.id ? (
                     <div className="flex gap-1">
@@ -553,7 +575,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
               <button
                 onClick={handleCopyShareLink}
                 className="flex-1 py-2.5 border border-[#E2E8F0] text-sm font-medium text-[#0D1F3C] rounded-lg hover:bg-[#F1F5F9] transition-colors flex items-center justify-center gap-2">
-                {shareCopied ? '✓ Copié !' : '📋 Copier le lien'}
+                {shareCopied ? 'Copié' : 'Copier le lien'}
               </button>
               <a
                 href={`https://wa.me/?text=${encodeURIComponent(`Rejoins mon coaching ici : ${shareLink}`)}`}
@@ -597,19 +619,20 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-[#0D1F3C] mb-1.5">Email <span className="text-[#94A3B8] font-normal">(optionnel)</span></label>
-                <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)}
+                <label className="block text-xs font-semibold text-[#0D1F3C] mb-1.5">Email</label>
+                <input type="email" value={newEmail} onChange={e => setNewEmail(e.target.value)} required
                   placeholder="thomas@exemple.com"
                   className="w-full px-3 py-2.5 bg-white border border-[#E2E8F0] rounded-lg text-sm focus:outline-none focus:border-[#4E9B6F] focus:ring-2 focus:ring-[#4E9B6F]/10 transition-all" />
+                <p className="mt-1.5 text-[11px] text-[#94A3B8]">Un email d'invitation sera envoyé automatiquement.</p>
               </div>
               <div className="flex gap-3 pt-1">
                 <button type="button" onClick={() => setShowAddModal(false)}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-sm text-[#64748B] rounded-lg hover:bg-[#F1F5F9] transition-colors">
                   Annuler
                 </button>
-                <button type="submit" disabled={addLoading || !newFirstName.trim()}
+                <button type="submit" disabled={addLoading || !newFirstName.trim() || !newEmail.trim()}
                   className="flex-1 py-2.5 bg-[#4E9B6F] text-white text-sm font-medium rounded-lg hover:bg-[#3d8058] transition-all active:scale-[0.98] disabled:opacity-50">
-                  {addLoading ? 'Création...' : 'Créer le membre →'}
+                  {addLoading ? 'Envoi...' : 'Inviter →'}
                 </button>
               </div>
             </form>
@@ -621,8 +644,13 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
               <div className="w-12 h-12 rounded-full bg-[#4E9B6F]/10 flex items-center justify-center mx-auto mb-4">
                 <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2C6.03 2 2 6.03 2 11s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9zm-1 13l-4-4 1.41-1.41L10 12.17l6.59-6.58L18 7l-8 8z" fill="#4E9B6F"/></svg>
               </div>
-              <h3 className="font-semibold text-[#0D1F3C] text-center mb-1">Membre créé ✓</h3>
-              <p className="text-sm text-[#64748B] text-center mb-5">Envoie ce lien à <strong>{clientLink.name}</strong> par WhatsApp, SMS ou email.</p>
+              <h3 className="font-semibold text-[#0D1F3C] text-center mb-1">Invitation envoyée</h3>
+              <p className="text-sm text-[#64748B] text-center mb-5">
+                {clientLink.email
+                  ? <>Un email a été envoyé à <strong className="text-[#0D1F3C]">{clientLink.email}</strong>. Vous pouvez aussi partager le lien directement :</>
+                  : <>Partage ce lien à <strong>{clientLink.name}</strong> par WhatsApp ou SMS.</>
+                }
+              </p>
 
               {/* Lien */}
               <div className="bg-[#F1F5F9] rounded-xl px-4 py-3 mb-4 flex items-center gap-3 min-w-0">
@@ -634,7 +662,7 @@ export function ClientsContent({ profile, clients, upgraded }: Props) {
                 <button
                   onClick={() => { navigator.clipboard.writeText(clientLink.url); setLinkCopied(true); setTimeout(() => setLinkCopied(false), 2000) }}
                   className="flex-1 py-2.5 border border-[#E2E8F0] text-sm font-medium text-[#0D1F3C] rounded-lg hover:bg-[#F1F5F9] transition-colors flex items-center justify-center gap-2">
-                  {linkCopied ? '✓ Copié !' : '📋 Copier le lien'}
+                  {linkCopied ? 'Copié' : 'Copier le lien'}
                 </button>
                 <a
                   href={`https://wa.me/?text=${encodeURIComponent(`Bonjour ${clientLink.name} ! Voici ton espace de suivi Evolya : ${clientLink.url}`)}`}

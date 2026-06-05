@@ -185,10 +185,7 @@ export function ClientDashboard({ client, objectives, checkins, sessions, lastCo
             Bonjour, {client.full_name.split(' ')[0]}
           </h1>
           <div className="flex items-center gap-1.5 mt-0.5">
-            {coachPhoto
-              ? <img src={coachPhoto} alt={coachName} className="w-4 h-4 rounded-full object-cover" />
-              : <span className="w-4 h-4 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B]">{coachName[0]}</span>
-            }
+            <span className="w-4 h-4 rounded-full bg-[#E2E8F0] flex items-center justify-center text-[8px] font-bold text-[#64748B]">{coachName[0]}</span>
             <p className="text-[11px] text-[#94A3B8]">Suivi par {coachName}</p>
           </div>
         </div>

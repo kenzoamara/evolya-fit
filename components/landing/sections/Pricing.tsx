@@ -127,7 +127,6 @@ const CATEGORIES = [
     features: [
       { label: 'Thèmes disponibles', values: ['2', '5', 'Illimités', 'Illimités'] },
       { label: 'Mode clair / sombre', values: [true, true, true, true] },
-      { label: 'Photo de profil', values: [false, false, true, true] },
       { label: 'Calculatrice intégrée', values: [false, false, true, true] },
       { label: 'Blog', values: [false, false, 'Limité', 'Complet'] },
     ],

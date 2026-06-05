@@ -38,7 +38,13 @@ export default async function DashboardPage() {
     const [r0, r1, r2, r3, r4] = await Promise.all([
       admin
         .from('clients')
-        .select('id, full_name, status, objectives(*), checkins(*), sessions(id, session_date, session_time, created_at)')
+        .select(`
+          id, full_name, status, rest_days,
+          objectives(*),
+          checkins(*),
+          sessions(id, session_date, session_time, created_at, attendance),
+          programme_assignments(id, programme_id, start_date, active, programmes(id, title, duration_days))
+        `)
         .eq('coach_id', user.id),
       admin
         .from('programmes')
@@ -66,7 +72,7 @@ export default async function DashboardPage() {
         .eq('sender_role', 'coach')
         .limit(1),
     ])
-    clients = (r0.data ?? []) as typeof clients
+    clients = (r0.data ?? []) as unknown as typeof clients
     programmes = (r1.data ?? []) as typeof programmes
     tasks = (r2.data ?? []) as typeof tasks
     upcomingSessions = (r3.data ?? []) as unknown as typeof upcomingSessions

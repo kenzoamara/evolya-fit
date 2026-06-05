@@ -4,6 +4,8 @@ import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { Toaster } from 'sonner'
 import { CookieNotice } from '@/components/shared/cookie-notice'
+import { NativeBridge } from '@/components/shared/native-bridge'
+import { NetworkStatus } from '@/components/shared/network-status'
 import './globals.css'
 
 const inter = Inter({
@@ -92,11 +94,6 @@ export const metadata: Metadata = {
     title: "Evolya'Fit — Suivi coach-client",
     description: "La plateforme de suivi coach-client — Centralise le suivi de tes clients, automatise les check-ins et concentre-toi sur ton coaching.",
   },
-  icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/icon.png',
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
@@ -126,6 +123,8 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased bg-[#F8FAFB] text-[#0D1F3C]">
         {children}
+        <NativeBridge />
+        <NetworkStatus />
         <CookieNotice />
         <Toaster
           position="top-center"

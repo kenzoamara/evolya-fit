@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import dynamic from 'next/dynamic'
+import { isIOSApp } from '@/lib/platform'
 
 const NumberFlow = dynamic(() => import('@number-flow/react'), { ssr: false })
 
@@ -63,7 +64,6 @@ const PLAN_FEATURES: Record<string, Category[]> = {
       items: [
         { label: '2 thèmes disponibles', included: true },
         { label: 'Mode clair / sombre', included: true },
-        { label: 'Photo de profil', included: false },
         { label: 'Blog', included: false },
         { label: 'Calculatrice intégrée', included: false },
       ],
@@ -121,7 +121,6 @@ const PLAN_FEATURES: Record<string, Category[]> = {
       items: [
         { label: '5 thèmes disponibles', included: true },
         { label: 'Mode clair / sombre', included: true },
-        { label: 'Photo de profil', included: false },
         { label: 'Blog', included: false },
         { label: 'Calculatrice intégrée', included: false },
       ],
@@ -178,7 +177,6 @@ const PLAN_FEATURES: Record<string, Category[]> = {
       name: 'Personnalisation',
       items: [
         { label: 'Thèmes illimités', included: true },
-        { label: 'Photo de profil', included: true },
         { label: 'Mode clair / sombre', included: true },
         { label: 'Blog limité', included: true },
         { label: 'Calculatrice intégrée', included: true },
@@ -333,7 +331,6 @@ const COMPARISON_CATEGORIES = [
     name: 'Personnalisation',
     features: [
       { label: 'Thèmes disponibles', values: ['2', '5', 'Illimités', 'Illimités'] },
-      { label: 'Photo de profil', values: [false, false, true, true] },
       { label: 'Blog intégré', values: [false, false, 'Limité', 'Complet'] },
     ],
   },
@@ -411,7 +408,7 @@ function FeatureList({ categories, popular, isCurrent }: { categories: Category[
 }
 
 function PlanCard({
-  plan, annual, isCurrent, isRecommended, isDisabled, loading, onChoose,
+  plan, annual, isCurrent, isRecommended, isDisabled, loading, onChoose, webOnly = false,
 }: {
   plan: Plan
   annual: boolean
@@ -420,6 +417,7 @@ function PlanCard({
   isDisabled: boolean
   loading: boolean
   onChoose: (priceKey: string) => void
+  webOnly?: boolean
 }) {
   const price = annual ? plan.annualMonthly : plan.monthly
   const priceKey = `${plan.id}_${annual ? 'annual' : 'monthly'}`
@@ -529,6 +527,10 @@ function PlanCard({
           <div className="flex items-center justify-center gap-2 text-[14px] font-semibold py-3 rounded-xl bg-[#0D1F3C]/10 text-[#0D1F3C]/40 cursor-not-allowed">
             Non disponible
           </div>
+        ) : webOnly ? (
+          <div className={`flex items-center justify-center gap-2 text-[12.5px] font-semibold py-3 px-2 rounded-xl text-center leading-tight ${dark ? 'bg-white/10 text-white/80' : 'bg-[#F4F6F8] text-[#64748B]'}`}>
+            Abonnement gérable sur le web
+          </div>
         ) : (
           <button
             onClick={() => onChoose(priceKey)}
@@ -575,6 +577,10 @@ export function PlansContent({ currentPlan, onboarding = false }: { currentPlan:
   const [annual, setAnnual] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Sur l'app iOS, l'achat d'abonnement est interdit (règle App Store 3.1.1) :
+  // on masque les boutons de paiement et on renvoie vers le web.
+  const [webOnly, setWebOnly] = useState(false)
+  useEffect(() => { setWebOnly(isIOSApp() && !onboarding) }, [onboarding])
 
   const PLAN_ORDER: Record<string, number> = { free: 0, trial: 0, starter: 1, growth: 2, pro: 3 }
   const currentLevel = PLAN_ORDER[currentPlan] ?? 0
@@ -586,6 +592,7 @@ export function PlansContent({ currentPlan, onboarding = false }: { currentPlan:
   const recommendedPlan = paidPlans.find(p => (PLAN_ORDER[p.id] ?? 0) > currentLevel) ?? null
 
   async function handleChoose(priceKey: string) {
+    if (webOnly) return  // achat désactivé dans l'app iOS
     setLoading(true)
     setError(null)
     try {
@@ -639,6 +646,18 @@ export function PlansContent({ currentPlan, onboarding = false }: { currentPlan:
           </p>
         </div>
 
+        {/* Bannière iOS — achat géré sur le web (App Store 3.1.1) */}
+        {webOnly && (
+          <div className="max-w-2xl mx-auto mb-8 bg-[#EFF6FF] border border-[#BFDBFE] rounded-xl px-4 py-3.5 flex items-start gap-3">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+              <circle cx="12" cy="12" r="9" /><path d="M12 16v-4M12 8h.01" />
+            </svg>
+            <p className="text-[13px] text-[#1d4ed8] leading-relaxed">
+              La gestion et le changement d&apos;abonnement se font depuis un navigateur web, sur ton espace coach.
+            </p>
+          </div>
+        )}
+
         {/* Toggle mensuel / annuel */}
         <div className="flex justify-center mb-10">
           <div className="flex items-center bg-white border border-[#E2E8F0] rounded-full p-1 gap-0.5 shadow-sm">
@@ -679,6 +698,7 @@ export function PlansContent({ currentPlan, onboarding = false }: { currentPlan:
                   isDisabled={false}
                   loading={loading}
                   onChoose={handleChoose}
+                  webOnly={webOnly}
                 />
               </div>
             )
@@ -778,6 +798,8 @@ export function PlansContent({ currentPlan, onboarding = false }: { currentPlan:
                             <span className="text-[12px] font-semibold text-[#D97706]">Plan actuel</span>
                           ) : pl.free ? (
                             <span className="text-[12px] text-[#CBD5E1]">—</span>
+                          ) : webOnly ? (
+                            <span className="text-[11px] text-[#94A3B8]">Sur le web</span>
                           ) : (
                             <button
                               onClick={() => handleChoose(`${pl.id}_${annual ? 'annual' : 'monthly'}`)}

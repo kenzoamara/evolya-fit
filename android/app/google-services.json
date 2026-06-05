@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "894043443685",
+    "project_id": "push-evolya-fit",
+    "storage_bucket": "push-evolya-fit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:894043443685:android:564a9171fbb0ab50305f0c",
+        "android_client_info": {
+          "package_name": "fr.evolyafit.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC2HmjZy4UuGxYJR2kE0a4kK2WqxwQgYlc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

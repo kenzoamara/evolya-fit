@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Logo } from '@/components/shared/logo'
+import { isNativeApp } from '@/lib/platform'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -12,6 +13,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isApp, setIsApp] = useState(false)
+  useEffect(() => { setIsApp(isNativeApp()) }, [])
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
@@ -27,7 +30,7 @@ export default function LoginPage() {
       return
     }
 
-    // Redirection selon le rôle : les admins vont directement sur l'espace admin
+    // Redirection selon le rôle
     let destination = '/dashboard'
     if (data.user) {
       const { data: profile } = await supabase
@@ -35,7 +38,30 @@ export default function LoginPage() {
         .select('role')
         .eq('id', data.user.id)
         .single()
-      if (profile?.role === 'admin') destination = '/admin'
+
+      if (profile?.role === 'admin') {
+        destination = '/admin'
+      } else if (!profile) {
+        // Pas de profil coach → c'est peut-être un élève
+        // On appelle /api/client/find pour retrouver son magic_token
+        try {
+          const res = await fetch('/api/client/find')
+          const clientData = await res.json()
+          if (res.ok && clientData.magic_token) {
+            destination = `/c/${clientData.magic_token}/dashboard`
+          } else {
+            // Compte inconnu (ni coach ni client) → on déconnecte proprement
+            await supabase.auth.signOut()
+            setError('Compte introuvable. Contacte ton coach.')
+            setLoading(false)
+            return
+          }
+        } catch {
+          setError('Erreur réseau. Réessaie.')
+          setLoading(false)
+          return
+        }
+      }
     }
 
     router.push(destination)
@@ -164,12 +190,18 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <p className="text-center text-[13px] text-[#64748B] mt-6">
-            Pas encore de compte ?{' '}
-            <Link href="/auth/signup" className="text-[#4E9B6F] font-semibold hover:text-[#3d8058] transition-colors">
-              Créer un compte
-            </Link>
-          </p>
+          {isApp ? (
+            <p className="text-center text-[12px] text-[#94A3B8] mt-6 leading-relaxed">
+              La création de compte se fait depuis un navigateur web.
+            </p>
+          ) : (
+            <p className="text-center text-[13px] text-[#64748B] mt-6">
+              Pas encore de compte ?{' '}
+              <Link href="/auth/signup" className="text-[#4E9B6F] font-semibold hover:text-[#3d8058] transition-colors">
+                Créer un compte
+              </Link>
+            </p>
+          )}
         </div>
       </div>
 

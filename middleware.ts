@@ -33,7 +33,48 @@ export async function middleware(request: NextRequest) {
   const isClientRoute = pathname.startsWith('/c/')
   const isApiRoute = pathname.startsWith('/api/')
 
-  if (isPublicRoute || isClientRoute || isApiRoute) {
+  // ── App native (Capacitor) — détectée via le marqueur User-Agent ──
+  // Pas de landing : ouverture directe sur la connexion.
+  // Création de compte interdite dans l'app (le choix du plan + paiement se fait sur le web).
+  const isNativeApp = /EvolyaApp/i.test(request.headers.get('user-agent') || '')
+  if (isNativeApp && !isApiRoute) {
+    if (pathname === '/' && !user) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/login'
+      return NextResponse.redirect(url)
+    }
+    if (pathname.startsWith('/auth/signup')) {
+      const url = request.nextUrl.clone()
+      url.pathname = '/auth/login'
+      url.searchParams.set('from', 'app')
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // ── Espace élève (/c/[token]/*) — création de compte OBLIGATOIRE ──
+  // Tant que l'élève n'a pas créé son compte (mot de passe), on le force vers
+  // la page de création de compte. Vaut pour le web ET l'app.
+  if (isClientRoute) {
+    const parts = pathname.split('/')        // ['', 'c', token, sous-route, ...]
+    const token = parts[2] ?? ''
+    const sub = parts[3] ?? ''
+    const exempt = token === 'login' || sub === 'create-account'
+    if (token && !exempt) {
+      const { data: client } = await supabase
+        .from('clients')
+        .select('auth_user_id')
+        .eq('magic_token', token)
+        .maybeSingle()
+      if (client && !client.auth_user_id) {
+        const url = request.nextUrl.clone()
+        url.pathname = `/c/${token}/create-account`
+        return NextResponse.redirect(url)
+      }
+    }
+    return supabaseResponse
+  }
+
+  if (isPublicRoute || isApiRoute) {
     return supabaseResponse
   }
 

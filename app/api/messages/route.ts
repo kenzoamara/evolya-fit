@@ -2,7 +2,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import { sendCoachPushNotification } from '@/lib/push'
-import { sendWhatsAppMessage } from '@/lib/whatsapp'
+import { sendNativePush } from '@/lib/push-native'
 
 // GET /api/messages?token=xxx  (client via magic token)
 // GET /api/messages?clientId=xxx  (coach authenticated)
@@ -112,6 +112,12 @@ export async function POST(req: Request) {
         body:  content.trim().length > 80 ? content.trim().slice(0, 80) + '…' : content.trim(),
         url:   `${appUrl}/messages?clientId=${client.id}`,
       })
+      // Push natif (app mobile) au coach
+      sendNativePush([client.coach_id], {
+        title: 'Nouveau message',
+        body:  content.trim().length > 80 ? content.trim().slice(0, 80) + '…' : content.trim(),
+        url:   `${appUrl}/messages?clientId=${client.id}`,
+      }).catch(() => {})
 
       return NextResponse.json({ message })
     }
@@ -132,29 +138,12 @@ export async function POST(req: Request) {
 
       if (error) return NextResponse.json({ error: 'Erreur envoi.' }, { status: 500 })
 
-      // Récupérer le token de l'membre pour construire l'URL de notif + WhatsApp
+      // Récupérer le token du membre pour les notifications
       const { data: clientData } = await admin
         .from('clients')
-        .select('magic_token, full_name, whatsapp_phone')
+        .select('magic_token, full_name, auth_user_id')
         .eq('id', clientId)
         .single()
-
-      // Envoyer aussi via WhatsApp si le coach est connecté et le client a un numéro
-      if (clientData?.whatsapp_phone) {
-        const { data: coachProfile } = await admin
-          .from('profiles')
-          .select('whatsapp_session_id, whatsapp_connected')
-          .eq('id', user.id)
-          .single()
-
-        if (coachProfile?.whatsapp_connected && coachProfile?.whatsapp_session_id) {
-          sendWhatsAppMessage(
-            coachProfile.whatsapp_session_id,
-            clientData.whatsapp_phone,
-            content.trim()
-          ).catch(() => {}) // fire & forget, pas bloquant
-        }
-      }
 
       // Envoyer la push notification à l'membre (fire & forget)
       if (clientData?.magic_token) {
@@ -169,6 +158,15 @@ export async function POST(req: Request) {
             url: notifUrl,
           }),
         }).catch(() => { /* silent fail */ })
+      }
+
+      // Push natif (app mobile) à l'élève
+      if (clientData?.auth_user_id) {
+        sendNativePush([clientData.auth_user_id], {
+          title: 'Nouveau message de votre coach',
+          body: content.trim().length > 80 ? content.trim().slice(0, 80) + '…' : content.trim(),
+          url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.evolyafit.fr'}/c/${clientData.magic_token}/messages`,
+        }).catch(() => {})
       }
 
       return NextResponse.json({ message })

@@ -30,38 +30,36 @@ export default function LoginPage() {
       return
     }
 
-    // Redirection selon le rôle
+    // Ordre de priorité :
+    // 1. Élève → a un enregistrement dans clients.auth_user_id → espace client
+    // 2. Admin → profile.role = 'admin' → /admin
+    // 3. Coach → /dashboard (défaut)
+    //
+    // IMPORTANT : le trigger Supabase crée un profile 'coach' pour TOUS les
+    // nouveaux users Auth (y compris les élèves). On doit donc vérifier
+    // clients EN PREMIER, avant de regarder le profil.
     let destination = '/dashboard'
     if (data.user) {
+      try {
+        const res = await fetch('/api/client/find')
+        if (res.ok) {
+          const clientData = await res.json()
+          if (clientData.magic_token) {
+            destination = `/c/${clientData.magic_token}/dashboard`
+            router.push(destination)
+            router.refresh()
+            return
+          }
+        }
+      } catch { /* pas un élève, on continue */ }
+
+      // Pas un élève → vérifier si admin
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', data.user.id)
         .single()
-
-      if (profile?.role === 'admin') {
-        destination = '/admin'
-      } else if (!profile) {
-        // Pas de profil coach → c'est peut-être un élève
-        // On appelle /api/client/find pour retrouver son magic_token
-        try {
-          const res = await fetch('/api/client/find')
-          const clientData = await res.json()
-          if (res.ok && clientData.magic_token) {
-            destination = `/c/${clientData.magic_token}/dashboard`
-          } else {
-            // Compte inconnu (ni coach ni client) → on déconnecte proprement
-            await supabase.auth.signOut()
-            setError('Compte introuvable. Contacte ton coach.')
-            setLoading(false)
-            return
-          }
-        } catch {
-          setError('Erreur réseau. Réessaie.')
-          setLoading(false)
-          return
-        }
-      }
+      if (profile?.role === 'admin') destination = '/admin'
     }
 
     router.push(destination)
